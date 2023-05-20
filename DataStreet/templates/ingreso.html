@@ -1,0 +1,126 @@
+{% extends "./index.html" %}
+
+{% block title %} Gestión de Cursos {% endblock %}
+
+{% block body %}
+{%load static%}
+
+<body>
+
+    <div class="container text-left">
+        <br>
+        <div class="row">
+            <div class="col-sm-2">
+
+            </div>
+            <div class="col-sm-8 p-3">
+                <div class="registration-form" style="background-color: #fff;max-width: 600px;
+                                margin: auto;
+                                padding: 50px 70px;
+                                border-top-left-radius: 30px;
+                                border-top-right-radius: 30px;
+                                border-bottom-left-radius: 30px;
+                                border-bottom-right-radius: 30px;
+                                box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.075);">
+                    <form action="http://127.0.0.1:8000/registraringreso/" method="POST"> {% csrf_token %}
+                        <h1 class="text-center text-sm-center lead mb-3"><b>Formulario de Movimiento de Ingresos</b>
+                        </h1>
+
+                        <label>Selecciona Unidad de Negocio</label>
+                        <select id="unidad_negocio" name="unidad_negocio" class="col-auto mb-3 " style="width:100%;"
+                            aria-label="Default select example" required>
+                            {% for centro in centros %}
+                            <option value="{{centro}}">{{centro}}</option>
+                            {% endfor %}
+                        </select>
+                        <label>Selecciona Unidad Productiva</label>
+                        <select id="unidad_productiva" name="unidad_productiva" class="col-auto mb-3"
+                            style="width:100%;" aria-label="Default select example">
+                            {% for opcion in subcentros %}
+                            <option value="{{ data_centros_id }}">{{ opcion }}</option>
+                            {% endfor %}
+                        </select>
+                        <label class="mb-3">Seleccione la fecha del registro:</label>
+                        <input type="date" id="fecha_registro" name="fecha_registro"
+                            style="width:100%; box-sizing: border-box;" class="input-group mb-3" required>
+
+                        <label>Selecciona la acción a realizar</label>
+                        <select id="accion" name="accion" class="col-auto form-select mb-3" style="width:100%;"
+                            aria-label="Default select example" required>
+                            <option value="Ingreso de Caja Inicial">Ingreso de Caja Inicial</option>
+                            <option value="Adición a Caja">Adición a Caja</option>
+                            <option value="Reducción de Caja">Reducción de Caja</option>
+                        </select>
+                        <div class="form-floating  mb-3">
+                            <label for="inputPassword6" class="col-form-label mb-3">Valor</label>
+                            <input type="number" name="costo_valor" id="costo_valor" class="form-control"
+                                placeholder="0.00" style="width:100%; box-sizing: border-box;" required>
+                        </div>
+
+
+
+                        <div class="form-floating  mb-3">
+                            <label>Concepto</label>
+                            <textarea class="form-control" placeholder="Ingresa aquí el concepto" id="concepto"
+                                name="concepto" required></textarea>
+                        </div>
+
+
+                        <input class="btn btn-block btn-success" style="color: #fff;" type="submit"
+                            value="Registrar Ingreso">
+
+                    </form>
+                </div>
+
+
+                <script>
+                    var unidad_negocio = document.getElementById('unidad_negocio');
+                    var unidad_productiva = document.getElementById('unidad_productiva');
+                    var subcentros = "{{centros}}";
+                    subcentros = subcentros.replace(/&#x27;/g, '"');
+                    subcentros = subcentros.replace(/""/g, "''");
+                    subcentros = subcentros.replace(/None/g, '"none"');
+                    subcentros = JSON.parse(subcentros);
+                    unidad_negocio.addEventListener('change', function () {
+                        var seleccion = unidad_negocio.value;
+                        unidad_productiva.innerHTML = '';
+                        subcentros[seleccion].forEach(function (data_centros_id, opcion) {
+                            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
+                            unidad_productiva.innerHTML += opcion_html;
+                        });
+                    });
+                    unidad_negocio.addEventListener('load', function () {
+                        var seleccion = unidad_negocio.value;
+                        unidad_productiva.innerHTML = '';
+                        subcentros[seleccion].forEach(function (data_centros_id, opcion) {
+                            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
+                            unidad_productiva.innerHTML += opcion_html;
+                        });
+                    });
+                </script>
+                <script>
+                    var miSelect = document.getElementById('accion');
+                    var miLabel = document.getElementById('tipoMovimiento');
+
+                    miSelect.addEventListener('change', function () {
+                        miLabel.innerText = 'Valor de ' + miSelect.value;
+                    });
+                </script>
+
+            </div>
+            <div class="col-sm-2">
+
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"
+    integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"
+    integrity="sha384-Y4oOpwW3duJdCWv5ly8SCFYWqFDsfob/3GkgExXKV4idmbt98QcxXYs9UoXAB7BZ"
+    crossorigin="anonymous"></script>
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "./index.html" %}
+
+{% block title %} Gestión de Cursos {% endblock %}
+
+{% block body %}
+{%load static%}
+<div class="row">
+
+    <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha Registro</th>
+                        <th>Movimiento</th>
+                        <th>Accion</th>
+                        <th>Valor</th>
+                        <th>Estado</th>
+                </thead>
+                <tbody>
+                    {% for movimiento in data_movimientos %}
+                    <tr>
+                        <td>{{movimiento.fecha_registro}}</td>
+                        <!-- Tipo de Ingreso -->
+                        {% if movimiento.tipo_ingreso == 'OUT' %}
+                        <td>Egreso</td>
+                        {% elif movimiento.tipo_ingreso == 'IN' %}
+                        <td>Ingreso</td>
+                        {% else %}
+                        <td>Desconocido</td>
+                        {% endif %}
+                        <td>{{movimiento.accion}}</td>
+                        <td>{{movimiento.valor}}</td>
+                        <td>{{movimiento.estado}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th><b>Diferencia: </b></th>
+                        <td>{{diferencia}}</td>
+                        <th></th>
+                        <th></th>
+                    </tr>
+
+            </table>
+        </div>
+
+    </div>
+
+
+</div>
+
+{% endblock %}

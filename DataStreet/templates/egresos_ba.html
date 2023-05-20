@@ -1,0 +1,157 @@
+{% extends "./index.html" %}
+
+{% block title %} Gestión de Cursos {% endblock %}
+
+{% block body %}
+{%load static%}
+
+<div class="container text-left">
+    <div class="row">
+        <div class="col-sm-2">
+
+        </div>
+        <div class="col-sm-8 p-3">
+            <div class="registration-form" style="background-color: #fff;max-width: 600px;
+                                margin: auto;
+                                padding: 50px 70px;
+                                border-top-left-radius: 30px;
+                                border-top-right-radius: 30px;
+                                border-bottom-left-radius: 30px;
+                                border-bottom-right-radius: 30px;
+                                box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.075);">
+                <form action="http://127.0.0.1:8000/registraregreso/" method="POST" enctype="multipart/form-data"> {% csrf_token %}
+                    <h1 class="text-center text-sm-center lead mb-3" style="color: black;"><b>Formulario de Movimiento
+                            de Egresos</b>
+                    </h1>
+
+                    <label>Selecciona el Centro de Costos</label>
+                    <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%;"
+                        aria-label="Default select example" required>
+                        {% for centro in centros %}
+                        <option value="{{centro}}">{{centro}}</option>
+                        {% endfor %}
+                    </select>
+                    <label>Selecciona el Subcentro de Costos</label>
+                    <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
+                        aria-label="Default select example">
+                        {% for opcion in subcentros %}
+                        <option value="{{ data_centros_id }}">{{ opcion }}</option>
+                        {% endfor %}
+                    </select><br>
+                    <label>Seleccione la fecha del registro:</label>
+                    <input type="date" id="fecha_registro" name="fecha_registro"
+                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" required>
+
+                    <label for="inputPassword6" class="col-form-label mb-3">Ingrese el Nombre del Proveedor:</label>
+                    <input type="text" id="nom_provedor" name="nom_provedor" class="form-control"
+                        style="width:100%; box-sizing: border-box;" required>
+
+                    <label class="mb-3">Seleccione el tipo de Documento:</label>
+                    <select class="form-select form-select-lg mb-3" style="width:100%; box-sizing: border-box;"
+                        aria-label=".form-select-lg example" id="doc_type" name="tipo_doc" required>
+                        <option value="CC">Cédula</option>
+                        <option value="NIT">NIT</option>
+                        <option value="CE">Cédula de Extrangería</option>
+                    </select>
+
+                    <label for="inputPassword6" class="col-form-label">Numero de Documento:</label>
+                    <input type="text" id="num_doc" name="num_doc" class="form-control"
+                        aria-labelledby="passwordHelpInline" required>
+
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="billCheck" name="billCheck">
+                        <label class="form-check-label" for="flexCheckDefault">
+                            <input type="hidden" id="factura_check" name="factura_check" value="false">
+                            Tiene factura:
+                        </label>
+                    </div>
+
+                    <div id="seccion" style="display: none;">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-auto">
+                                <label for="inputPassword6" class="col-form-label">Digite el número de factura:</label>
+                            </div>
+                            <div class="col-auto">
+                                <input type="text" id="billNumber" name="num_factura" class="form-control"
+                                    aria-labelledby="passwordHelpInline">
+                            </div>
+                        </div>
+
+                        <label>Adjunte el soporte:</label>
+                        <input type="file" id="soporte" name="soporte"><br><br>
+                        <!-- <input type="submit" value="Subir Archivo"> -->
+
+
+                    </div>
+
+                    <div class="form-floating  mb-3">
+                        <label for="inputPassword6" class="col-form-label mb-3">Valor</label>
+                        <input type="number" name="costo_valor" id="costo_valor" class="form-control" placeholder="0.00"
+                            style="width:100%; box-sizing: border-box;" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="exampleFormControlTextarea1" class="form-label">Digite el concepto:</label>
+                        <textarea class="form-control" id="exampleFormControlTextarea1" name="concepto"
+                            rows="3"></textarea>
+                    </div>
+
+                    <input class="btn btn-block btn-success" style="color: #fff;" type="submit"
+                        value="Registrar Egreso">
+
+
+
+                </form>
+            </div>
+        </div>
+        <div class="col">
+
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script>
+    var centro_costo = document.getElementById('centro_costo');
+    var sub_centro_costo = document.getElementById('sub_centro_costo');
+    var subcentros = "{{centros}}";
+    subcentros = subcentros.replace(/&#x27;/g, '"');
+    subcentros = subcentros.replace(/""/g, "''");
+    subcentros = subcentros.replace(/None/g, '"none"');
+    subcentros = JSON.parse(subcentros);
+    centro_costo.addEventListener('change', function () {
+        var seleccion = centro_costo.value;
+        sub_centro_costo.innerHTML = '';
+        subcentros[seleccion].forEach(function (data_centros_id, opcion) {
+            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
+            sub_centro_costo.innerHTML += opcion_html;
+        });
+    });
+</script>
+
+<script>
+    var checkbox = document.getElementById('billCheck');
+    var seccion = document.getElementById('seccion');
+    var billNumber = document.getElementById('billNumber');
+    var soporte = document.getElementById('soporte');
+    var factura_check = document.getElementById('factura_check');
+
+
+
+    checkbox.addEventListener('change', function () {
+        if (checkbox.checked) {
+            billNumber.required = true;
+            soporte.required = true;
+            factura_check.value = true;
+            seccion.style.display = 'block';
+        } else {
+            billNumber.required = false;
+            soporte.required = false;
+            factura_check.value = false;
+            seccion.style.display = 'none';
+        }
+    });
+</script>
+
+{% endblock %}
