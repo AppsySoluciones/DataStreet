@@ -37,7 +37,7 @@
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <img src="{% static 'img/LogoCrecento.png' %}" alt="Logro">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="http://127.0.0.1:8000/">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="http://50.19.129.198:8080/">
                 <div class="sidebar-brand-text mx-3" style="font-family: 'Mont', sans-serif;">Menú Principal</div>
             </a>
 
@@ -58,14 +58,14 @@
 
             {% if user.is_authenticated and user|has_group:"Administrador" %}
             <li class="nav-item">
-                <a class="nav-link" href="http://127.0.0.1:8000/ingreso">
+                <a class="nav-link" href="http://50.19.129.198:8080/ingreso">
                     <i class="fas fa-arrow-down"></i>
                     <span>Ingreso</span></a>
             </li>
             {% endif %}
             {% if user.is_authenticated and user|has_group:"Comun" %}
             <li class="nav-item">
-                <a class="nav-link" href="http://127.0.0.1:8000/egreso">
+                <a class="nav-link" href="http://50.19.129.198:8080/egreso">
                     <i class="fas fa-arrow-up"></i>
                     <span>Egreso</span></a>
             </li>
@@ -73,32 +73,32 @@
 
             {% if user.is_authenticated and user|has_group:"Administrador" %}
             <li class="nav-item">
-                <a class="nav-link" href="http://127.0.0.1:8000/ingreso_ba">
+                <a class="nav-link" href="http://50.19.129.198:8080/ingreso_ba">
                     <i class="fas fa-piggy-bank"></i>
                     <span>Ingreso Bancario</span></a>
             </li>
             {% endif %}
             {% if user.is_authenticated and user|has_group:"Administrador" %}
             <li class="nav-item">
-                <a class="nav-link" href="http://127.0.0.1:8000/egreso_ba">
+                <a class="nav-link" href="http://50.19.129.198:8080/egreso_ba">
                     <i class="fas fa-piggy-bank" style="color: #e6ebf4;"></i>
                     <span>Egreso Bancario</span></a>
             </li>
             {% endif %}
 
             <li class="nav-item">
-                <a class="nav-link" href="http://127.0.0.1:8000/tablaing/">
+                <a class="nav-link" href="http://50.19.129.198:8080/tablaing/">
                     <i class="fas fa-table"></i>
                     <span>Tabla Ingresos</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="http://127.0.0.1:8000/tablaegre/">
+                <a class="nav-link" href="http://50.19.129.198:8080/tablaegre/">
                     <i class="fas fa-table"></i>
                     <span>Tabla Egresos</span></a>
             </li>
 
             {% if user.is_authenticated and user|has_group:"Administrador" %}
-                            <form method="POST" action="http://127.0.0.1:8000/selectunidad/" class="navbar-search">
+                            <form method="POST" action="http://50.19.129.198:8080/selectunidad/" class="navbar-search">
                                 {% csrf_token %}
                                 <div class="input-group">
                                     <!-- <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2"> -->
@@ -371,7 +371,7 @@
                                 </a>
                                 <div class="dropdown-divider"></div>
 
-                                <form action="http://127.0.0.1:8000/logout/" method="post">
+                                <form action="http://50.19.129.198:8080/logout/" method="post">
                                     {% csrf_token %}
                                     <input type="submit" value="Cerrar sesión">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>

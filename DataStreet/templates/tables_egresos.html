@@ -101,10 +101,10 @@
                                                                 <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante"></a>
                                                             <a href="/"></a>
                                                             {% if user.is_authenticated and user|has_group:"Auditor" %}
-                                                                <a href="http://127.0.0.1:8000/movimiento/detalle/{{movimiento.pk}}">
+                                                                <a href="http://50.19.129.198:8080/movimiento/detalle/{{movimiento.pk}}">
                                                                     <input class="btn btn-block btn-warning" style="color: #fff;" value="Auditar"></a>
                                                             {% else %}
-                                                                <a href="http://127.0.0.1:8000/movimiento/detalle/{{movimiento.pk}}">
+                                                                <a href="http://50.19.129.198:8080/movimiento/detalle/{{movimiento.pk}}">
                                                                     <input class="btn btn-block btn-success" style="color: #fff;" value="Detalle"></a>
                                                             {% endif %}
                                                         </b>

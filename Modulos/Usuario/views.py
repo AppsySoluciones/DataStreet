@@ -22,4 +22,4 @@ class LoginView(FormView):
 def logout(request):
     if 'username' in request.session:
         del request.session['username']
-    return redirect('http://127.0.0.1:8000/login')
+    return redirect('http://50.19.129.198:8080/login')

@@ -295,7 +295,7 @@ def agregar_comentario(request,pk):
         comentario=comentario
         )
     comentario.save()
-    return redirect('http://127.0.0.1:8000/movimiento/detalle/'+str(pk)+'/') 
+    return redirect('http://50.19.129.198:8080/movimiento/detalle/'+str(pk)+'/') 
 
 def edicion_form(request):
     return None
@@ -307,4 +307,4 @@ def select_unidad_prod(request):
     else:
         usuario.last_productiva = request.POST['unidad_productiva']
     usuario.save()
-    return redirect('http://127.0.0.1:8000/')
+    return redirect('http://50.19.129.198:8080/')
