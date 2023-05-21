@@ -90,11 +90,16 @@
                                                 <!-- Tipo de Movimiento	Fecha de Movimiento	Concepto	Valor	Comprobante/Detalle -->
                                                 <th>Tipo de Movimiento</th>
                                                 <th>Fecha de Movimiento</th>
+                                                {% if user.is_authenticated and user|has_group:"Administrador" %}
+                                                    <th>Unidad Productiva</th>
+                                                {% endif %}
                                                 <th>Concepto</th>
                                                 <th>Valor</th>
                                                 <th>Nombre Proveedor</th>
                                                 <th>Estado</th>
+                                                
                                                 <th>Comprobante/Detalle</th>
+                                                
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -109,6 +114,9 @@
                                                         <td>Desconocido</td>
                                                     {% endif %}
                                                     <td>{{ movimiento.fecha_registro }}</td>
+                                                    {% if user.is_authenticated and user|has_group:"Administrador" %}
+                                                    <td>{{movimiento.unidad_productiva.nombre}}</td>
+                                                    {% endif %}
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
                                                     <td>{{ movimiento.nombre_proveedor }}</td>
@@ -119,10 +127,10 @@
                                                                 <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante"></a>
                                                             <a href="/"></a>
                                                             {% if user.is_authenticated and user|has_group:"Auditor" %}
-                                                                <a href="http://50.19.129.198:8080/movimiento/detalle/{{movimiento.pk}}">
+                                                                <a href="{{server_url}}movimiento/detalle/{{movimiento.pk}}">
                                                                     <input class="btn btn-block btn-warning" style="color: #fff;" value="Auditar"></a>
                                                             {% else %}
-                                                                <a href="http://50.19.129.198:8080/movimiento/detalle/{{movimiento.pk}}">
+                                                                <a href="{{server_url}}movimiento/detalle/{{movimiento.pk}}">
                                                                     <input class="btn btn-block btn-success" style="color: #fff;" value="Detalle"></a>
                                                             {% endif %}
                                                         </b>

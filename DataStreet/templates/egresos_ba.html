@@ -19,7 +19,7 @@
                                 border-bottom-left-radius: 30px;
                                 border-bottom-right-radius: 30px;
                                 box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.075);">
-                <form action="http://50.19.129.198:8080/registraregreso/" method="POST" enctype="multipart/form-data"> {% csrf_token %}
+                <form action="{{server_url}}registraregreso/" method="POST" enctype="multipart/form-data"> {% csrf_token %}
                     <h1 class="text-center text-sm-center lead mb-3" style="color: black;"><b>Formulario de Movimiento
                             de Egresos</b>
                     </h1>
@@ -96,6 +96,7 @@
                         <textarea class="form-control" id="exampleFormControlTextarea1" name="concepto"
                             rows="3"></textarea>
                     </div>
+                    <input type="hidden" name="ingreso_bancario" id="ingreso_bancario" value="True">
 
                     <input class="btn btn-block btn-success" style="color: #fff;" type="submit"
                         value="Registrar Egreso">

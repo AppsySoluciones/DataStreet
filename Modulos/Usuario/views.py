@@ -3,6 +3,8 @@ from django.contrib.auth import login
 from django.http import HttpResponse
 from django.views.generic import FormView
 from django.shortcuts import render,redirect
+from django.conf import settings
+URL_SERVER = settings.URL_SERVER
 
 class LoginView(FormView):
     form_class = AuthenticationForm
@@ -22,4 +24,4 @@ class LoginView(FormView):
 def logout(request):
     if 'username' in request.session:
         del request.session['username']
-    return redirect('http://50.19.129.198:8080/login')
+    return redirect(f'{URL_SERVER}login')

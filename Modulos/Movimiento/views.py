@@ -8,10 +8,12 @@ from Modulos.Usuario.models import Usuario
 from django.urls import reverse_lazy
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 import locale
 
 import json
+URL_SERVER = settings.URL_SERVER
 
 
 
@@ -28,7 +30,7 @@ def grupo_requerido(grupo_nombres):
 def home(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     disponible,ingreso,egreso = get_movimientos(usuario)
-    context = {
+    context = {'server_url':URL_SERVER,
         'disponible':disponible,
         'egresos':egreso,
         'ingresos':ingreso,
@@ -60,6 +62,7 @@ def egresos(request):
     print(data_centros)
     print(data_centros_id)
     context = {
+        'server_url':URL_SERVER,
         'centros':data_centros,
         'centros_id':data_centros_id,
         'disponible':disponible,
@@ -73,9 +76,9 @@ def egresos(request):
 #@login_required(login_url='/login/')
 #@grupo_requerido(['Administrador', 'Auditor'])
 def ingresos(request):
-    usuario = Usuario.objects.filter(pk=request.user.id).first()
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
     disponible,ingreso,egreso = get_movimientos(usuario)
-    unidad_negocio = UnidadNegocio.objects.all()
+    unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
     unidad_negocio_nombres = {
     }
     unidad_negocio_id= {
@@ -83,18 +86,45 @@ def ingresos(request):
     for unidad in unidad_negocio:
         unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('nombre',flat=True))
         unidad_negocio_id[unidad.pk] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
-    return render(request,"ingreso.html",{'centros':unidad_negocio_nombres,'centros_id':unidad_negocio_id,'disponible':disponible,'ingresos':ingreso,'egresos':egreso,'request': request})
+    print(unidad_negocio_nombres)
+    print(unidad_negocio_id)
+    context = {
+        'server_url':URL_SERVER,
+        'centros':unidad_negocio_nombres,
+        'centros_id':unidad_negocio_id,
+        'disponible':disponible,
+        'ingresos':ingreso,
+        'egresos':egreso,
+        'request': request
+        }
+    
+    return render(request,"ingreso.html",context)
 
 
 def ingresos_ba(request):
-    usuario = Usuario.objects.filter(pk=request.user.id).first()
-    unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-    disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
-    centro_costos = CentroCosto.objects.all()
-    data_centros = {}
-    for centro in centro_costos:
-        data_centros[centro.nombre] = list(centro.subcentro.all().values_list('nombre',flat=True))
-    return render(request,"ingresos_ba.html",{'centros':data_centros,'ingresos':ingreso,'disponible':disponible,'egresos':egreso,'request': request})
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    disponible,ingreso,egreso = get_movimientos(usuario)
+    unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
+    unidad_negocio_nombres = {
+    }
+    unidad_negocio_id= {
+    }
+    for unidad in unidad_negocio:
+        unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('nombre',flat=True))
+        unidad_negocio_id[unidad.pk] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
+    print(unidad_negocio_nombres)
+    print(unidad_negocio_id)
+    context = {
+        'server_url':URL_SERVER,
+        'centros':unidad_negocio_nombres,
+        'centros_id':unidad_negocio_id,
+        'disponible':disponible,
+        'ingresos':ingreso,
+        'egresos':egreso,
+        'request': request
+        }
+    
+    return render(request,"ingreso.html",context)
 
 def egresos_ba(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
@@ -110,7 +140,7 @@ def egresos_ba(request):
         data_centros_id[centro.pk] = list(centro.subcentro.all().values_list('id',flat=True))
     print(data_centros)
     print(data_centros_id)
-    context = {
+    context = {'server_url':URL_SERVER,
         'centros':data_centros,
         'centros_id':data_centros_id,
         'disponible':disponible,
@@ -124,8 +154,8 @@ def egresos_ba(request):
 #@grupo_requerido('Administrador')
 def registrarIngreso(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
-    unidadm=request.POST['unidad_negocio']
-    unidad_productiva_id=request.POST['unidad_productiva']
+    unidadm=request.POST['centro_costo']
+    unidad_productiva_id=request.POST['sub_centro_costo']
     fecha_registro = request.POST['fecha_registro']
     accion = request.POST['accion']
     costo_valor = request.POST['costo_valor']
@@ -133,7 +163,10 @@ def registrarIngreso(request):
     unidadm = UnidadNegocio.objects.filter(nombre=unidadm).first()
     unidad_negocio = UnidadNegocio.objects.filter(pk=unidad_productiva_id).first()
     unidad_productiva = UnidadProductiva.objects.first()
-    
+    if request.POST['ingreso_bancario'] == 'False':
+        ingreso_bancario = False
+    else:
+        ingreso_bancario = True
     ingreso = Movimiento.objects.create(
         unidad_productiva=unidad_productiva,
         fecha_registro=fecha_registro,
@@ -141,7 +174,8 @@ def registrarIngreso(request):
         valor=costo_valor,
         concepto=concepto,
         estado='En proceso',
-        tipo_ingreso='IN'
+        tipo_ingreso='IN',
+        ingreso_bancario=ingreso_bancario
     )
     ingreso.save()
     return redirect('/')
@@ -197,11 +231,15 @@ def registrarEgreso(request):
 
 
 def tablas_ingresos(request):
-    usuario = Usuario.objects.filter(pk=request.user.id).first()
-    unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-    disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    if usuario.groups.filter(name='Administrador').exists():
+        disponible,ingreso,egreso = get_movimientos(usuario)
+    else:
+        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+    
     movimientos = get_movimientos_usuario(usuario).filter(tipo_ingreso='IN')
-    context = {
+    context = {'server_url':URL_SERVER,
         'data_movimientos':movimientos,
         'ingresos':ingreso,
         'egresos':egreso,
@@ -211,11 +249,14 @@ def tablas_ingresos(request):
     return render(request,"tables_ingresos.html",context)
 
 def tablas_egresos(request):
-    usuario = Usuario.objects.filter(pk=request.user.id).first()
-    unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-    disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    if usuario.groups.filter(name='Administrador').exists():
+        disponible,ingreso,egreso = get_movimientos(usuario)
+    else:
+        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
     movimientos = get_movimientos_usuario(usuario).filter(tipo_ingreso='OUT')
-    context = {
+    context = {'server_url':URL_SERVER,
         'data_movimientos':movimientos,
         'ingresos':ingreso,
         'egresos':egreso,
@@ -235,7 +276,7 @@ def detalle(request,pk):
     centro_costo = CentroCosto.objects.filter(subcentro=movimientos.sub_centro_costo).first()
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     valor_f = locale.currency(movimientos.valor, symbol=True, grouping=True)
-    context = {
+    context = {'server_url':URL_SERVER,
         'ingresos':ingreso,
         'egresos':egreso,
         'disponible':disponible,
@@ -270,7 +311,7 @@ def edicion_mov(request,pk):
         data_centros[centro.nombre] = list(centro.subcentro.all().values_list('nombre',flat=True))
         data_centros_id[centro.pk] = list(centro.subcentro.all().values_list('id',flat=True))
     
-    context = {
+    context = {'server_url':URL_SERVER,
         'ingresos':ingreso,
         'egresos':egreso,
         'disponible':disponible,
@@ -295,7 +336,7 @@ def agregar_comentario(request,pk):
         comentario=comentario
         )
     comentario.save()
-    return redirect('http://50.19.129.198:8080/movimiento/detalle/'+str(pk)+'/') 
+    return redirect(f'{URL_SERVER}movimiento/detalle/'+str(pk)+'/') 
 
 def edicion_form(request):
     return None
@@ -307,4 +348,4 @@ def select_unidad_prod(request):
     else:
         usuario.last_productiva = request.POST['unidad_productiva']
     usuario.save()
-    return redirect('http://50.19.129.198:8080/')
+    return redirect(f'{URL_SERVER}')

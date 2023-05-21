@@ -26,16 +26,16 @@
                         <h1 class="text-center text-sm-center lead mb-3"><b>Formulario de Movimiento de Ingresos</b>
                         </h1>
 
-                        <label>Selecciona Unidad de Negocio</label>
-                        <select id="unidad_negocio" name="unidad_negocio" class="col-auto mb-3 " style="width:100%;"
+                        <label>Selecciona la unidad de negocio</label>
+                        <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%;"
                             aria-label="Default select example" required>
                             {% for centro in centros %}
                             <option value="{{centro}}">{{centro}}</option>
                             {% endfor %}
                         </select>
-                        <label>Selecciona Unidad Productiva</label>
-                        <select id="unidad_productiva" name="unidad_productiva" class="col-auto mb-3"
-                            style="width:100%;" aria-label="Default select example">
+                        <label>Selecciona la unidad productiva</label>
+                        <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
+                            aria-label="Default select example">
                             {% for opcion in subcentros %}
                             <option value="{{ data_centros_id }}">{{ opcion }}</option>
                             {% endfor %}
@@ -86,8 +86,7 @@
                             <textarea class="form-control" placeholder="Ingresa aquí el concepto" id="concepto"
                                 name="concepto" required></textarea>
                         </div>
-
-
+                        <input type="hidden" name="ingreso_bancario" id="ingreso_bancario" value="True">
                         <input class="btn btn-block btn-success" style="color: #fff;" type="submit"
                             value="Registrar Ingreso">
 
@@ -96,27 +95,28 @@
 
 
                 <script>
-                    var unidad_negocio = document.getElementById('unidad_negocio');
-                    var unidad_productiva = document.getElementById('unidad_productiva');
+                    var centro_costo = document.getElementById('centro_costo');
+                    var sub_centro_costo = document.getElementById('sub_centro_costo');
                     var subcentros = "{{centros}}";
                     subcentros = subcentros.replace(/&#x27;/g, '"');
                     subcentros = subcentros.replace(/""/g, "''");
                     subcentros = subcentros.replace(/None/g, '"none"');
                     subcentros = JSON.parse(subcentros);
-                    unidad_negocio.addEventListener('change', function () {
-                        var seleccion = unidad_negocio.value;
-                        unidad_productiva.innerHTML = '';
+                    centro_costo.addEventListener('change', function () {
+                        var seleccion = centro_costo.value;
+                        sub_centro_costo.innerHTML = '';
                         subcentros[seleccion].forEach(function (data_centros_id, opcion) {
                             var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
-                            unidad_productiva.innerHTML += opcion_html;
+                            sub_centro_costo.innerHTML += opcion_html;
                         });
                     });
-                    unidad_negocio.addEventListener('load', function () {
-                        var seleccion = unidad_negocio.value;
-                        unidad_productiva.innerHTML = '';
+
+                    centro_costo.addEventListener('DOMContentLoaded', function () {
+                        var seleccion = centro_costo.value;
+                        sub_centro_costo.innerHTML = '';
                         subcentros[seleccion].forEach(function (data_centros_id, opcion) {
                             var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
-                            unidad_productiva.innerHTML += opcion_html;
+                            sub_centro_costo.innerHTML += opcion_html;
                         });
                     });
                 </script>

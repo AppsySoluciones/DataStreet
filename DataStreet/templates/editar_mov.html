@@ -20,7 +20,7 @@
                                                         box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.075);">
 
                 {% if 'IN' == movimiento.tipo_ingreso %}
-                <form action="http://50.19.129.198:8080/movimiento/editar/{{movimiento.pk}}/edit" method="POST"> {% csrf_token %}
+                <form action="{{server_url}}movimiento/editar/{{movimiento.pk}}/edit" method="POST"> {% csrf_token %}
                     <h1 class="text-center text-sm-center lead mb-3"><b>Formulario de Movimiento de Ingresos</b>
                     </h1>
 
@@ -70,7 +70,7 @@
 
                 </form>
                 {%elif 'OUT' == movimiento.tipo_ingreso %}
-                <form action="http://50.19.129.198:8080/movimiento/editar/{{movimiento.pk}}/edit" method="POST" enctype="multipart/form-data"> {% csrf_token %}
+                <form action="{{server_url}}movimiento/editar/{{movimiento.pk}}/edit" method="POST" enctype="multipart/form-data"> {% csrf_token %}
                     <h1 class="text-center text-sm-center lead mb-3" style="color: black;"><b>Formulario de Movimiento
                             de Egresos</b>
                     </h1>

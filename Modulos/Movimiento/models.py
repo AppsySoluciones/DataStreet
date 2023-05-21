@@ -23,11 +23,12 @@ class Movimiento(models.Model):
     factura = models.BooleanField(default=False,null=True,blank=True)
     estado = models.CharField(max_length=10,null=True,blank=True)
     accion = models.CharField(max_length=20,null=True,blank=True)
-    uuid = models.SlugField(blank=True,unique=True)
+    uuid = models.SlugField(blank=True)
     fecha_registro = models.DateField(auto_created=True,null=True,blank=True)
     concepto = models.CharField(max_length=200,null=True,blank=True)
     valor = models.FloatField(default=0)
     comprobante_factura = models.FileField(upload_to='comprobantes/',null=True,blank=True)
+    ingreso_bancario = models.BooleanField(default=False,null=True,blank=True)
 
     tipo_ingreso = models.CharField(
         default=TipoMovimiento.INGRESO,
@@ -92,8 +93,18 @@ def get_estado_caja_admin(user,unidad_productiva=None):
 
 
 
-def get_movimientos_usuario(user):
-    return Movimiento.objects.filter(unidad_productiva__usuarioRegistro=user).all()
+def get_movimientos_usuario(usuario):
+    if usuario.groups.filter(name='Administrador').exists():
+        querysets = []
+        unidades_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
+        # Inicializa un objeto Q vacío
+        union_query = Q()
+        for unidad_negocio in unidades_negocio:
+            condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all()) 
+            union_query |= condicion
+        return  Movimiento.objects.filter(union_query).all()
+    else:
+        return Movimiento.objects.filter(unidad_productiva__usuarioRegistro=usuario).all()
 
 def get_movimientos(usuario,unidad_productiva=None):
     if usuario.groups.filter(name='Administrador').exists():
@@ -106,6 +117,8 @@ def get_movimientos(usuario,unidad_productiva=None):
     return disponible,ingreso,egreso
 
 
+
+
 class Comentario(models.Model):
     movimiento = models.ForeignKey(Movimiento, on_delete=models.CASCADE,null=True,blank=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE,null=True,blank=True)
@@ -114,3 +127,4 @@ class Comentario(models.Model):
     def __str__(self):
         return f"{self.usuario} - {self.comentario}"
     
+
