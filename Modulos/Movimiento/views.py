@@ -211,8 +211,10 @@ def registrarEgreso(request):
         tipo_ingreso='OUT',
         valor=costo_valor,
         unidad_productiva=unidad_productiva,
-        
-    )
+        comprobante_factura=comprobante_factura
+        )
+        egreso.save()
+    
     else:
         egreso = Movimiento.objects.create(
             fecha_registro=fecha_registro,
@@ -239,6 +241,7 @@ def tablas_ingresos(request):
         disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
     
     movimientos = get_movimientos_usuario(usuario).filter(tipo_ingreso='IN')
+    movimiento_uno = movimientos.last()
     context = {'server_url':URL_SERVER,
         'data_movimientos':movimientos,
         'ingresos':ingreso,

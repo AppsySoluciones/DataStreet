@@ -88,7 +88,6 @@
                                         <thead>
                                             <tr>
                                                 <!-- Tipo de Movimiento	Fecha de Movimiento	Concepto	Valor	Comprobante/Detalle -->
-                                                <th>Tipo de Movimiento</th>
                                                 <th>Fecha de Movimiento</th>
                                                 {% if user.is_authenticated and user|has_group:"Administrador" %}
                                                     <th>Unidad Productiva</th>
@@ -102,14 +101,6 @@
                                         <tbody>
                                             {% for movimiento in data_movimientos %}
                                                 <tr>
-                                                    <!-- Tipo de Ingreso -->
-                                                    {% if movimiento.tipo_ingreso == 'OUT' %}
-                                                        <td>Egreso</td>
-                                                    {% elif movimiento.tipo_ingreso == 'IN' %}
-                                                        <td>Ingreso</td>
-                                                    {% else %}
-                                                        <td>Desconocido</td>
-                                                    {% endif %}
                                                     <td>{{ movimiento.fecha_registro }}</td>
                                                     {% if user.is_authenticated and user|has_group:"Administrador" %}
                                                     <td>{{movimiento.unidad_productiva.nombre}}</td>
@@ -117,10 +108,12 @@
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
                                                     <td>
-                                                        <b>
-                                                            <a href="/">
+                                                        <b>{% if movimiento.comprobante_factura %}
+                                                            <a href="{{movimiento.comprobante_factura.url}}">
                                                                 <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante"></a>
-                                                            <a href="/"></a>
+                                                                {% else %}
+                                                                <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante" disabled>
+                                                            {% endif %}
                                                             {% if user.is_authenticated and user|has_group:"Auditor" %}
                                                                 <a href="{{server_url}}movimiento/detalle/{{movimiento.pk}}">
                                                                     <input class="btn btn-block btn-warning" style="color: #fff;" value="Auditar"></a>
