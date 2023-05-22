@@ -129,6 +129,21 @@
             sub_centro_costo.innerHTML += opcion_html;
         });
     });
+    // Cargar el primer centro de costo y sus subcentros correspondientes
+    var primerCentroCosto = centro_costo.options[1].value; // Obtener el valor del primer centro de costo (asumiendo que el índice 1 corresponde al primero)
+    cargarSubcentros(primerCentroCosto); // Llamar a la función para cargar los subcentros correspondientes al primer centro de costo
+
+    // Función para cargar los subcentros de costo correspondientes a un centro de costo seleccionado
+    function cargarSubcentros(centroSeleccionado) {
+        sub_centro_costo.innerHTML = ''; // Limpiar las opciones anteriores
+        subcentros[centroSeleccionado].forEach(function (data_centros_id, opcion) {
+            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
+            sub_centro_costo.innerHTML += opcion_html;
+        });
+    }
+
+    // Disparar el evento de cambio manualmente para cargar las opciones de subcentro de costo correspondientes al primer centro de costo
+    centro_costo.dispatchEvent(new Event('change'));
 </script>
 
 <script>
