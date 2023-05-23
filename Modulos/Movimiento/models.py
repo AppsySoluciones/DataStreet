@@ -5,8 +5,13 @@ from Modulos.Usuario.models import Usuario
 from django.db.models import Sum
 from django.db.models import Q
 from django.db import models
+from django.conf import settings
 import locale
 import uuid
+
+
+
+
 # Create your models here.
 
 class TipoMovimiento(models.TextChoices):
@@ -45,12 +50,19 @@ class Movimiento(models.Model):
         self.uid = uuid.uuid4()
         self.save()
 
+
+    
+
+    
+
     
 
 def get_estado_caja(user,unidad_productiva):
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)).aggregate(Sum('valor'))['valor__sum']
-    egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)).aggregate(Sum('valor'))['valor__sum']
+    filtros_in = Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)
+    filtros_out = Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)&Q(estado='Aprobado')
+    ingresos = Movimiento.objects.filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
+    egresos = Movimiento.objects.filter(filtros_out).aggregate(Sum('valor'))['valor__sum']
     if ingresos == None:
         ingresos = 0
     if egresos == None:
@@ -67,18 +79,18 @@ def get_estado_caja_admin(user,unidad_productiva=None):
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
         unidad_productiva=UnidadProductiva.objects.get(id=user.last_productiva)
         ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)).aggregate(Sum('valor'))['valor__sum']
-        egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)).aggregate(Sum('valor'))['valor__sum']
+        egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)&Q(estado='Aprobado')).aggregate(Sum('valor'))['valor__sum']
         
     elif user.last_productiva:
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
         unidad_productiva=UnidadProductiva.objects.get(id=user.last_productiva)
         ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)).aggregate(Sum('valor'))['valor__sum']
-        egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)).aggregate(Sum('valor'))['valor__sum']
+        egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)&Q(estado='Aprobado')).aggregate(Sum('valor'))['valor__sum']
 
     else:
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
         ingresos = Movimiento.objects.filter(tipo_ingreso='IN').aggregate(Sum('valor'))['valor__sum']
-        egresos = Movimiento.objects.filter(tipo_ingreso='OUT').aggregate(Sum('valor'))['valor__sum']
+        egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(estado='Aprobado')).aggregate(Sum('valor'))['valor__sum']
 
     if ingresos == None:
         ingresos = 0
@@ -94,7 +106,7 @@ def get_estado_caja_admin(user,unidad_productiva=None):
 
 
 def get_movimientos_usuario(usuario):
-    if usuario.groups.filter(name='Administrador').exists():
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
         querysets = []
         unidades_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
         # Inicializa un objeto Q vacío
@@ -107,7 +119,7 @@ def get_movimientos_usuario(usuario):
         return Movimiento.objects.filter(unidad_productiva__usuarioRegistro=usuario).all()
 
 def get_movimientos(usuario,unidad_productiva=None):
-    if usuario.groups.filter(name='Administrador').exists():
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
         disponible,ingreso,egreso = get_estado_caja_admin(usuario,unidad_productiva)
     elif usuario.groups.filter(name='Comun').exists():
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()

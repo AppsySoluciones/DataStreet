@@ -109,7 +109,7 @@
                                                     <td>{{ movimiento.valor }}</td>
                                                     <td>
                                                         <b>{% if movimiento.comprobante_factura %}
-                                                            <a href="{{movimiento.comprobante_factura.url}}">
+                                                            <a href="{{server_url}}movimiento/comprobante/{{movimiento.pk}}" target="_blank">
                                                                 <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante"></a>
                                                                 {% else %}
                                                                 <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante" disabled>

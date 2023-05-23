@@ -9,11 +9,14 @@ from django.urls import reverse_lazy
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+import boto3
+from botocore.exceptions import ClientError
 
 import locale
 
 import json
 URL_SERVER = settings.URL_SERVER
+AWS_STORAGE_BUCKET_NAME = settings.AWS_STORAGE_BUCKET_NAME
 
 
 
@@ -241,7 +244,6 @@ def tablas_ingresos(request):
         disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
     
     movimientos = get_movimientos_usuario(usuario).filter(tipo_ingreso='IN')
-    movimiento_uno = movimientos.last()
     context = {'server_url':URL_SERVER,
         'data_movimientos':movimientos,
         'ingresos':ingreso,
@@ -352,3 +354,27 @@ def select_unidad_prod(request):
         usuario.last_productiva = request.POST['unidad_productiva']
     usuario.save()
     return redirect(f'{URL_SERVER}')
+
+def comprobante(request,pk):
+    movimiento = get_object_or_404(Movimiento,pk=pk)
+    s3_client = boto3.client(
+    's3',
+    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
+
+    try:
+        response = s3_client.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': AWS_STORAGE_BUCKET_NAME,
+                'Key': movimiento.comprobante_factura.name
+            },
+            ExpiresIn=360
+        )
+        return redirect(f'{response}')
+    except ClientError as e:
+        # Manejar cualquier error de generación de URL firmada
+        print(e)
+        return redirect('/')
+
+    
