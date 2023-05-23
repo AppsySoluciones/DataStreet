@@ -88,13 +88,15 @@
                                         <thead>
                                             <tr>
                                                 <!-- Tipo de Movimiento	Fecha de Movimiento	Concepto	Valor	Comprobante/Detalle -->
-                                                <th>Fecha de Movimiento</th>
+                                                <th>Fecha de Registro</th>
+                                                <th>Tipo de Movimiento</th>
                                                 {% if user.is_authenticated and user|has_group:"Administrador" %}
                                                     <th>Unidad Productiva</th>
                                                 {% endif %}
                                                 <th>Concepto</th>
-                                                <th>Valor</th>                                                
+                                                <th>Valor</th>                                               
                                                 <th>Comprobante/Detalle</th>
+                                                <th>Estado</th>
                                                 
                                             </tr>
                                         </thead>
@@ -102,11 +104,19 @@
                                             {% for movimiento in data_movimientos %}
                                                 <tr>
                                                     <td>{{ movimiento.fecha_registro }}</td>
+                                                    {% if movimiento.tipo_ingreso == 'OUT' %}
+                                                        <td>Egreso</td>
+                                                    {% elif movimiento.tipo_ingreso == 'IN' %}
+                                                        <td>Ingreso</td>
+                                                    {% else %}
+                                                        <td>Desconocido</td>
+                                                    {% endif %}
                                                     {% if user.is_authenticated and user|has_group:"Administrador" %}
                                                     <td>{{movimiento.unidad_productiva.nombre}}</td>
                                                     {% endif %}
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
+                                                    <td>{{ movimiento.estado }}</td>
                                                     <td>
                                                         <b>{% if movimiento.comprobante_factura %}
                                                             <a href="{{server_url}}movimiento/comprobante/{{movimiento.pk}}" target="_blank">

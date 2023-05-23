@@ -17,4 +17,6 @@ urlpatterns = [
     path('movimiento/addnote/<int:pk>/',views.agregar_comentario),
     path('selectunidad/',views.select_unidad_prod),
     path('movimiento/comprobante/<int:pk>/',views.comprobante),
+    path('movimiento/aprob/<int:pk>/',views.aprobar_mov),
+    path('movimiento/rechazar/<int:pk>/',views.rechazar_mov),
     ]

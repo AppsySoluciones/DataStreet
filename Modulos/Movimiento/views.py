@@ -243,7 +243,7 @@ def tablas_ingresos(request):
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
         disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
     
-    movimientos = get_movimientos_usuario(usuario).filter(tipo_ingreso='IN')
+    movimientos = get_movimientos_usuario(usuario)#.filter(tipo_ingreso='IN')
     context = {'server_url':URL_SERVER,
         'data_movimientos':movimientos,
         'ingresos':ingreso,
@@ -377,4 +377,13 @@ def comprobante(request,pk):
         print(e)
         return redirect('/')
 
-    
+def aprobar_mov(request,pk):
+    movimiento = get_object_or_404(Movimiento,pk=pk)
+    movimiento.estado = 'Aprobado'
+    movimiento.save()
+    return redirect(f'{URL_SERVER}movimiento/detalle/'+str(pk)+'/')
+def rechazar_mov(request,pk):
+    movimiento = get_object_or_404(Movimiento,pk=pk)
+    movimiento.estado = 'Rechazado'
+    movimiento.save()
+    return redirect(f'{URL_SERVER}movimiento/detalle/'+str(pk)+'/')

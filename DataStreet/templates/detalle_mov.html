@@ -81,7 +81,7 @@
 
                             <li class="list-group-item">
                                 <label id="doc_type" class="form-select form-select-lg mb-3"
-                                style="width:100%; box-sizing: border-box;"><b>Comprobante de factura:</b>Comprobante de factura: <a href="{{movimiento.comprobante_factura.file_field.path}}"> {{movimiento.comprobante_factura }}</a></label>
+                                style="width:100%; box-sizing: border-box;"><b>Comprobante de factura:</b>Comprobante de factura: <a href="{{server_url}}movimiento/comprobante/{{movimiento.pk}}" target="_blank"> {{movimiento.comprobante_factura }}</a></label>
                             </li>
 
                             <li class="list-group-item">
@@ -144,9 +144,19 @@
                     <div class="form-floating  mb-3">
                         
                         <input class="btn btn-block btn-success" style="color: #fff;" name="action" type="submit" value="Aprobar">
-                        <input class="btn btn-block btn-danger" style="color: #fff;" name="action" type="submit" value="Rechazar">
+                        
                     </div>
                     </form>
+                    <form method="GET" action="{{server_url}}movimiento/rechazar/{{movimiento.pk}}/">
+                        {% csrf_token %}                      
+                    <div class="form-floating  mb-3">
+                        
+                        <input class="btn btn-block btn-danger" style="color: #fff;" name="action" type="submit" value="Rechazar">
+                        
+                    </div>
+                    </form>
+
+                    
                     
                     {% endif %}
 
