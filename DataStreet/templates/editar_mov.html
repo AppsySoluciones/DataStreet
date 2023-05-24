@@ -37,10 +37,10 @@
                         style="width:100%;" aria-label="Default select example" disabled>
                         <option default value="">{{ movimiento.unidad_productiva }}</option>
                     </select>
-                    <label class="mb-3">Seleccione la fecha del registro:</label>
+                    <!-- <label class="mb-3">Seleccione la fecha del registro:</label>
 
                     <input type="date" id="fecha_registro" name="fecha_registro"
-                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" default="{{movimiento.fecha_registro}}" disabled>
+                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" default="{{movimiento.fecha_registro}}" disabled> -->
 
                     <label>Selecciona la acción a realizar</label>
                     <select id="accion" name="accion" class="col-auto form-select mb-3" style="width:100%;"
@@ -78,26 +78,24 @@
                     <label>Selecciona el Centro de Costos</label>
                     <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%;"
                         aria-label="Default select example" required>
-                        <option default value="{{ centro_costo }}">{{ centro_costo }}</option>
                         {% for centro in centros %}
                         <option value="{{centro}}">{{centro}}</option>
                         {% endfor %}
                     </select>
                     <label>Selecciona el Subcentro de Costos</label>
                     <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
-                        aria-label="Default select example">
-                        <option default value="{{ movimiento.sub_centro_costo }}">{{ movimiento.sub_centro_costo }}</option>
+                        aria-label="Default select example "required>
                         {% for opcion in subcentros %}
                         <option value="{{ data_centros_id }}">{{ opcion }}</option>
                         {% endfor %}
                     </select><br>
-                    <label>Seleccione la fecha del registro:</label>
+                    <!-- <label>Seleccione la fecha del registro:</label>
                     <input type="date" id="fecha_registro" name="fecha_registro"
-                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" required>
+                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" required> -->
 
                     <label for="inputPassword6" class="col-form-label mb-3">Ingrese el Nombre del Proveedor:</label>
                     <input type="text" id="nom_provedor" name="nom_provedor" class="form-control"
-                        style="width:100%; box-sizing: border-box;" placeholder="{{movimiento.nombre_proveedor}}" required>
+                        style="width:100%; box-sizing: border-box;" placeholder="{{movimiento.nombre_proveedor}}" value="{{movimiento.nombre_proveedor}}" required>
 
                     <label class="mb-3">Seleccione el tipo de Documento:</label>
                     <select class="form-select form-select-lg mb-3" style="width:100%; box-sizing: border-box;"
@@ -110,7 +108,7 @@
 
                     <label for="inputPassword6" class="col-form-label">Numero de Documento:</label>
                     <input type="text" id="num_doc" name="num_doc" class="form-control"
-                        aria-labelledby="passwordHelpInline" placeholder="{{movimiento.numero_documento}}"required>
+                        aria-labelledby="passwordHelpInline" placeholder="{{movimiento.numero_documento}}" value="{{movimiento.numero_documento}}" required>
 
 
                     <div class="form-check">
@@ -128,7 +126,7 @@
                             </div>
                             <div class="col-auto">
                                 <input type="text" id="billNumber" name="num_factura" class="form-control"
-                                    aria-labelledby="passwordHelpInline" placeholder="{{movimiento.numero_factura}}">
+                                    aria-labelledby="passwordHelpInline" placeholder="{{movimiento.numero_factura}}" value="{{movimiento.numero_factura}}">
                             </div>
                         </div>
 
@@ -141,14 +139,14 @@
 
                     <div class="form-floating  mb-3">
                         <label for="inputPassword6" class="col-form-label mb-3">Valor</label>
-                        <input type="number" name="costo_valor" id="costo_valor" class="form-control" 
-                            style="width:100%; box-sizing: border-box;" placeholder="{{movimiento.valor}}" required>
+                        <input type="text" name="costo_valor" id="costo_valor" class="form-control" style="width:100%; box-sizing: border-box;" value="{{ movimiento.valor }}" required>
+
                     </div>
 
                     <div class="mb-3">
                         <label for="exampleFormControlTextarea1" class="form-label">Digite el concepto:</label>
                         <textarea class="form-control" id="exampleFormControlTextarea1" name="concepto"
-                            rows="3" placeholder="{{movimiento.concepto}}"></textarea>
+                            rows="3" placeholder="{{movimiento.concepto}}">{{movimiento.concepto}}</textarea>
                     </div>
 
                     <input class="btn btn-block btn-primary" style="color: #fff;" type="submit"
@@ -229,6 +227,40 @@
             seccion.style.display = 'none';
         }
     });
+</script>
+
+<script>
+    var centro_costo = document.getElementById('centro_costo');
+    var sub_centro_costo = document.getElementById('sub_centro_costo');
+    var subcentros = "{{centros}}";
+    subcentros = subcentros.replace(/&#x27;/g, '"');
+    subcentros = subcentros.replace(/""/g, "''");
+    subcentros = subcentros.replace(/None/g, '"none"');
+    subcentros = JSON.parse(subcentros);
+    centro_costo.addEventListener('change', function () {
+        var seleccion = centro_costo.value;
+        sub_centro_costo.innerHTML = '';
+        subcentros[seleccion].forEach(function (data_centros_id, opcion) {
+            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
+            sub_centro_costo.innerHTML += opcion_html;
+        });
+    });
+    // Cargar el primer centro de costo y sus subcentros correspondientes
+    var primerCentroCosto = centro_costo.options[1].value; // Obtener el valor del primer centro de costo (asumiendo que el índice 1 corresponde al primero)
+    cargarSubcentros(primerCentroCosto); // Llamar a la función para cargar los subcentros correspondientes al primer centro de costo
+
+    // Función para cargar los subcentros de costo correspondientes a un centro de costo seleccionado
+    function cargarSubcentros(centroSeleccionado) {
+        sub_centro_costo.innerHTML = ''; // Limpiar las opciones anteriores
+        subcentros[centroSeleccionado].forEach(function (data_centros_id, opcion) {
+            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
+            sub_centro_costo.innerHTML += opcion_html;
+        });
+    }
+
+    // Disparar el evento de cambio manualmente para cargar las opciones de subcentro de costo correspondientes al primer centro de costo
+    centro_costo.dispatchEvent(new Event('change'));
+
 </script>
 </body>{% endblock %}
 

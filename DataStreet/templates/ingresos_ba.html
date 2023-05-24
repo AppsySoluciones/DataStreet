@@ -40,9 +40,7 @@
                             <option value="{{ data_centros_id }}">{{ opcion }}</option>
                             {% endfor %}
                         </select>
-                        <label class="mb-3">Seleccione la fecha del registro:</label>
-                        <input type="date" id="fecha_registro" name="fecha_registro"
-                            style="width:100%; box-sizing: border-box;" class="input-group mb-3" required>
+                        
 
                         <label>Selecciona el tipo de ingreso</label>
                         <select id="accion" name="accion" class="col-auto form-select mb-3" style="width:100%;"
@@ -66,7 +64,8 @@
 
 
                         <label for="inputPassword6" class="col-form-label">Detalle de la negociación:</label>
-                        <input type="text" id="num_doc" name="num_doc" class="form-control" aria-labelledby="passwordHelpInline" required>
+                        <textarea class="form-control" placeholder="Ingresa aquí el Detalle de la negociación" id="num_doc"
+                                name="num_doc" required></textarea>
 
                         <div class="form-floating  mb-3">
                             <label for="inputPassword6" class="col-form-label mb-3">Valor</label>

@@ -1,3 +1,4 @@
+from datetime import datetime
 from Modulos.CentroCostos.models import CentroCosto,SubCentroCosto
 from Modulos.Movimiento.models import Comentario, Movimiento,get_estado_caja, get_movimientos_usuario,get_estado_caja_admin,get_movimientos
 from Modulos.UnidadProductiva.models import UnidadProductiva
@@ -11,7 +12,8 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 import boto3
 from botocore.exceptions import ClientError
-
+from django.contrib import messages
+from django.db.models import Q
 import locale
 
 import json
@@ -127,7 +129,7 @@ def ingresos_ba(request):
         'request': request
         }
     
-    return render(request,"ingreso.html",context)
+    return render(request,"ingresos_ba.html",context)
 
 def egresos_ba(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
@@ -159,7 +161,7 @@ def registrarIngreso(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
     unidadm=request.POST['centro_costo']
     unidad_productiva_id=request.POST['sub_centro_costo']
-    fecha_registro = request.POST['fecha_registro']
+    
     accion = request.POST['accion']
     costo_valor = request.POST['costo_valor']
     concepto = request.POST['concepto']
@@ -170,25 +172,27 @@ def registrarIngreso(request):
         ingreso_bancario = False
     else:
         ingreso_bancario = True
+
+    if request.POST['accion'] == 'Reducción de Caja':
+        costo_valor = -1*float(costo_valor)
+        
     ingreso = Movimiento.objects.create(
         unidad_productiva=unidad_productiva,
-        fecha_registro=fecha_registro,
         accion=accion,
         valor=costo_valor,
         concepto=concepto,
-        estado='En proceso',
+        estado='Aprobado',
+        ingreso_bancario=ingreso_bancario,
         tipo_ingreso='IN',
-        ingreso_bancario=ingreso_bancario
     )
     ingreso.save()
-    return redirect('/')
+    return redirect(f'{URL_SERVER}ingreso/')
 
 #@grupo_requerido('Comun')
 def registrarEgreso(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
     centro_costo=request.POST['centro_costo']
     sub_centro_costo_id=request.POST['sub_centro_costo']
-    fecha_registro = request.POST['fecha_registro']
     nom_provedor = request.POST['nom_provedor']
     tipo_doc = request.POST['tipo_doc']
     num_doc = request.POST['num_doc']
@@ -198,6 +202,7 @@ def registrarEgreso(request):
     
     sub_centro_costo= SubCentroCosto.objects.filter(pk=sub_centro_costo_id).first()
     unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+    fecha_registro = datetime.now()
 
     if factura_check == 'true':
         num_factura = request.POST['num_factura']
@@ -231,19 +236,23 @@ def registrarEgreso(request):
             unidad_productiva=unidad_productiva,
         )
         egreso.save()
-    return redirect('/')
+
+        messages.success(request, f'¡El Egreso {concepto} se registró correctamente!')
+    return redirect(f'{URL_SERVER}egreso/')
 
 
 
 def tablas_ingresos(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
-    if usuario.groups.filter(name='Administrador').exists():
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
         disponible,ingreso,egreso = get_movimientos(usuario)
     else:
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
         disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
     
-    movimientos = get_movimientos_usuario(usuario)#.filter(tipo_ingreso='IN')
+    movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+    
+
     context = {'server_url':URL_SERVER,
         'data_movimientos':movimientos,
         'ingresos':ingreso,
@@ -251,6 +260,15 @@ def tablas_ingresos(request):
         'disponible':disponible,
         'request': request
         }
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        #diccionario[clave] = valor
+        elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+        unique_elementos = set(elementos)
+        context['unidades_productivas'] = unique_elementos
+
+    if usuario.groups.filter(name='Auditor').exists():
+        context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+
     return render(request,"tables_ingresos.html",context)
 
 def tablas_egresos(request):
@@ -270,6 +288,53 @@ def tablas_egresos(request):
         }
     return render(request,"tables_egresos.html",context)
 
+
+def tablas_ingresos_ba(request):
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        disponible,ingreso,egreso = get_movimientos(usuario)
+    else:
+        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+    filtros = Q(ingreso_bancario=True) | Q(tipo_ingreso='IN')
+    movimientos = get_movimientos_usuario(usuario).filter(filtros)
+    
+
+    context = {'server_url':URL_SERVER,
+        'data_movimientos':movimientos,
+        'ingresos':ingreso,
+        'egresos':egreso,
+        'disponible':disponible,
+        'request': request
+        }
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        #diccionario[clave] = valor
+        elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+        unique_elementos = set(elementos)
+        context['unidades_productivas'] = unique_elementos
+
+    if usuario.groups.filter(name='Auditor').exists():
+        context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+
+    return render(request,"tables_ingresos_ba.html",context)
+
+def tablas_egresos_ba(request):
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    if usuario.groups.filter(name='Administrador').exists():
+        disponible,ingreso,egreso = get_movimientos(usuario)
+    else:
+        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+    filtros = Q(ingreso_bancario=True) | Q(tipo_ingreso='OUT')
+    movimientos = get_movimientos_usuario(usuario).filter(filtros)
+    context = {'server_url':URL_SERVER,
+        'data_movimientos':movimientos,
+        'ingresos':ingreso,
+        'egresos':egreso,
+        'disponible':disponible,
+        'request': request
+        }
+    return render(request,"tables_ingresos_ba.html",context)
 
 def detalle(request,pk):
     usuario = get_object_or_404(Usuario,pk=request.user.id)
@@ -331,6 +396,9 @@ def edicion_mov(request,pk):
         }
     return render(request,"editar_mov.html",context)
 
+
+
+
 def agregar_comentario(request,pk):
     comentario = request.POST['comentario']
     movimiento = get_object_or_404(Movimiento,pk=pk)
@@ -343,8 +411,53 @@ def agregar_comentario(request,pk):
     comentario.save()
     return redirect(f'{URL_SERVER}movimiento/detalle/'+str(pk)+'/') 
 
-def edicion_form(request):
-    return None
+def edicion_form(request,pk):
+    movimiento = get_object_or_404(Movimiento,pk=pk)
+    usuario = Usuario.objects.filter(pk=request.user.id).first()
+    centro_costo=request.POST['centro_costo']
+    sub_centro_costo_id=request.POST['sub_centro_costo']
+    nom_provedor = request.POST['nom_provedor']
+    tipo_doc = request.POST['tipo_doc']
+    num_doc = request.POST['num_doc']
+    factura_check = request.POST['factura_check']
+    concepto = request.POST['concepto']
+    costo_valor = request.POST['costo_valor']
+    
+    sub_centro_costo= SubCentroCosto.objects.filter(pk=sub_centro_costo_id).first()
+    unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+    fecha_registro = datetime.now()
+
+    if factura_check == 'true':
+        num_factura = request.POST['num_factura']
+        comprobante_factura = request.FILES['soporte']
+        egreso = Movimiento.objects.filter(pk=pk).update(
+        sub_centro_costo=sub_centro_costo,
+        fecha_registro=fecha_registro,
+        nombre_proveedor=nom_provedor,
+        tipo_documento=tipo_doc,
+        numero_documento=num_doc,
+        numero_factura=num_factura,
+        concepto = concepto,
+        estado='En proceso',
+        tipo_ingreso='OUT',
+        valor=costo_valor,
+        unidad_productiva=unidad_productiva,
+        comprobante_factura=comprobante_factura
+        )
+    
+    else:
+        egreso = Movimiento.objects.filter(pk=pk).update(
+            fecha_registro=fecha_registro,
+            nombre_proveedor=nom_provedor,
+            tipo_documento=tipo_doc,
+            numero_documento=num_doc,
+            concepto = concepto,
+            estado='En proceso',
+            tipo_ingreso='OUT',
+            valor=costo_valor,
+            unidad_productiva=unidad_productiva,
+        )
+    return redirect(f'{URL_SERVER}movimiento/editar/{movimiento.pk}/')
 
 def select_unidad_prod(request):
     usuario = get_object_or_404(Usuario,pk=request.user.id)
@@ -381,9 +494,19 @@ def aprobar_mov(request,pk):
     movimiento = get_object_or_404(Movimiento,pk=pk)
     movimiento.estado = 'Aprobado'
     movimiento.save()
-    return redirect(f'{URL_SERVER}movimiento/detalle/'+str(pk)+'/')
+    messages.success(request, f'¡El Movimiento {movimiento.concepto} fué marcado como APROBADO!')
+    unidad_prod = movimiento.unidad_productiva
+    if unidad_prod.usuarioRegistro is not None:
+        usuario = unidad_prod.usuarioRegistro.first()
+        usuario.send_email('Movimiento Rechazado',f'¡El Movimiento {movimiento.concepto} fué marcado como APROBADO!')
+    return redirect(f'{URL_SERVER}tablaing/')
 def rechazar_mov(request,pk):
     movimiento = get_object_or_404(Movimiento,pk=pk)
     movimiento.estado = 'Rechazado'
     movimiento.save()
-    return redirect(f'{URL_SERVER}movimiento/detalle/'+str(pk)+'/')
+    messages.success(request, f'¡El Movimiento {movimiento.concepto} fué marcado como RECHAZADO!')
+    unidad_prod = movimiento.unidad_productiva
+    if unidad_prod.usuarioRegistro is not None:
+        usuario = unidad_prod.usuarioRegistro.first()
+        usuario.send_email('Movimiento Rechazado', f'¡El Movimiento {movimiento.concepto} fué marcado como RECHAZADO!')
+    return redirect(f'{URL_SERVER}tablaing/')

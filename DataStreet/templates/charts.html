@@ -44,14 +44,15 @@
                 <div class="container-fluid">
 
                     <!-- Page Heading -->
-                    <h1 class="h3 mb-2 text-gray-800">Charts</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Dashboard</h1>
                     <p class="mb-4">Chart.js is a third party plugin that is used to generate the charts in this theme.
                         The charts below have been customized - for further customization options, please visit the <a
                             target="_blank" href="https://www.chartjs.org/docs/latest/">official Chart.js
                             documentation</a>.</p>
 
                     <!-- Content Row -->
-                    <div class="row">
+
+                    
 
                         <div class="col-xl-8 col-lg-7">
 
@@ -88,24 +89,73 @@
                         </div>
 
                         <!-- Donut Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">Donut Chart</h6>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <div class="chart-pie pt-4">
-                                        <canvas id="myPieChart"></canvas>
+                        <div class="col-xl-8">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card mini-stats-wid">
+                                        <div class="card-body">
+                                            <div class="d-flex">
+                                                <div class="flex-grow-1">
+                                                    <p class="text-muted fw-medium">Orders</p>
+                                                    <h4 class="mb-0">1,235</h4>
+                                                </div>
+                        
+                                                <div class="flex-shrink-0 align-self-center">
+                                                    <div class="mini-stat-icon avatar-sm rounded-circle bg-primary">
+                                                        <span class="avatar-title">
+                                                            <i class="bx bx-copy-alt font-size-24"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <hr>
-                                    Styling for the donut chart can be found in the
-                                    <code>/js/demo/chart-pie-demo.js</code> file.
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card mini-stats-wid">
+                                        <div class="card-body">
+                                            <div class="d-flex">
+                                                <div class="flex-grow-1">
+                                                    <p class="text-muted fw-medium">Revenue</p>
+                                                    <h4 class="mb-0">$35, 723</h4>
+                                                </div>
+                        
+                                                <div class="flex-shrink-0 align-self-center ">
+                                                    <div class="avatar-sm rounded-circle bg-primary mini-stat-icon">
+                                                        <span class="avatar-title rounded-circle bg-primary">
+                                                            <i class="bx bx-archive-in font-size-24"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card mini-stats-wid">
+                                        <div class="card-body">
+                                            <div class="d-flex">
+                                                <div class="flex-grow-1">
+                                                    <p class="text-muted fw-medium">Average Price</p>
+                                                    <h4 class="mb-0">$16.2</h4>
+                                                </div>
+                        
+                                                <div class="flex-shrink-0 align-self-center">
+                                                    <div class="avatar-sm rounded-circle bg-primary mini-stat-icon">
+                                                        <span class="avatar-title rounded-circle bg-primary">
+                                                            <i class="bx bx-purchase-tag-alt font-size-24"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            <!-- end row -->
+                        
+                            </div>
                         </div>
-                    </div>
 
                 </div>
                 <!-- /.container-fluid -->

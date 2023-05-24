@@ -173,6 +173,15 @@ AWS_DEFAULT_ACL =  'public-read'
 AWS_S3_VERITY = True
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-URL_SERVER = 'http://50.19.129.198:8080/'
+#URL_SERVER = 'http://50.19.129.198:8080/'
 
-#URL_SERVER = 'http://127.0.0.1:8000/'
+URL_SERVER = 'http://127.0.0.1:8000/'
+
+
+# Configuración de correo electrónico
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST_USER = 'accelerate@grovity.co'
+EMAIL_HOST_PASSWORD = 'A#hj2Q&Hzf@W'
+EMAIL_HOST = 'smtp.acumbamail.com'
+EMAIL_PORT = '587'
+

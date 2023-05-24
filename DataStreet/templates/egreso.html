@@ -6,14 +6,16 @@
 {%load static%}
 
 <div class="container text-left">
+
+
     <div class="row">
         <div class="col-sm-2">
 
         </div>
-        <div class="col-sm-8 p-3">
+        <div class="col-sm-8 p-3 col-xl-12">
             <div class="registration-form" style="background-color: #fff;max-width: 600px;
                                 margin: auto;
-                                padding: 50px 70px;
+                                padding: 60px 20px;
                                 border-top-left-radius: 30px;
                                 border-top-right-radius: 30px;
                                 border-bottom-left-radius: 30px;
@@ -37,15 +39,15 @@
                         {% for opcion in subcentros %}
                         <option value="{{ data_centros_id }}">{{ opcion }}</option>
                         {% endfor %}
-                    </select><br>
-                    <label>Seleccione la fecha del registro:</label>
+                    </select>
+                    <!-- <label>Seleccione la fecha del registro:</label>
                     <input type="date" id="fecha_registro" name="fecha_registro"
-                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" required>
+                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" required> -->
 
                     <label for="inputPassword6" class="col-form-label mb-3">Ingrese el Nombre del Proveedor:</label>
                     <input type="text" id="nom_provedor" name="nom_provedor" class="form-control"
                         style="width:100%; box-sizing: border-box;" required>
-
+                    <br>
                     <label class="mb-3">Seleccione el tipo de Documento:</label>
                     <select class="form-select form-select-lg mb-3" style="width:100%; box-sizing: border-box;"
                         aria-label=".form-select-lg example" id="doc_type" name="tipo_doc" required>
@@ -106,7 +108,7 @@
                 </form>
             </div>
         </div>
-        <div class="col">
+        <div class="col-sm-2">
 
         </div>
     </div>

@@ -11,6 +11,8 @@ urlpatterns = [
     path('registraregreso/',views.registrarEgreso),
     path('tablaing/',views.tablas_ingresos),
     path('tablaegre/',views.tablas_egresos),
+    path('tablaingba/',views.tablas_ingresos_ba),
+    path('tablaegreba/',views.tablas_egresos_ba),
     path('movimiento/detalle/<int:pk>/',views.detalle),
     path('movimiento/editar/<int:pk>/',views.edicion_mov),
     path('movimiento/editar/<int:pk>/edit',views.edicion_form),

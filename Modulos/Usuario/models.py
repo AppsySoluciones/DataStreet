@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.mail import send_mail
+from django.shortcuts import render
 
 import uuid
 from django.db import models
@@ -59,5 +61,14 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
             return self.groups.filter(name=grupo_nombre).exists()
 
         return user_passes_test(chequear_grupo)
+    
+    def send_email(self,subject, message):
+        # Enviar notificación por correo electrónico
+        subject = 'Notificación'
+        from_email = 'noreply@grovity.co'
+        recipient_list = [str(self.email)]
+        send_mail(subject, message, from_email, recipient_list)
+        
+        return None
     
 

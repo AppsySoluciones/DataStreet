@@ -107,9 +107,9 @@
 
                             {% for comentario in comentarios%}
                             <div class="card border-dark mb-3" style="width: 100%;">
-                                <div class="card-header">{{comentario.fecha_registro}}</div>
+                                <div class="card-header">{{comentario.movimiento.fecha_registro}}</div>
                                 <div class="card-body">
-                                    <h5 class="card-title">Auditor - {{comentario.usuario}}</h5>
+                                    <h5 class="card-title">{{comentario.usuario}}</h5>
                                     <p class="card-text">{{comentario.comentario}}</p>
                                 </div>
                             </div>
@@ -126,7 +126,7 @@
                 </form>
                     {% endif %}
                     
-                    {% if user.is_authenticated and user|has_group:"Auditor"%}
+                    {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado'%}
 
                     <form method="POST" action="{{server_url}}movimiento/addnote/{{movimiento.pk}}/">
                         {% csrf_token %}

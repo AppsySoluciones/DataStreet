@@ -114,7 +114,7 @@
                                                 <th>Tipo de Movimiento</th>
                                                 {% if user.is_authenticated and user|has_group:"Administrador" %}
                                                     <th>Unidad Productiva</th>
-                                                    
+                                                    <th>Tipo de Ingreso</th>
                                                 {% endif %}
                                                 {% if user.is_authenticated and user|has_group:"Auditor" %}
                                                 <th>Unidad Productiva</th>
@@ -138,6 +138,7 @@
                                                     {% endif %}
                                                     {% if user.is_authenticated and user|has_group:"Administrador" %}
                                                         <td>{{movimiento.unidad_productiva.nombre}}</td>
+                                                        <td>{{movimiento.accion}}</td>
                                                     {% endif %}
                                                     {% if user.is_authenticated and user|has_group:"Auditor" %}
                                                         <td>{{movimiento.unidad_productiva.nombre}}</td>
