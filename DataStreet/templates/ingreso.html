@@ -37,7 +37,7 @@
                         <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
                             aria-label="Default select example" required>
                             {% for opcion in subcentros %}
-                            <option value="{{ data_centros_id }}">{{ opcion }}</option>
+                            <option value="{{ opcion }}">{{ opcion }}</option>
                             {% endfor %}
                         </select>
 
@@ -84,8 +84,8 @@
                     centro_costo.addEventListener('change', function () {
                         var seleccion = centro_costo.value;
                         sub_centro_costo.innerHTML = '';
-                        subcentros[seleccion].forEach(function (data_centros_id, opcion) {
-                            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
+                        subcentros[seleccion].forEach(function (centros_id, opcion) {
+                            var opcion_html = '<option value="' + centros_id + '">' + centros_id + '</option>';
                             sub_centro_costo.innerHTML += opcion_html;
                         });
                     });
@@ -97,8 +97,8 @@
                     // Función para cargar los subcentros de costo correspondientes a un centro de costo seleccionado
                     function cargarSubcentros(centroSeleccionado) {
                         sub_centro_costo.innerHTML = ''; // Limpiar las opciones anteriores
-                        subcentros[centroSeleccionado].forEach(function (data_centros_id, opcion) {
-                            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
+                        subcentros[centroSeleccionado].forEach(function (centros_id, opcion) {
+                            var opcion_html = '<option value="' + centros_id + '">' + centros_id + '</option>';
                             sub_centro_costo.innerHTML += opcion_html;
                         });
                     }

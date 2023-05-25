@@ -58,9 +58,25 @@
                         <!-- Page Heading -->
 
                         <div class="row">
-                            <div class="col-sm-2">
-                                <h1 class="h3 mb-2 text-gray-800">Movimientos</h1>
-                                <p class="mb-4">Podrás visualizar tus movimientos</p>
+                            <div class="col-sm-6">
+                                <h1 class="h3 mb-2 text-gray-800">Tabla de Ingresos Bancarios</h1>
+                                <p class="mb-4">Podrás visualizar tus movimientos bancarios</p>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="card-header py-3">
+                                    <a href="{{ server_url }}generarxlsing/" target="_blank">
+                                        <input class="btn btn-block btn-success mb-1" style="color: #fff;" value="Generar Hoja de Cálculo">
+                                    </a>
+                                </div>
+                                
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="card-header py-3">
+                                    <a href="{{ server_url }}generarxlsing/" target="_blank">
+                                        <input class="btn btn-block btn-danger mb-1" style="color: #fff;" value="Generar PDF">
+                                    </a>
+                                </div>
+                                
                             </div>
                         </div>
 
@@ -179,7 +195,7 @@
                         <script>
                             $(document).ready(function() {
                                 // Inicializar la tabla
-                                var tabla = $('#dataTable').DataTable();
+                                var tabla = $('#dataTable').DataTable({order: [[ 0, "asc" ]]});
                         
                                 // Aplicar el filtro cuando cambie el valor del select
                                 $('#filtro').on('change', function() {
@@ -197,7 +213,7 @@
                         <script>
                             $(document).ready(function() {
                                 // Inicializar la tabla
-                                var tabla = $('#dataTable').DataTable();
+                                var tabla2 = $('#dataTable').DataTable();
                         
                                 // Aplicar el filtro cuando cambie el valor del select
                                 $('#filtro2').on('change', function() {
@@ -205,9 +221,9 @@
                         
                                     // Limpiar el filtro si no se selecciona ninguna opción
                                     if (valor === '') {
-                                        tabla.column(2).search('').draw();
+                                        tabla2.column(2).search('').draw();
                                     } else {
-                                        tabla.column(2).search(valor).draw();
+                                        tabla2.column(2).search(valor).draw();
                                     }
                                 });
                             });

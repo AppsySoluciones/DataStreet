@@ -1,6 +1,6 @@
 from datetime import datetime
 from Modulos.CentroCostos.models import CentroCosto,SubCentroCosto
-from Modulos.Movimiento.models import Comentario, Movimiento,get_estado_caja, get_movimientos_usuario,get_estado_caja_admin,get_movimientos
+from Modulos.Movimiento.models import Comentario, Movimiento,get_estado_caja, get_movimientos_usuario,get_estado_caja_admin,get_movimientos,export_to_excel,convert_xlsx_to_pdf
 from Modulos.UnidadProductiva.models import UnidadProductiva
 from django.contrib.auth.decorators import login_required
 from Modulos.UnidadNegocio.models import UnidadNegocio
@@ -90,7 +90,7 @@ def ingresos(request):
     }
     for unidad in unidad_negocio:
         unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('nombre',flat=True))
-        unidad_negocio_id[unidad.pk] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
+        unidad_negocio_id[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
     print(unidad_negocio_nombres)
     print(unidad_negocio_id)
     context = {
@@ -116,7 +116,7 @@ def ingresos_ba(request):
     }
     for unidad in unidad_negocio:
         unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('nombre',flat=True))
-        unidad_negocio_id[unidad.pk] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
+        unidad_negocio_id[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
     print(unidad_negocio_nombres)
     print(unidad_negocio_id)
     context = {
@@ -166,8 +166,8 @@ def registrarIngreso(request):
     costo_valor = request.POST['costo_valor']
     concepto = request.POST['concepto']
     unidadm = UnidadNegocio.objects.filter(nombre=unidadm).first()
-    unidad_negocio = UnidadNegocio.objects.filter(pk=unidad_productiva_id).first()
-    unidad_productiva = UnidadProductiva.objects.first()
+    unidad_productiva = get_object_or_404(UnidadProductiva, nombre=unidad_productiva_id)
+        
     if request.POST['ingreso_bancario'] == 'False':
         ingreso_bancario = False
     else:
@@ -177,6 +177,7 @@ def registrarIngreso(request):
         costo_valor = -1*float(costo_valor)
         
     ingreso = Movimiento.objects.create(
+        fecha_registro = datetime.now(),
         unidad_productiva=unidad_productiva,
         accion=accion,
         valor=costo_valor,
@@ -186,6 +187,7 @@ def registrarIngreso(request):
         tipo_ingreso='IN',
     )
     ingreso.save()
+    messages.success(request, f'¡El Ingreso {concepto} se registró correctamente!')
     return redirect(f'{URL_SERVER}ingreso/')
 
 #@grupo_requerido('Comun')
@@ -250,7 +252,12 @@ def tablas_ingresos(request):
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
         disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
     
-    movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+    if usuario.groups.filter(name__in=['Auditor']).exists():
+        filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
+        movimientos = get_movimientos_usuario(usuario).filter(filters)
+
+    else:
+        movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
     
 
     context = {'server_url':URL_SERVER,
@@ -267,6 +274,7 @@ def tablas_ingresos(request):
         context['unidades_productivas'] = unique_elementos
 
     if usuario.groups.filter(name='Auditor').exists():
+        
         context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
 
     return render(request,"tables_ingresos.html",context)
@@ -296,7 +304,7 @@ def tablas_ingresos_ba(request):
     else:
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
         disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
-    filtros = Q(ingreso_bancario=True) | Q(tipo_ingreso='IN')
+    filtros = Q(ingreso_bancario=True)
     movimientos = get_movimientos_usuario(usuario).filter(filtros)
     
 
@@ -325,8 +333,8 @@ def tablas_egresos_ba(request):
     else:
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
         disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
-    filtros = Q(ingreso_bancario=True) | Q(tipo_ingreso='OUT')
-    movimientos = get_movimientos_usuario(usuario).filter(filtros)
+    filtros = Q(ingreso_bancario=True) & Q(tipo_ingreso='OUT')
+    movimientos = get_movimientos_usuario(usuario).filter(filtros).order_by('fecha_registro')
     context = {'server_url':URL_SERVER,
         'data_movimientos':movimientos,
         'ingresos':ingreso,
@@ -334,12 +342,15 @@ def tablas_egresos_ba(request):
         'disponible':disponible,
         'request': request
         }
-    return render(request,"tables_ingresos_ba.html",context)
+    return render(request,"tables_egresos_ba.html",context)
 
 def detalle(request,pk):
-    usuario = get_object_or_404(Usuario,pk=request.user.id)
-    unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-    disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        disponible,ingreso,egreso = get_movimientos(usuario)
+    else:
+        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
     movimientos = get_object_or_404(Movimiento,pk=pk)
     comentarios = Comentario.objects.filter(movimiento=movimientos)
     unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=movimientos.unidad_productiva).first()
@@ -361,8 +372,6 @@ def detalle(request,pk):
 
         }
     return render(request,"detalle_mov.html",context)
-
-
 
 def edicion_mov(request,pk):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
@@ -397,8 +406,6 @@ def edicion_mov(request,pk):
     return render(request,"editar_mov.html",context)
 
 
-
-
 def agregar_comentario(request,pk):
     comentario = request.POST['comentario']
     movimiento = get_object_or_404(Movimiento,pk=pk)
@@ -409,6 +416,7 @@ def agregar_comentario(request,pk):
         comentario=comentario
         )
     comentario.save()
+    messages.success(request, f'¡Comentario Agregado Correctamente!')
     return redirect(f'{URL_SERVER}movimiento/detalle/'+str(pk)+'/') 
 
 def edicion_form(request,pk):
@@ -510,3 +518,35 @@ def rechazar_mov(request,pk):
         usuario = unidad_prod.usuarioRegistro.first()
         usuario.send_email('Movimiento Rechazado', f'¡El Movimiento {movimiento.concepto} fué marcado como RECHAZADO!')
     return redirect(f'{URL_SERVER}tablaing/')
+
+def generar_excel_ingresos(request):
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        #diccionario[clave] = valor
+        if usuario.groups.filter(name='Auditor').exists():
+            movimientos = movimientos.filter(tipo_ingreso='OUT')
+        elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+        unique_elementos = set(elementos)
+        movimientos = unique_elementos
+        
+    excel_generado = export_to_excel(movimientos)
+    messages.success(request, f'¡El excel se generó corretamente!')
+
+    return excel_generado 
+    
+def generar_pdf_ingresos(request):
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        #diccionario[clave] = valor
+        if usuario.groups.filter(name='Auditor').exists():
+            movimientos = movimientos.filter(tipo_ingreso='OUT')
+        elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+        unique_elementos = set(elementos)
+        movimientos = unique_elementos
+        
+    excel_generado = export_to_excel(movimientos,True)
+    messages.success(request, f'¡El pdf se generó corretamente!')
+
+    return excel_generado 

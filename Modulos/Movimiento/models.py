@@ -6,9 +6,17 @@ from django.db.models import Sum
 from django.db.models import Q
 from django.db import models
 from django.conf import settings
+from openpyxl import load_workbook
 import locale
 import uuid
-
+import openpyxl
+from openpyxl.utils import get_column_letter
+from openpyxl import Workbook
+from django.http import HttpResponse
+import pyexcel as pe
+from fpdf import FPDF
+from django.http import FileResponse
+from fpdf import FPDF
 
 
 
@@ -30,6 +38,7 @@ class Movimiento(models.Model):
     accion = models.CharField(max_length=20,null=True,blank=True)
     uuid = models.SlugField(blank=True)
     fecha_registro = models.DateField(auto_created=True,null=True,blank=True)
+    fecha_aprobacion = models.DateField(null=True,blank=True)
     concepto = models.CharField(max_length=200,null=True,blank=True)
     valor = models.FloatField(default=0)
     comprobante_factura = models.FileField(upload_to='comprobantes/',null=True,blank=True)
@@ -51,9 +60,72 @@ class Movimiento(models.Model):
         self.save()
 
 
-    
+def export_to_excel(data,to_pdf=False):
+    # Obtener los objetos de Django
+    queryset = Movimiento.objects.all()
 
+    # Crear el libro de trabajo de Excel y la hoja de cálculo
+    workbook = Workbook()
+    worksheet = workbook.active
+
+    # Escribir los encabezados de las columnas
+    headers = ['Fecha de Registro', 'Fecha Aprobado', 'Tipo de Ingreso', 'Unidad Productiva', 'Concepto', 'Valor']
+    for col_num, header in enumerate(headers, 1):
+        worksheet.cell(row=1, column=col_num, value=header)
+
+    # Escribir los datos del objeto
+    for row_num, obj in enumerate(queryset, 2):
+        if not obj.unidad_productiva:
+            unidad_productiva_nombre = 'N/A'
+        else:
+            unidad_productiva_nombre =  obj.unidad_productiva.nombre
+        worksheet.cell(row=row_num, column=1, value=obj.fecha_registro)
+        worksheet.cell(row=row_num, column=2, value=obj.fecha_aprobacion)
+        worksheet.cell(row=row_num, column=3, value=obj.tipo_ingreso)
+        worksheet.cell(row=row_num, column=4, value=unidad_productiva_nombre)
+        worksheet.cell(row=row_num, column=5, value=obj.concepto)
+        worksheet.cell(row=row_num, column=5, value=obj.concepto)
+        worksheet.cell(row=row_num, column=6, value=obj.valor)
     
+    if to_pdf:
+        workbook.save('archivo_excel.xlsx')
+        return convert_xlsx_to_pdf('archivo_excel.xlsx', 'pdf_file.pdf')
+    else:
+        # Crear la respuesta del archivo Excel
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=archivo.xlsx'
+        workbook.save(response)
+        return response
+
+
+
+
+def convert_xlsx_to_pdf(xlsx_file, pdf_file):
+    # Load the XLSX file
+    workbook = load_workbook(xlsx_file)
+
+    # Select the active worksheet
+    worksheet = workbook.active
+
+    # Create the PDF object
+    pdf = FPDF()
+
+    # Add a page to the PDF
+    pdf.add_page()
+
+    # Iterate over the rows of the XLSX and add them to the PDF
+    for row in worksheet.iter_rows(values_only=True):
+        line = '\t'.join(str(cell) for cell in row)
+        pdf.cell(0, 10, txt=line, ln=True)
+
+    # Guardar el archivo PDF
+    pdf.output(pdf_file)
+     # Crear una instancia de FileResponse con el archivo PDF
+    response = FileResponse(open(pdf_file, 'rb'), content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="archivo.pdf"'
+
+    return response
+
 
     
 
@@ -127,6 +199,14 @@ def get_movimientos(usuario,unidad_productiva=None):
     else:
         disponible,ingreso,egreso = get_estado_caja_admin(usuario)
     return disponible,ingreso,egreso
+
+
+
+
+
+
+
+
 
 
 

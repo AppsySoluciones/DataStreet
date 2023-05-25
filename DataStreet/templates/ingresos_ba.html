@@ -22,7 +22,7 @@
                                 border-bottom-left-radius: 30px;
                                 border-bottom-right-radius: 30px;
                                 box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.075);">
-                    <form action="/registraringreso/" method="POST"> {% csrf_token %}
+                    <form action="{{server_url}}registraringreso/" method="POST"> {% csrf_token %}
                         <h1 class="text-center text-sm-center lead mb-3"><b>Formulario de Movimiento de Ingresos</b>
                         </h1>
 
@@ -37,7 +37,7 @@
                         <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
                             aria-label="Default select example" required>
                             {% for opcion in subcentros %}
-                            <option value="{{ data_centros_id }}">{{ opcion }}</option>
+                            <option value="{{ opcion }}">{{ opcion }}</option>
                             {% endfor %}
                         </select>
                         
@@ -76,9 +76,6 @@
                         <label>Adjunte el soporte:</label>
                         <input type="file" id="soporte" name="soporte"><br><br>
 
-                        </form>
-
-
 
                         <div class="form-floating  mb-3">
                             <label>Concepto</label>
@@ -87,7 +84,7 @@
                         </div>
                         <input type="hidden" name="ingreso_bancario" id="ingreso_bancario" value="True">
                         <input class="btn btn-block btn-success" style="color: #fff;" type="submit"
-                            value="Registrar Ingreso">
+                        value="Registrar ingreso">
 
                     </form>
                 </div>
@@ -104,8 +101,8 @@
                     centro_costo.addEventListener('change', function () {
                         var seleccion = centro_costo.value;
                         sub_centro_costo.innerHTML = '';
-                        subcentros[seleccion].forEach(function (data_centros_id, opcion) {
-                            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
+                        subcentros[seleccion].forEach(function (centros_id, opcion) {
+                            var opcion_html = '<option value="' + centros_id + '">' + centros_id + '</option>';
                             sub_centro_costo.innerHTML += opcion_html;
                         });
                     });

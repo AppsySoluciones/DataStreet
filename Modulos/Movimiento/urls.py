@@ -21,4 +21,6 @@ urlpatterns = [
     path('movimiento/comprobante/<int:pk>/',views.comprobante),
     path('movimiento/aprob/<int:pk>/',views.aprobar_mov),
     path('movimiento/rechazar/<int:pk>/',views.rechazar_mov),
+    path('generarxlsing/',views.generar_excel_ingresos),
+    path('generarpdfing/',views.generar_pdf_ingresos),
     ]
