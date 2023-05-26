@@ -429,7 +429,9 @@ def edicion_form(request,pk):
     num_doc = request.POST['num_doc']
     factura_check = request.POST['factura_check']
     concepto = request.POST['concepto']
-    costo_valor = request.POST['costo_valor']
+    
+    costo_valor =request.POST['costo_valor']
+    costo_valor = float(costo_valor.replace(",", "." ))
     
     sub_centro_costo= SubCentroCosto.objects.filter(pk=sub_centro_costo_id).first()
     unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
