@@ -13,7 +13,7 @@ from django.db.models import Sum
 from django.conf import settings
 from django.db.models import Q
 from datetime import datetime
-from Modulos.Movimiento.utils import render_to_pdf
+from Modulos.Movimiento.utils import render_to_pdf,area_chart_data,pie_chart_data
 import locale
 import boto3
 import json
@@ -38,24 +38,36 @@ def grupo_requerido(grupo_nombres):
 def home(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     disponible,ingreso,egreso = get_movimientos(usuario)
+
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        disponible,ingreso,egreso = get_movimientos(usuario)
+    else:
+        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+    
+    if usuario.groups.filter(name__in=['Auditor']).exists():
+        filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
+        movimientos = get_movimientos_usuario(usuario).filter(filters)
+
+    else:
+        movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+
+
     context = {'server_url':URL_SERVER,
         'disponible':disponible,
         'egresos':egreso,
         'ingresos':ingreso,
         'request': request
         }
-    if usuario.groups.filter(name='Administrador').exists():
-        unidades_productivas_admin = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
-        context['unidades_productivas_admin'] = unidades_productivas_admin
-    movimientos = Movimiento.objects.all()
-    fechas = []
-    valores = []
-    for movimiento in movimientos:
-        fechas.append('fecha')
-        valores.append(int(movimiento.valor))
-    context['fechas'] = fechas
-    context['valores'] = valores
-    return render(request,"charts.html",context)
+    
+
+    if usuario.groups.filter(name='Auditor').exists():
+        movimientos = movimientos.filter(tipo_ingreso='OUT')
+
+    context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
+    context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
+
+    return render(request,"charts.html",context) 
 
 def ValuesQuerySetToDict(vqs):
     return [item for item in vqs]
@@ -259,8 +271,6 @@ def registrarEgreso(request):
 
         messages.success(request, f'¡El Egreso {concepto} se registró correctamente!')
     return redirect(f'{URL_SERVER}egreso/')
-
-
 
 def tablas_ingresos(request,pdf=None):
     try:
@@ -640,7 +650,6 @@ class Pdf_ingresos_ba (View):
             messages.error(request, f'¡Error al generar el pdf!')
             print(e)
             return redirect(f'{URL_SERVER}tablaingba/')
-
 
 class Pdf_egresos_ba (View):
     def get(self, request, *args, **kwargs):
