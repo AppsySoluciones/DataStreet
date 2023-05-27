@@ -1,4 +1,4 @@
-{% extends "./index.html" %}
+
 {% load static %}
 {% load auth_extras %}
 
@@ -13,7 +13,7 @@
         <meta name="description" content="">
         <meta name="author" content="">
 
-        <title>Tabla de Ingresos Bancarios</title>
+        <title>PDF - Tabla Egresos Bancarios</title>
 
 
         <!-- Custom fonts for this template -->
@@ -29,7 +29,6 @@
         <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
 
     </head>
-    {% block body %}
 
         <body
             id="page-top">
@@ -59,7 +58,7 @@
 
                         <div class="row">
                             <div class="col-sm-6">
-                                <h1 class="h3 mb-2 text-gray-800">Tabla de Ingresos Bancarios</h1>
+                                <h1 class="h3 mb-2 text-gray-800">Tabla de Egresos Bancarios</h1>
                                 <p class="mb-4">Podrás visualizar tus movimientos bancarios</p>
                             </div>
                             <div class="col-sm-3">
@@ -72,7 +71,7 @@
                             </div>
                             <div class="col-sm-3">
                                 <div class="card-header py-3">
-                                    <a href="{{ server_url }}generarpdfingba/" target="_blank">
+                                    <a href="{{ server_url }}generarxlsing/" target="_blank">
                                         <input class="btn btn-block btn-danger mb-1" style="color: #fff;" value="Generar PDF">
                                     </a>
                                 </div>
@@ -122,7 +121,7 @@
 
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <table border="1" class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                         <thead>
                                             <tr>
                                                 <!-- Tipo de Movimiento	Fecha de Movimiento	Concepto	Valor	Comprobante/Detalle -->
@@ -130,7 +129,6 @@
                                                 <th>Tipo de Movimiento</th>
                                                 {% if user.is_authenticated and user|has_group:"Administrador" %}
                                                     <th>Unidad Productiva</th>
-                                                    <th>Tipo de Ingreso</th>
                                                 {% endif %}
                                                 {% if user.is_authenticated and user|has_group:"Auditor" %}
                                                 <th>Unidad Productiva</th>
@@ -155,7 +153,6 @@
                                                     {% endif %}
                                                     {% if user.is_authenticated and user|has_group:"Administrador" %}
                                                         <td>{{movimiento.unidad_productiva.nombre}}</td>
-                                                        <td>{{movimiento.accion}}</td>
                                                     {% endif %}
                                                     {% if user.is_authenticated and user|has_group:"Auditor" %}
                                                         <td>{{movimiento.unidad_productiva.nombre}}</td>
@@ -166,20 +163,25 @@
                                                     <td>
                                                         <b>
                                                             {% if movimiento.comprobante_factura %}
-                                                                <a href="{{ server_url }}movimiento/comprobante/{{ movimiento.pk }}" target="_blank">
-                                                                    <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante">
-                                                                </a>
+                                                            
+                                                                <div><a href="{{ server_url }}movimiento/comprobante/{{ movimiento.pk }}" target="_blank">
+                                                                    Comprobante
+                                                                </a></div>
                                                             {% else %}
-                                                                <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante" disabled>
+                                                            <div><input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante" disabled></div>
+                                                                
                                                             {% endif %}
                                                             {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado' %}
-                                                                <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
-                                                                    <input class="btn btn-block btn-warning" style="color: #fff;" value="Auditar">
-                                                                </a>
+                                                            <div><a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
+                                                                Auditar
+                                                            </a></div>    
+                                                            
                                                             {% else %}
-                                                                <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
-                                                                    <input class="btn btn-block btn-success" style="color: #fff;" value="Detalle">
-                                                                </a>
+                                                            <div><a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
+                                                                Detalle
+                                                                
+                                                            </a></div>
+                                                                
                                                             {% endif %}
                                                         </b>
                                                     </td>
@@ -214,7 +216,7 @@
                         <script>
                             $(document).ready(function() {
                                 // Inicializar la tabla
-                                var tabla2 = $('#dataTable').DataTable();
+                                var tabla = $('#dataTable').DataTable();
                         
                                 // Aplicar el filtro cuando cambie el valor del select
                                 $('#filtro2').on('change', function() {
@@ -222,9 +224,9 @@
                         
                                     // Limpiar el filtro si no se selecciona ninguna opción
                                     if (valor === '') {
-                                        tabla2.column(2).search('').draw();
+                                        tabla.column(2).search('').draw();
                                     } else {
-                                        tabla2.column(2).search(valor).draw();
+                                        tabla.column(2).search(valor).draw();
                                     }
                                 });
                             });
@@ -280,6 +282,5 @@
             <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
 
         </body>
-    {% endblock %}
 
 </html>

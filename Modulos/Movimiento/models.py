@@ -80,7 +80,7 @@ def export_to_excel(data,to_pdf=False):
         else:
             unidad_productiva_nombre =  obj.unidad_productiva.nombre
         worksheet.cell(row=row_num, column=1, value=obj.fecha_registro)
-        worksheet.cell(row=row_num, column=2, value=obj.fecha_aprobacion)
+        worksheet.cell(row=row_num, column=2, value=obj.fecha_modificacion)
         worksheet.cell(row=row_num, column=3, value=obj.tipo_ingreso)
         worksheet.cell(row=row_num, column=4, value=unidad_productiva_nombre)
         worksheet.cell(row=row_num, column=5, value=obj.concepto)

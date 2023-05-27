@@ -1,22 +1,25 @@
-from datetime import datetime
 from Modulos.CentroCostos.models import CentroCosto,SubCentroCosto
 from Modulos.Movimiento.models import Comentario, Movimiento,get_estado_caja, get_movimientos_usuario,get_estado_caja_admin,get_movimientos,export_to_excel,convert_xlsx_to_pdf
 from Modulos.UnidadProductiva.models import UnidadProductiva
 from django.contrib.auth.decorators import login_required
 from Modulos.UnidadNegocio.models import UnidadNegocio
+from django.shortcuts import get_object_or_404
 from django.shortcuts import render,redirect
+from botocore.exceptions import ClientError
 from Modulos.Usuario.models import Usuario
 from django.urls import reverse_lazy
-from django.db.models import Sum
-from django.shortcuts import get_object_or_404
-from django.conf import settings
-import boto3
-from botocore.exceptions import ClientError
 from django.contrib import messages
+from django.db.models import Sum
+from django.conf import settings
 from django.db.models import Q
+from datetime import datetime
+from Modulos.Movimiento.utils import render_to_pdf
 import locale
-
+import boto3
 import json
+from django.views.generic import View
+
+
 URL_SERVER = settings.URL_SERVER
 AWS_STORAGE_BUCKET_NAME = settings.AWS_STORAGE_BUCKET_NAME
 
@@ -44,6 +47,14 @@ def home(request):
     if usuario.groups.filter(name='Administrador').exists():
         unidades_productivas_admin = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
         context['unidades_productivas_admin'] = unidades_productivas_admin
+    movimientos = Movimiento.objects.all()
+    fechas = []
+    valores = []
+    for movimiento in movimientos:
+        fechas.append('fecha')
+        valores.append(int(movimiento.valor))
+    context['fechas'] = fechas
+    context['valores'] = valores
     return render(request,"charts.html",context)
 
 def ValuesQuerySetToDict(vqs):
@@ -174,6 +185,13 @@ def registrarIngreso(request):
         ingreso_bancario = True
 
     if request.POST['accion'] == 'Reducción de Caja':
+        _,ingreso,_ = get_movimientos(usuario)
+        ingreso = ingreso.strip("$")
+        ingreso = ingreso.replace(",", "" )
+        ingreso = float(ingreso.replace(",", "." ))
+        if float(costo_valor) > ingreso:
+            messages.error(request, f'¡La reducción de caja {concepto} no se registró correctamente! El valor supera el disponible en caja.')
+            return redirect(f'{URL_SERVER}ingreso/')
         costo_valor = -1*float(costo_valor)
         
     ingreso = Movimiento.objects.create(
@@ -244,41 +262,45 @@ def registrarEgreso(request):
 
 
 
-def tablas_ingresos(request):
-    usuario = get_object_or_404(Usuario, pk=request.user.id)
-    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
-        disponible,ingreso,egreso = get_movimientos(usuario)
-    else:
-        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
-    
-    if usuario.groups.filter(name__in=['Auditor']).exists():
-        filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
-        movimientos = get_movimientos_usuario(usuario).filter(filters)
-
-    else:
-        movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
-    
-
-    context = {'server_url':URL_SERVER,
-        'data_movimientos':movimientos,
-        'ingresos':ingreso,
-        'egresos':egreso,
-        'disponible':disponible,
-        'request': request
-        }
-    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
-        #diccionario[clave] = valor
-        elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
-        unique_elementos = set(elementos)
-        context['unidades_productivas'] = unique_elementos
-
-    if usuario.groups.filter(name='Auditor').exists():
+def tablas_ingresos(request,pdf=None):
+    try:
+        usuario = get_object_or_404(Usuario, pk=request.user.id)
+        if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+            disponible,ingreso,egreso = get_movimientos(usuario)
+        else:
+            unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+            disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
         
-        context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+        if usuario.groups.filter(name__in=['Auditor']).exists():
+            filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
+            movimientos = get_movimientos_usuario(usuario).filter(filters)
 
-    return render(request,"tables_ingresos.html",context)
+        else:
+            movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+        
 
+        context = {'server_url':URL_SERVER,
+            'data_movimientos':movimientos,
+            'ingresos':ingreso,
+            'egresos':egreso,
+            'disponible':disponible,
+            'request': request
+            }
+        if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+            #diccionario[clave] = valor
+            elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+            unique_elementos = set(elementos)
+            context['unidades_productivas'] = unique_elementos
+
+        if usuario.groups.filter(name='Auditor').exists():
+            
+            context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+
+        return render(request,"tables_ingresos.html",context)
+
+    except Exception as e:
+        messages.error(request, f'¡Error! {e}')
+        return redirect(f'{URL_SERVER}ingreso/')
 def tablas_egresos(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     if usuario.groups.filter(name='Administrador').exists():
@@ -537,18 +559,111 @@ def generar_excel_ingresos(request):
 
     return excel_generado 
     
-def generar_pdf_ingresos(request):
-    usuario = get_object_or_404(Usuario, pk=request.user.id)
-    movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
-    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
-        #diccionario[clave] = valor
-        if usuario.groups.filter(name='Auditor').exists():
-            movimientos = movimientos.filter(tipo_ingreso='OUT')
-        elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
-        unique_elementos = set(elementos)
-        movimientos = unique_elementos
-        
-    excel_generado = export_to_excel(movimientos,True)
-    messages.success(request, f'¡El pdf se generó corretamente!')
 
-    return excel_generado 
+
+class Pdf_ingresos (View):
+    def get(self, request, *args, **kwargs):
+        try:
+            usuario = get_object_or_404(Usuario, pk=request.user.id)
+            if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+                disponible,ingreso,egreso = get_movimientos(usuario)
+            else:
+                unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+                disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+            
+            if usuario.groups.filter(name__in=['Auditor']).exists():
+                filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
+                movimientos = get_movimientos_usuario(usuario).filter(filters)
+
+            else:
+                movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+            
+
+            context = {'server_url':URL_SERVER,
+                'data_movimientos':movimientos,
+                'ingresos':ingreso,
+                'egresos':egreso,
+                'disponible':disponible,
+                'request': request
+                }
+            if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+                #diccionario[clave] = valor
+                elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+                unique_elementos = set(elementos)
+                context['unidades_productivas'] = unique_elementos
+
+            if usuario.groups.filter(name='Auditor').exists():
+                
+                context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+            excel_generado = render_to_pdf('pdf/pdf_tables_ingresos.html', context)
+            messages.success(request, f'¡El pdf se generó corretamente!')
+            return excel_generado
+            #return render(request,"pdf/pdf_tables_ingresos.html",context)
+        except Exception as e:
+            messages.error(request, f'¡Error al generar el pdf!')
+            print(e)
+            return redirect(f'{URL_SERVER}tablaing/')
+        
+class Pdf_ingresos_ba (View):
+    def get(self, request, *args, **kwargs):
+        try:
+            usuario = get_object_or_404(Usuario, pk=request.user.id)
+            if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+                disponible,ingreso,egreso = get_movimientos(usuario)
+            else:
+                unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+                disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+            filtros = Q(ingreso_bancario=True)
+            movimientos = get_movimientos_usuario(usuario).filter(filtros)
+            
+
+            context = {'server_url':URL_SERVER,
+                'data_movimientos':movimientos,
+                'ingresos':ingreso,
+                'egresos':egreso,
+                'disponible':disponible,
+                'request': request
+                }
+            if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+                #diccionario[clave] = valor
+                elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+                unique_elementos = set(elementos)
+                context['unidades_productivas'] = unique_elementos
+
+            if usuario.groups.filter(name='Auditor').exists():
+                context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+            excel_generado = render_to_pdf('pdf/pdf_tables_ingresos_ba.html', context)
+            messages.success(request, f'¡El pdf se generó corretamente!')
+            return excel_generado
+
+        except Exception as e:
+            messages.error(request, f'¡Error al generar el pdf!')
+            print(e)
+            return redirect(f'{URL_SERVER}tablaingba/')
+
+
+class Pdf_egresos_ba (View):
+    def get(self, request, *args, **kwargs):
+        try:
+            usuario = get_object_or_404(Usuario, pk=request.user.id)
+            if usuario.groups.filter(name='Administrador').exists():
+                disponible,ingreso,egreso = get_movimientos(usuario)
+            else:
+                unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+                disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+            filtros = Q(ingreso_bancario=True) & Q(tipo_ingreso='OUT')
+            movimientos = get_movimientos_usuario(usuario).filter(filtros).order_by('fecha_registro')
+            context = {'server_url':URL_SERVER,
+                'data_movimientos':movimientos,
+                'ingresos':ingreso,
+                'egresos':egreso,
+                'disponible':disponible,
+                'request': request
+                }
+            excel_generado = render_to_pdf('pdf/pdf_tables_egresos_ba.html', context)
+            messages.success(request, f'¡El pdf se generó corretamente!')
+            return excel_generado
+        except Exception as e:
+            messages.error(request, f'¡Error al generar el pdf!')
+            print(e)
+            return redirect(f'{URL_SERVER}tablaegreba/')
