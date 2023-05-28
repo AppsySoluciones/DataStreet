@@ -13,7 +13,7 @@ from django.db.models import Sum
 from django.conf import settings
 from django.db.models import Q
 from datetime import datetime
-from Modulos.Movimiento.utils import render_to_pdf,area_chart_data,pie_chart_data
+from Modulos.Movimiento.utils import render_to_pdf,area_chart_data,pie_chart_data,mayor_ingreso_uproductiva
 import locale
 import boto3
 import json
@@ -66,6 +66,8 @@ def home(request):
 
     context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
     context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
+    context['pie_egresos'] = pie_chart_data(movimientos)
+    context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
 
     return render(request,"charts.html",context) 
 
