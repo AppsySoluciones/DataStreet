@@ -1,3 +1,4 @@
+import locale
 from django.db.models import Q
 from django.db.models import Sum
 from io import BytesIO # nos ayuda a convertir un html en pdf
@@ -47,7 +48,11 @@ def pie_chart_data(movimientos):
     filter = Q(tipo_ingreso="OUT") & Q(estado="Aprobado")
     ingresos = movimientos.filter(tipo_ingreso="IN").aggregate(Sum('valor'))['valor__sum']
     egresos = movimientos.filter(filter).aggregate(Sum('valor'))['valor__sum']
-    disponible = ingresos - egresos
+    if ingresos is None:
+        ingresos = 0
+    if egresos is None:
+        egresos = 0 
+    disponible = ingresos + egresos
     ingresos = int(round((ingresos/disponible)*100, 2))
     egresos = int(round((egresos/disponible)*100, 2))
 
@@ -55,7 +60,8 @@ def pie_chart_data(movimientos):
 
 
 def mayor_ingreso_uproductiva(movimientos):
-    # Filtrar los 3 tipos de ingresos y obtener la suma mayor
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+        # Filtrar los 3 tipos de ingresos y obtener la suma mayor
         list_unidad_productiva = []
 
         # Obtener las unidades productivas y sus sumas de movimientos
@@ -73,16 +79,63 @@ def mayor_ingreso_uproductiva(movimientos):
         # Ordenar por la suma en orden descendente
         suma_unidades_productivas = sorted(suma_unidades_productivas, key=lambda x: x['suma'], reverse=True)
 
-        if suma_unidades_productivas:
-            unidad_mayor_suma = suma_unidades_productivas[0]['unidad_productiva']
-            suma_mayor = suma_unidades_productivas[0]['suma']
-        else:
-            unidad_mayor_suma = None
-            suma_mayor = 0
+        width = [94,82,70]
+        i = 0
 
-        # Retornar la respuesta como JSON
-        response_data = {
-            'unidad_mayor_suma': unidad_mayor_suma,
-            'suma_mayor': suma_mayor,
-        }
-        return unidad_mayor_suma,suma_mayor
+        if suma_unidades_productivas:
+            if len(suma_unidades_productivas)>3:
+                suma_unidades_productivas = suma_unidades_productivas[:3]
+            else:
+                suma_unidades_productivas = suma_unidades_productivas[:len(suma_unidades_productivas)]
+            for suma_unidad_productiva in suma_unidades_productivas:
+                suma_unidad_productiva['with'] = width[i]
+                suma_unidad_productiva['suma'] = locale.currency(suma_unidad_productiva['suma'], symbol=True, grouping=True)
+                i +=1
+            return suma_unidades_productivas
+        else:
+            return [],[]
+        
+
+def mayor_egreso_uproductiva(movimientos):
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
+        # Obtener las unidades productivas y sus sumas de movimientos
+        unidades_productivas = UnidadProductiva.objects.all()
+        suma_unidades_productivas = []
+
+        for unidad_productiva in unidades_productivas:
+            filter = Q(tipo_ingreso="OUT") & Q(unidad_productiva=unidad_productiva) & Q(estado="Aprobado")
+            suma = movimientos.filter(filter).aggregate(Sum('valor'))['valor__sum']
+            suma_unidades_productivas.append({
+                'unidad_productiva': unidad_productiva.nombre,
+                'suma': suma if suma else 0
+            })
+
+        # Ordenar por la suma en orden descendente
+        suma_unidades_productivas = sorted(suma_unidades_productivas, key=lambda x: x['suma'], reverse=True)
+
+        width = [94,82,70]
+        i = 0
+
+        if suma_unidades_productivas:
+            if len(suma_unidades_productivas)>3:
+                suma_unidades_productivas = suma_unidades_productivas[:3]
+            else:
+                suma_unidades_productivas = suma_unidades_productivas[:len(suma_unidades_productivas)]
+            for suma_unidad_productiva in suma_unidades_productivas:
+                suma_unidad_productiva['with'] = width[i]
+                suma_unidad_productiva['suma'] = locale.currency(suma_unidad_productiva['suma'], symbol=True, grouping=True)
+                i +=1
+            return suma_unidades_productivas
+        else:
+            return [],[]
+        
+def centro_costos_uprod(movimientos):
+    resultados = movimientos.values('sub_centro_costo__nombre').annotate(suma_valor=Sum('valor'))
+    lista_resultados = []
+    for resultado in resultados:
+        sub_centro_costo = resultado['sub_centro_costo__nombre']
+        suma_valor = int(resultado['suma_valor'])
+        lista_resultados.append({'sub_centro_costo': sub_centro_costo, 'suma_valor': suma_valor})
+    
+    return lista_resultados

@@ -13,7 +13,7 @@ from django.db.models import Sum
 from django.conf import settings
 from django.db.models import Q
 from datetime import datetime
-from Modulos.Movimiento.utils import render_to_pdf,area_chart_data,pie_chart_data,mayor_ingreso_uproductiva
+from Modulos.Movimiento.utils import render_to_pdf,area_chart_data,pie_chart_data,mayor_ingreso_uproductiva,mayor_egreso_uproductiva, centro_costos_uprod
 import locale
 import boto3
 import json
@@ -66,8 +66,9 @@ def home(request):
 
     context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
     context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
-    context['pie_egresos'] = pie_chart_data(movimientos)
     context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
+    context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
+    context['pie_centrocostos'] = centro_costos_uprod(movimientos)
 
     return render(request,"charts.html",context) 
 
@@ -259,6 +260,7 @@ def registrarEgreso(request):
     
     else:
         egreso = Movimiento.objects.create(
+            sub_centro_costo=sub_centro_costo,
             fecha_registro=fecha_registro,
             nombre_proveedor=nom_provedor,
             tipo_documento=tipo_doc,

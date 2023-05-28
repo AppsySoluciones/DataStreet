@@ -69,11 +69,11 @@
                         </div>
 
                         <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
+                        <div class="col-xl-4">
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Porcentaje de Ingresos/Egresos vs Disponible en Caja</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Porcentaje de Ingresos/Egresos vs Total</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
@@ -98,11 +98,39 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-xl-4">
-                            <div class="card">
+                    <div class="row" style="display: flex;">
+                        <!-- Costos Pie Chart -->
+                        <div class="col-xl-4 col-lg-5" style="flex: 1; display: flex; flex-direction: column;">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Top Cities Selling Product</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Centro Costos</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                                                            </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="chart-pie pt-4 pb-2"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
+                                        <canvas id="costosPieChart" width="276" height="245" style="display: block; width: 276px; height: 245px;" class="chartjs-render-monitor"></canvas>
+                                    </div>
+                                    <!-- <div class="mt-4 text-center small">
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle text-success"></i> Ingresos (%)
+                                        </span>
+                                        <span class="mr-2">
+                                            <i class="fas fa-circle text-danger"></i> Egresos (%)
+                                        </span>
+                                    </div> -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 col-lg-5" style="flex: 1; display: flex; flex-direction: column;">
+                            <div class="card shadow">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Top Ingreso Unidades Productivas</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
@@ -116,58 +144,97 @@
                                         <div class="mb-4">
                                             <i class="bx bx-map-pin text-primary display-4"></i>
                                         </div>
-                                        <h3>1,456</h3>
-                                        <p>San Francisco</p>
+                                        <h3>{% for item in top_3_ingresos %}
+                                            {% if forloop.counter == 1 %}
+                                            {{item.suma}}
+                                            {% endif %}
+                                            {% endfor %}</h3>
+                                        <p>
+                                            {% for item in top_3_ingresos %}
+                                            {% if forloop.counter == 1 %}
+                                            {{item.unidad_productiva}}
+                                            {% endif %}
+                                            {% endfor %} </p>
+                                        </div>
+                    
+                                    <div class="table-responsive mt-4">
+                                        <table class="table align-middle table-nowrap">
+                                            <tbody>
+                                                
+                                                {% for uprod in top_3_ingresos %}
+                                                <tr>
+                                                    <td style="width: 30%">
+                                                        <p class="mb-0">{{uprod.unidad_productiva}}</p>
+                                                    </td>
+                                                    <td style="width: 25%">
+                                                        <h5 class="mb-0">{{uprod.suma}}</h5>
+                                                    </td>
+                                                    <td>
+                                                        <div class="progress bg-transparent progress-sm">
+                                                            <div class="progress-bar bg-success rounded" role="progressbar"
+                                                                style="width: {{uprod.with}}%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 col-lg-5" style="flex: 1; display: flex; flex-direction: column;">
+                            <div class="card shadow">
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Top Egreso Unidades Productivas</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+                                                                            </div>
+                                </div>
+                                <div class="card-body">
+                                    <h4 class="card-title mb-4"></h4>
+                    
+                                    <div class="text-center">
+                                        <div class="mb-4">
+                                            <i class="bx bx-map-pin text-primary display-4"></i>
+                                        </div>
+                                        <h3>{% for item in top_3_egresos %}
+                                            {% if forloop.counter == 1 %}
+                                            {{item.suma}}
+                                            {% endif %}
+                                            {% endfor %}</h3>
+                                        <p>
+                                            {% for item in top_3_egresos %}
+                                            {% if forloop.counter == 1 %}
+                                            {{item.unidad_productiva}}
+                                            {% endif %}
+                                            {% endfor %} </p>
                                     </div>
                     
                                     <div class="table-responsive mt-4">
                                         <table class="table align-middle table-nowrap">
                                             <tbody>
+                                                
+                                                {% for uprod in top_3_egresos %}
                                                 <tr>
                                                     <td style="width: 30%">
-                                                        <p class="mb-0">San Francisco</p>
+                                                        <p class="mb-0">{{uprod.unidad_productiva}}</p>
                                                     </td>
                                                     <td style="width: 25%">
-                                                        <h5 class="mb-0">1,456</h5>
+                                                        <h5 class="mb-0">{{uprod.suma}}</h5>
                                                     </td>
                                                     <td>
                                                         <div class="progress bg-transparent progress-sm">
-                                                            <div class="progress-bar bg-primary rounded" role="progressbar"
-                                                                style="width: 94%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">
+                                                            <div class="progress-bar bg-danger rounded" role="progressbar"
+                                                                style="width: {{uprod.with}}%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">
                                                             </div>
                                                         </div>
                                                     </td>
                                                 </tr>
-                                                <tr>
-                                                    <td>
-                                                        <p class="mb-0">Los Angeles</p>
-                                                    </td>
-                                                    <td>
-                                                        <h5 class="mb-0">1,123</h5>
-                                                    </td>
-                                                    <td>
-                                                        <div class="progress bg-transparent progress-sm">
-                                                            <div class="progress-bar bg-success rounded" role="progressbar"
-                                                                style="width: 82%" aria-valuenow="82" aria-valuemin="0" aria-valuemax="100">
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <p class="mb-0">San Diego</p>
-                                                    </td>
-                                                    <td>
-                                                        <h5 class="mb-0">1,026</h5>
-                                                    </td>
-                                                    <td>
-                                                        <div class="progress bg-transparent progress-sm">
-                                                            <div class="progress-bar bg-warning rounded" role="progressbar"
-                                                                style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                                {% endfor %}
                                             </tbody>
                                         </table>
                                     </div>
@@ -391,6 +458,53 @@ var myPieChart = new Chart(ctx, {
 });
 
 </script>
+
+<script>
+    // Set new default font family and font color to mimic Bootstrap's default styling
+    Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+    Chart.defaults.global.defaultFontColor = '#858796';
+    const colores = ['#ff0000','#ff8700','#ffd300','#deff0a','#a1ff0a','#0aff99','#0aefff','#147df5','#580aff','#be0aff']
+    const labels = [{%for data in pie_centrocostos %}'{{ data.sub_centro_costo }}', {% endfor %}]
+    const backgroundColor = [];
+    for (i=0; i<labels.length;i++){
+        const color = colores[Math.floor(Math.random() * 10)];
+        backgroundColor.push(color)
+
+        console.log(color)
+    }
+    // Pie Chart Example
+    var ctx = document.getElementById("costosPieChart");
+    var myPieChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: [{%for data in pie_centrocostos %}{{ data.suma_valor }}, {% endfor %}],
+                backgroundColor: backgroundColor,
+                hoverBackgroundColor: backgroundColor,
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyFontColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+            },
+            legend: {
+                display: true
+            },
+            cutoutPercentage: 80,
+        },
+    });
+    
+    </script>
 
 
 {% endblock %}
