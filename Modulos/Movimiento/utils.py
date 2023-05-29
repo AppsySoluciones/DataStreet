@@ -53,8 +53,12 @@ def pie_chart_data(movimientos):
     if egresos is None:
         egresos = 0 
     disponible = ingresos + egresos
-    ingresos = int(round((ingresos/disponible)*100, 2))
-    egresos = int(round((egresos/disponible)*100, 2))
+    if disponible == 0:
+        ingresos = 0
+        egresos = 0
+    else:
+        ingresos = int(round((ingresos/disponible)*100, 2))
+        egresos = int(round((egresos/disponible)*100, 2))
 
     return ingresos, egresos
 
