@@ -92,11 +92,22 @@ WSGI_APPLICATION = 'DataStreet.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
+""" DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'DatasStreet.DB',
     }
+} """
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'PASSWORD': 'crecento*2023',
+        'HOST': 'crecento-database.cxklqq1pgnsl.us-east-1.rds.amazonaws.com',
+        'NAME': 'crecentodb',
+        'USER': 'postgres ',
+        'PORT': '5432',
+        }
 }
 
 
