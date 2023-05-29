@@ -256,8 +256,8 @@
             <script>
                 $(document).ready(function () {
                     // Inicializar la tabla
-                    var dataTable = $('#dataTable').DataTable(order);
-                    tabla.order( [ 0, 'asc' ] ).draw();
+                    var dataTable = $('#dataTable').DataTable();
+                    tabla.order( [ 0, 'desc' ] ).draw();
 
                     // Aplicar el filtro cuando cambie el valor del select
                     $('#filtro').on('change', function () {
