@@ -2,7 +2,7 @@ from django.db import models
 from Modulos.UnidadNegocio.models import UnidadNegocio
 
 class SubCentroCosto(models.Model):
-    nombre = models.CharField(max_length=50,unique=True)
+    nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=200,null=True,blank=True)
 
     def __str__(self):
@@ -10,7 +10,7 @@ class SubCentroCosto(models.Model):
 
 # Create your models here.
 class CentroCosto(models.Model):
-    nombre = models.CharField(max_length=50,unique=True)
+    nombre = models.CharField(max_length=50)
     descripcion = models.CharField(max_length=200,null=True,blank=True)
     unegocio = models.ManyToManyField(UnidadNegocio,related_name='ccosto_unegocio',blank=True)
     subcentro = models.ManyToManyField(SubCentroCosto,blank=True)
