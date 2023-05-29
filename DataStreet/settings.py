@@ -105,7 +105,7 @@ DATABASES = {
         'PASSWORD': 'crecento*2023',
         'HOST': 'crecento-database.cxklqq1pgnsl.us-east-1.rds.amazonaws.com',
         'NAME': 'crecentodb',
-        'USER': 'postgres ',
+        'USER': 'postgres',
         'PORT': '5432',
         }
 }
