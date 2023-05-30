@@ -234,6 +234,11 @@ def registrarEgreso(request):
     factura_check = request.POST['factura_check']
     concepto = request.POST['concepto']
     costo_valor = request.POST['costo_valor']
+    if request.POST['ingreso_bancario'] == 'False':
+        ingreso_bancario = False
+    else:
+        ingreso_bancario = True
+
     
     sub_centro_costo= SubCentroCosto.objects.filter(pk=sub_centro_costo_id).first()
     
@@ -260,7 +265,8 @@ def registrarEgreso(request):
         tipo_ingreso='OUT',
         valor=costo_valor,
         unidad_productiva=unidad_productiva,
-        comprobante_factura=comprobante_factura
+        comprobante_factura=comprobante_factura,
+        ingreso_bancario=ingreso_bancario,
         )
         egreso.save()
     
@@ -276,6 +282,7 @@ def registrarEgreso(request):
             tipo_ingreso='OUT',
             valor=costo_valor,
             unidad_productiva=unidad_productiva,
+            ingreso_bancario=ingreso_bancario,
         )
         egreso.save()
 
