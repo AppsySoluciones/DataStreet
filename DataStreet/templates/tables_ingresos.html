@@ -155,7 +155,13 @@
                                                     {% if movimiento.tipo_ingreso == 'OUT' %}
                                                         <td>Egreso</td>
                                                     {% elif movimiento.tipo_ingreso == 'IN' %}
-                                                        <td>Ingreso</td>
+                                                        {% if movimiento.conpceto == 'Reducción de Caja' %}
+                                                            <td>Reducción</td>
+                                                        {% else %}
+                                                            <td>Ingreso</td>
+                                                        {%endif}
+                                                    {% elif movimiento.tipo_ingreso == 'REDUX' %}
+                                                    <td>Ingreso</td>
                                                     {% else %}
                                                         <td>Desconocido</td>
                                                     {% endif %}
