@@ -161,7 +161,8 @@ def get_estado_caja_admin(user,unidad_productiva=None):
 
     else:
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-        ingresos = Movimiento.objects.filter(tipo_ingreso='IN'&Q(ingreso_bancario=False)).aggregate(Sum('valor'))['valor__sum']
+
+        ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(ingreso_bancario=False)).aggregate(Sum('valor'))['valor__sum']
         egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(estado='Aprobado')).aggregate(Sum('valor'))['valor__sum']
 
     if ingresos == None:
