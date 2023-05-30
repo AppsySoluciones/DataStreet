@@ -319,9 +319,9 @@ def tablas_ingresos(request,pdf=None):
             unique_elementos = set(elementos)
             context['unidades_productivas'] = unique_elementos
 
-        if usuario.groups.filter(name='Auditor').exists():
+        # if usuario.groups.filter(name='Auditor').exists():
             
-            context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+        #     context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
 
         return render(request,"tables_ingresos.html",context)
 
