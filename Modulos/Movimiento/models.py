@@ -66,6 +66,7 @@ def export_to_excel(data,to_pdf=False):
 
     # Crear el libro de trabajo de Excel y la hoja de cálculo
     workbook = Workbook()
+    workbook.iso_dates = True
     worksheet = workbook.active
 
     # Escribir los encabezados de las columnas
@@ -79,8 +80,8 @@ def export_to_excel(data,to_pdf=False):
             unidad_productiva_nombre = 'N/A'
         else:
             unidad_productiva_nombre =  obj.unidad_productiva.nombre
-        worksheet.cell(row=row_num, column=1, value=obj.fecha_registro)
-        worksheet.cell(row=row_num, column=2, value=obj.fecha_modificacion)
+        worksheet.cell(row=row_num, column=1, value=obj.fecha_registro.strftime('%d/%m/%Y %H:%M'))
+        worksheet.cell(row=row_num, column=2, value=obj.fecha_modificacion.strftime('%d/%m/%Y %H:%M'))
         worksheet.cell(row=row_num, column=3, value=obj.tipo_ingreso)
         worksheet.cell(row=row_num, column=4, value=unidad_productiva_nombre)
         worksheet.cell(row=row_num, column=5, value=obj.concepto)
