@@ -375,7 +375,7 @@ def tablas_egresos_ba(request):
     else:
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
         disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
-    filtros = Q(ingreso_bancario=True
+    filtros = ingreso_bancario=True
     movimientos = get_movimientos_usuario(usuario).filter(filtros)
     
 
