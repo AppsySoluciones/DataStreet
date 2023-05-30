@@ -131,7 +131,7 @@
                 </form>
                     {% endif %}
                     
-                    {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado'%}
+                    {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado' and movimiento.tipo_ingreso == 'OUT' %}
 
                     <form method="POST" action="{{server_url}}movimiento/addnote/{{movimiento.pk}}/">
                         {% csrf_token %}

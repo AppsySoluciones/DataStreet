@@ -291,6 +291,7 @@ def registrarEgreso(request):
 
 def tablas_ingresos(request,pdf=None):
     try:
+        
         usuario = get_object_or_404(Usuario, pk=request.user.id)
         if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
             disponible,ingreso,egreso = get_movimientos(usuario)
@@ -299,8 +300,7 @@ def tablas_ingresos(request,pdf=None):
             disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
         
         if usuario.groups.filter(name__in=['Auditor']).exists():
-            filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
-            movimientos = get_movimientos_usuario(usuario).filter(filters)
+            movimientos = get_movimientos_usuario(usuario)
 
         else:
             movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
@@ -322,6 +322,10 @@ def tablas_ingresos(request,pdf=None):
         # if usuario.groups.filter(name='Auditor').exists():
             
         #     context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+        for movimiento in movimientos:
+            unidad_productiva = movimiento.unidad_productiva
+            unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
+            movimiento.unidad_negocio = unidad_negocio.nombre
 
         return render(request,"tables_ingresos.html",context)
 

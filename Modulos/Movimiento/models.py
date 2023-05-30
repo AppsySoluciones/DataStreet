@@ -80,9 +80,16 @@ def export_to_excel(data,to_pdf=False):
             unidad_productiva_nombre = 'N/A'
         else:
             unidad_productiva_nombre =  obj.unidad_productiva.nombre
+        if obj.tipo_ingreso=='IN':
+            tipo_ingreso = 'Ingreso'
+        elif obj.tipo_ingreso=='OUT':
+            tipo_ingreso = 'Egreso'
+        else:
+            tipo_ingreso = 'N/A'
+            
         worksheet.cell(row=row_num, column=1, value=obj.fecha_registro.strftime('%d/%m/%Y %H:%M'))
         worksheet.cell(row=row_num, column=2, value=obj.fecha_modificacion.strftime('%d/%m/%Y %H:%M'))
-        worksheet.cell(row=row_num, column=3, value=obj.tipo_ingreso)
+        worksheet.cell(row=row_num, column=3, value=tipo_ingreso)
         worksheet.cell(row=row_num, column=4, value=unidad_productiva_nombre)
         worksheet.cell(row=row_num, column=5, value=obj.concepto)
         worksheet.cell(row=row_num, column=5, value=obj.concepto)

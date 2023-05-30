@@ -61,7 +61,7 @@
 
                         <div class="row">
                             <div class="col-sm-6">
-                                <h1 class="h3 mb-2 text-gray-800">Tabla de Movimientos</h1>
+                                <h1 class="h3 mb-2 text-gray-800">Tabla de Movimientos de Caja</h1>
                                 <p class="mb-4">Podrás visualizar tus movimientos de ingresos y egresos</p>
                             </div>
                             <div class="col-sm-3">
@@ -98,6 +98,8 @@
                                             <option value="">Todos</option>
                                             <option value="Ingreso">Ingreso</option>
                                             <option value="Egreso">Egreso</option>
+                                            <option value="Reducción">Reducción</option>
+                                            
                                         </select>
                                     </div>
                                 </div>
@@ -134,12 +136,10 @@
                                                 <!-- Tipo de Movimiento	Fecha de Movimiento	Concepto	Valor	Comprobante/Detalle -->
                                                 <th>Fecha de Registro</th>
                                                 <th>Tipo de Movimiento</th>
-                                                {% if user.is_authenticated and user|has_group:"Administrador" %}
-                                                    <th>Unidad Productiva</th>
-                                                    
-                                                {% endif %}
-                                                {% if user.is_authenticated and user|has_group:"Auditor" %}
+                                                {% if user.is_authenticated and user|has_group:"Administrador" or user.is_authenticated and user|has_group:"Auditor"%}
+                                                <th>Unidad de Negocio</th>
                                                 <th>Unidad Productiva</th>
+                                                    
                                                 {% endif %}
                                                 <th>Concepto</th>
                                                 <th>Valor</th>
@@ -153,21 +153,28 @@
                                                 <tr>
                                                     <td>{{ movimiento.fecha_registro }}</td>
                                                     {% if movimiento.tipo_ingreso == 'OUT' %}
-                                                        <td>Egreso</td>
+                                                        {% if movimiento.ingreso_bancario == True %}
+                                                        <td>Egreso Bancario</td>
+                                                        {% else %}
+                                                        <td>Egreso de Caja</td>
+                                                        {% endif %}
                                                     {% elif movimiento.tipo_ingreso == 'IN' %}
-                                                        {% if movimiento.concepto == 'Reducción de Caja' %}
+                                                        {% if movimiento.accion == 'Reducción de Caja' %}
                                                             <td>Reducción</td>
                                                         {% else %}
-                                                            <td>Ingreso</td>
+                                                            {% if movimiento.ingreso_bancario == True %}
+                                                            <td>Ingreso Bancario</td>
+                                                            {% else %}
+                                                            <td>Ingreso de Caja</td>
+                                                            {% endif %}
                                                         {% endif %}
                                                     {% else %}
                                                         <td>Desconocido</td>
                                                     {% endif %}
-                                                    {% if user.is_authenticated and user|has_group:"Administrador" %}
-                                                        <td>{{movimiento.unidad_productiva.nombre}}</td>
-                                                    {% endif %}
-                                                    {% if user.is_authenticated and user|has_group:"Auditor" %}
-                                                        <td>{{movimiento.unidad_productiva.nombre}}</td>
+                                                    {% if user.is_authenticated and user|has_group:"Administrador" or user.is_authenticated and user|has_group:"Auditor"%}
+                                                    <td>{{movimiento.unidad_negocio}}</td>    
+                                                    <td>{{movimiento.unidad_productiva.nombre}}</td>
+                                                        
                                                     {% endif %}
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
@@ -181,7 +188,7 @@
                                                             {% else %}
                                                                 <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante" disabled>
                                                             {% endif %}
-                                                            {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado' %}
+                                                            {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado' and movimiento.tipo_ingreso == 'OUT' %}
                                                                 <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
                                                                     <input class="btn btn-block btn-warning" style="color: #fff;" value="Auditar">
                                                                 </a>
