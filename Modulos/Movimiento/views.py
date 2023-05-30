@@ -370,8 +370,8 @@ def tablas_ingresos_ba(request):
         unique_elementos = set(elementos)
         context['unidades_productivas'] = unique_elementos
 
-    if usuario.groups.filter(name='Auditor').exists():
-        context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        context['data_movimientos'] = movimientos.filter(tipo_ingreso='IN')
 
     return render(request,"tables_ingresos_ba.html",context)
 
