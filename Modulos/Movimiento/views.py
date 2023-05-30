@@ -564,11 +564,17 @@ def aprobar_mov(request,pk):
     movimiento = get_object_or_404(Movimiento,pk=pk)
     movimiento.estado = 'Aprobado'
     movimiento.save()
-    messages.success(request, f'¡El Movimiento {movimiento.concepto} fué marcado como APROBADO!')
+    
     unidad_prod = movimiento.unidad_productiva
     if unidad_prod.usuarioRegistro is not None:
         usuario = unidad_prod.usuarioRegistro.first()
-        usuario.send_email('Movimiento Rechazado',f'¡El Movimiento {movimiento.concepto} fué marcado como APROBADO!')
+        if movimiento.tipo_ingreso == 'IN':
+            usuario.send_email('Ingreso Aprobado ',f'¡El Ingreso {movimiento.concepto} fué marcado como APROBADO!')
+            messages.success(request, f'¡El Ingreso {movimiento.concepto} fué marcado como APROBADO!')
+        elif movimiento.tipo_ingreso == 'OUT':
+            usuario.send_email('Egreso Rechazado',f'¡El Egreso {movimiento.concepto} fué marcado como APROBADO!')
+            messages.success(request, f'¡El Egreso {movimiento.concepto} fué marcado como APROBADO!')
+    
     return redirect(f'{URL_SERVER}tablaing/')
 def rechazar_mov(request,pk):
     movimiento = get_object_or_404(Movimiento,pk=pk)
@@ -578,7 +584,12 @@ def rechazar_mov(request,pk):
     unidad_prod = movimiento.unidad_productiva
     if unidad_prod.usuarioRegistro is not None:
         usuario = unidad_prod.usuarioRegistro.first()
-        usuario.send_email('Movimiento Rechazado', f'¡El Movimiento {movimiento.concepto} fué marcado como RECHAZADO!')
+        if movimiento.tipo_ingreso == 'IN':
+            usuario.send_email('Ingreso Rechazado ',f'¡El Ingreso {movimiento.concepto} fué marcado como RECHAZADO!')
+            messages.success(request, f'¡El Ingreso {movimiento.concepto} fué marcado como RECHAZADO!')
+        elif movimiento.tipo_ingreso == 'OUT':
+            usuario.send_email('Egreso Rechazado',f'¡El Egreso {movimiento.concepto} fué marcado como RECHAZADO!')
+            messages.success(request, f'¡El Egreso {movimiento.concepto} fué marcado como RECHAZADO!')
     return redirect(f'{URL_SERVER}tablaing/')
 
 def generar_excel_ingresos(request):
