@@ -150,18 +150,18 @@ def get_estado_caja_admin(user,unidad_productiva=None):
     if unidad_productiva:
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
         unidad_productiva=UnidadProductiva.objects.get(id=user.last_productiva)
-        ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)).aggregate(Sum('valor'))['valor__sum']
+        ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)&Q(ingreso_bancario=False)).aggregate(Sum('valor'))['valor__sum']
         egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)&Q(estado='Aprobado')).aggregate(Sum('valor'))['valor__sum']
         
     elif user.last_productiva:
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
         unidad_productiva=UnidadProductiva.objects.get(id=user.last_productiva)
-        ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)).aggregate(Sum('valor'))['valor__sum']
+        ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)&Q(ingreso_bancario=False)).aggregate(Sum('valor'))['valor__sum']
         egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)&Q(estado='Aprobado')).aggregate(Sum('valor'))['valor__sum']
 
     else:
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-        ingresos = Movimiento.objects.filter(tipo_ingreso='IN').aggregate(Sum('valor'))['valor__sum']
+        ingresos = Movimiento.objects.filter(tipo_ingreso='IN'&Q(ingreso_bancario=False)).aggregate(Sum('valor'))['valor__sum']
         egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(estado='Aprobado')).aggregate(Sum('valor'))['valor__sum']
 
     if ingresos == None:
