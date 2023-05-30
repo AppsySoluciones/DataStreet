@@ -236,7 +236,13 @@ def registrarEgreso(request):
     costo_valor = request.POST['costo_valor']
     
     sub_centro_costo= SubCentroCosto.objects.filter(pk=sub_centro_costo_id).first()
-    unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+    
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    if usuario.groups.filter(name='Administrador').exists():
+        unidad_productiva = UnidadProductiva.objects.filter(nombre='Administración').first()
+    else:
+        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+
     fecha_registro = datetime.now()
 
     if factura_check == 'true':
@@ -364,13 +370,15 @@ def tablas_ingresos_ba(request):
 
 def tablas_egresos_ba(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
-    if usuario.groups.filter(name='Administrador').exists():
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
         disponible,ingreso,egreso = get_movimientos(usuario)
     else:
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
         disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
-    filtros = Q(ingreso_bancario=True) & Q(tipo_ingreso='OUT')
-    movimientos = get_movimientos_usuario(usuario).filter(filtros).order_by('fecha_registro')
+    filtros = Q(ingreso_bancario=True
+    movimientos = get_movimientos_usuario(usuario).filter(filtros)
+    
+
     context = {'server_url':URL_SERVER,
         'data_movimientos':movimientos,
         'ingresos':ingreso,
@@ -378,6 +386,15 @@ def tablas_egresos_ba(request):
         'disponible':disponible,
         'request': request
         }
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        #diccionario[clave] = valor
+        elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+        unique_elementos = set(elementos)
+        context['unidades_productivas'] = unique_elementos
+
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+    
     return render(request,"tables_egresos_ba.html",context)
 
 def detalle(request,pk):
