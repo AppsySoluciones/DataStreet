@@ -35,7 +35,7 @@ class Movimiento(models.Model):
     tipo_documento = models.CharField(max_length=50,null=True,blank=True)
     factura = models.BooleanField(default=False,null=True,blank=True)
     estado = models.CharField(max_length=10,null=True,blank=True)
-    accion = models.CharField(max_length=20,null=True,blank=True)
+    accion = models.CharField(max_length=200,null=True,blank=True)
     uuid = models.SlugField(blank=True)
     fecha_registro = models.DateTimeField(auto_now=True,null=True,blank=True)
     fecha_modificacion = models.DateTimeField(auto_now_add=True,null=True,blank=True)
