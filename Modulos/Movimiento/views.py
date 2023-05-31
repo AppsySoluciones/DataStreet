@@ -598,21 +598,111 @@ def rechazar_mov(request,pk):
 
 def generar_excel_ingresos(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
-    movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        disponible,ingreso,egreso = get_movimientos(usuario)
+    else:
+        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+    
+    if usuario.groups.filter(name__in=['Auditor']).exists():
+        movimientos = get_movimientos_usuario(usuario)
+
+    else:
+        movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+    
+
+    context = {'server_url':URL_SERVER,
+        'data_movimientos':movimientos,
+        'ingresos':ingreso,
+        'egresos':egreso,
+        'disponible':disponible,
+        'request': request
+        }
     if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
         #diccionario[clave] = valor
-        if usuario.groups.filter(name='Auditor').exists():
-            movimientos = movimientos.filter(tipo_ingreso='OUT')
         elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
         unique_elementos = set(elementos)
-        movimientos = unique_elementos
+        context['unidades_productivas'] = unique_elementos
+
+    # if usuario.groups.filter(name='Auditor').exists():
+        
+    #     context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+    for movimiento in movimientos:
+        unidad_productiva = movimiento.unidad_productiva
+        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
+        movimiento.unidad_negocio = unidad_negocio.nombre
         
     excel_generado = export_to_excel(movimientos)
     messages.success(request, f'¡El excel se generó corretamente!')
 
     return excel_generado 
+
+
+
+def generar_excel_egresos(request):
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        disponible,ingreso,egreso = get_movimientos(usuario)
+    else:
+        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+    filtros = Q(ingreso_bancario=True)
+    movimientos = get_movimientos_usuario(usuario).filter(filtros)
     
 
+    context = {'server_url':URL_SERVER,
+        'data_movimientos':movimientos,
+        'ingresos':ingreso,
+        'egresos':egreso,
+        'disponible':disponible,
+        'request': request
+        }
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        #diccionario[clave] = valor
+        elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+        unique_elementos = set(elementos)
+        context['unidades_productivas'] = unique_elementos
+
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+        
+    excel_generado = export_to_excel(movimientos)
+    messages.success(request, f'¡El excel se generó corretamente!')
+
+    return excel_generado 
+
+
+def generar_excel_ingresos_ba(request):
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        disponible,ingreso,egreso = get_movimientos(usuario)
+    else:
+        unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+    filtros = Q(ingreso_bancario=True)
+    movimientos = get_movimientos_usuario(usuario).filter(filtros)
+    
+
+    context = {'server_url':URL_SERVER,
+        'data_movimientos':movimientos,
+        'ingresos':ingreso,
+        'egresos':egreso,
+        'disponible':disponible,
+        'request': request
+        }
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        #diccionario[clave] = valor
+        elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+        unique_elementos = set(elementos)
+        context['unidades_productivas'] = unique_elementos 
+
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        context['data_movimientos'] = movimientos.filter(tipo_ingreso='IN')
+        
+    excel_generado = export_to_excel(movimientos)
+    messages.success(request, f'¡El excel se generó corretamente!')
+
+    return excel_generado 
 
 class Pdf_ingresos (View):
     def get(self, request, *args, **kwargs):

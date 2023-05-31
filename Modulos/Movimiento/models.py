@@ -60,9 +60,9 @@ class Movimiento(models.Model):
         self.save()
 
 
-def export_to_excel(data,to_pdf=False):
+def export_to_excel(queryset,to_pdf=False):
     # Obtener los objetos de Django
-    queryset = Movimiento.objects.all()
+    #queryset = Movimiento.objects.all()
 
     # Crear el libro de trabajo de Excel y la hoja de cálculo
     workbook = Workbook()
