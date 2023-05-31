@@ -99,8 +99,7 @@ def export_to_excel(data,to_pdf=False):
         worksheet.cell(row=row_num, column=10, value=obj.factura)
         worksheet.cell(row=row_num, column=11, value=obj.estado)
         worksheet.cell(row=row_num, column=12, value=obj.accion)
-        worksheet.cell(row=row_num, column=13, value=obj.comprobante_factura)
-        worksheet.cell(row=row_num, column=14, value=obj.ingreso_bancario)
+        worksheet.cell(row=row_num, column=13, value=obj.ingreso_bancario)
     
     if to_pdf:
         workbook.save('archivo_excel.xlsx')
