@@ -81,9 +81,17 @@ def export_to_excel(data,to_pdf=False):
         else:
             unidad_productiva_nombre =  obj.unidad_productiva.nombre
         if obj.tipo_ingreso=='IN':
-            tipo_ingreso = 'Ingreso'
+            if obj.ingreso_bancario:
+                tipo_ingreso = 'Ingreso Bancario'
+            else:
+                tipo_ingreso = 'Ingreso de caja'
+            if obj.accion == 'Reducción de Caja':
+                tipo_ingreso = 'Reducción de Caja'
         elif obj.tipo_ingreso=='OUT':
-            tipo_ingreso = 'Egreso'
+            if obj.ingreso_bancario:
+                tipo_ingreso = 'Egreso Bancario'
+            else:
+                tipo_ingreso = 'Egreso de caja'
         else:
             tipo_ingreso = 'N/A'
 
