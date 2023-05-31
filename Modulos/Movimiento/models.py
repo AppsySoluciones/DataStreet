@@ -93,7 +93,7 @@ def export_to_excel(data,to_pdf=False):
         worksheet.cell(row=row_num, column=4, value=unidad_productiva_nombre)
         worksheet.cell(row=row_num, column=5, value=obj.concepto)
         worksheet.cell(row=row_num, column=6, value=obj.valor)
-        worksheet.cell(row=row_num, column=7, value=obj.sub_centro_costo)
+        worksheet.cell(row=row_num, column=7, value=obj.sub_centro_costo.nombre)
         worksheet.cell(row=row_num, column=8, value=obj.numero_factura)
         worksheet.cell(row=row_num, column=9, value=obj.tipo_documento)
         worksheet.cell(row=row_num, column=10, value=obj.factura)
