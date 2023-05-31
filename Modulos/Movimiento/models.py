@@ -86,6 +86,11 @@ def export_to_excel(data,to_pdf=False):
             tipo_ingreso = 'Egreso'
         else:
             tipo_ingreso = 'N/A'
+
+        if not obj.sub_centro_costo:
+            sub_centro_costo_nombre = 'N/A'
+        else:
+            sub_centro_costo_nombre = obj.sub_centro_costo.nombre
             
         worksheet.cell(row=row_num, column=1, value=obj.fecha_registro.strftime('%d/%m/%Y %H:%M'))
         worksheet.cell(row=row_num, column=2, value=obj.fecha_modificacion.strftime('%d/%m/%Y %H:%M'))
@@ -93,7 +98,7 @@ def export_to_excel(data,to_pdf=False):
         worksheet.cell(row=row_num, column=4, value=unidad_productiva_nombre)
         worksheet.cell(row=row_num, column=5, value=obj.concepto)
         worksheet.cell(row=row_num, column=6, value=obj.valor)
-        worksheet.cell(row=row_num, column=7, value=obj.sub_centro_costo.nombre)
+        worksheet.cell(row=row_num, column=7, value=sub_centro_costo_nombre)
         worksheet.cell(row=row_num, column=8, value=obj.numero_factura)
         worksheet.cell(row=row_num, column=9, value=obj.tipo_documento)
         worksheet.cell(row=row_num, column=10, value=obj.factura)
