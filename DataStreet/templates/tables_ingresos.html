@@ -188,12 +188,11 @@
                                                             {% else %}
                                                                 <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante" disabled>
                                                             {% endif %}
-                                                            {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado' and movimiento.tipo_ingreso == 'OUT' %}
+                                                            {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado' %}
                                                                 <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
                                                                     <input class="btn btn-block btn-warning" style="color: #fff;" value="Auditar">
                                                                 </a>
                                                             {% else %}
-                                                                <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
                                                                     <input class="btn btn-block btn-success" style="color: #fff;" value="Detalle">
                                                                 </a>
                                                             {% endif %}

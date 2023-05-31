@@ -70,7 +70,7 @@ def export_to_excel(data,to_pdf=False):
     worksheet = workbook.active
 
     # Escribir los encabezados de las columnas
-    headers = ['Fecha de Registro', 'Fecha Aprobado', 'Tipo de Ingreso', 'Unidad Productiva', 'Concepto', 'Valor']
+    headers = ['Fecha de Registro', 'Fecha Aprobado', 'Tipo de Ingreso', 'Unidad Productiva', 'Concepto', 'Valor', 'SubCentro Costo', 'Numero de Factura', 'Tipo de Documento', 'Factura', 'Estado', 'Accion', 'Comprobante Factura', 'Ingreso Bancario']
     for col_num, header in enumerate(headers, 1):
         worksheet.cell(row=1, column=col_num, value=header)
 
@@ -92,8 +92,15 @@ def export_to_excel(data,to_pdf=False):
         worksheet.cell(row=row_num, column=3, value=tipo_ingreso)
         worksheet.cell(row=row_num, column=4, value=unidad_productiva_nombre)
         worksheet.cell(row=row_num, column=5, value=obj.concepto)
-        worksheet.cell(row=row_num, column=5, value=obj.concepto)
         worksheet.cell(row=row_num, column=6, value=obj.valor)
+        worksheet.cell(row=row_num, column=7, value=obj.sub_centro_costo)
+        worksheet.cell(row=row_num, column=8, value=obj.numero_factura)
+        worksheet.cell(row=row_num, column=9, value=obj.tipo_documento)
+        worksheet.cell(row=row_num, column=10, value=obj.factura)
+        worksheet.cell(row=row_num, column=11, value=obj.estado)
+        worksheet.cell(row=row_num, column=12, value=obj.accion)
+        worksheet.cell(row=row_num, column=13, value=obj.comprobante_factura)
+        worksheet.cell(row=row_num, column=14, value=obj.ingreso_bancario)
     
     if to_pdf:
         workbook.save('archivo_excel.xlsx')
