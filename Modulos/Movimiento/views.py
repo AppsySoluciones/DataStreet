@@ -64,11 +64,15 @@ def home(request):
     if usuario.groups.filter(name='Auditor').exists():
         movimientos = movimientos.filter(tipo_ingreso='OUT')
 
+    unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
+
     context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
     context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
     context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
     context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
     context['pie_centrocostos'] = centro_costos_uprod(movimientos)
+
+    context['unidades_productivas'] = unidades_productivas
 
     return render(request,"charts.html",context) 
 
@@ -90,8 +94,8 @@ def egresos(request):
     for centro in centro_costos:
         data_centros[centro.nombre] = list(centro.subcentro.all().order_by('nombre').values_list('nombre',flat=True))
         data_centros_id[centro.pk] = list(centro.subcentro.all().order_by('nombre').values_list('id',flat=True))
-    print(data_centros)
-    print(data_centros_id)
+    
+    unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
     context = {
         'server_url':URL_SERVER,
         'centros':data_centros,
@@ -99,7 +103,8 @@ def egresos(request):
         'disponible':disponible,
         'egresos':egreso,
         'ingresos':ingreso,
-        'request': request
+        'request': request,
+        'unidades_productivas':unidades_productivas,
         }
     
     return render(request,"egreso.html",context)
@@ -117,8 +122,7 @@ def ingresos(request):
     for unidad in unidad_negocio:
         unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('nombre',flat=True))
         unidad_negocio_id[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
-    print(unidad_negocio_nombres)
-    print(unidad_negocio_id)
+
     context = {
         'server_url':URL_SERVER,
         'centros':unidad_negocio_nombres,
@@ -143,8 +147,7 @@ def ingresos_ba(request):
     for unidad in unidad_negocio:
         unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('nombre',flat=True))
         unidad_negocio_id[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
-    print(unidad_negocio_nombres)
-    print(unidad_negocio_id)
+
     context = {
         'server_url':URL_SERVER,
         'centros':unidad_negocio_nombres,
@@ -169,8 +172,7 @@ def egresos_ba(request):
     for centro in centro_costos:
         data_centros[centro.nombre] = list(centro.subcentro.all().order_by('nombre').values_list('nombre',flat=True))
         data_centros_id[centro.pk] = list(centro.subcentro.all().order_by('nombre').values_list('id',flat=True))
-    print(data_centros)
-    print(data_centros_id)
+
     context = {'server_url':URL_SERVER,
         'centros':data_centros,
         'centros_id':data_centros_id,
@@ -234,6 +236,8 @@ def registrarEgreso(request):
     factura_check = request.POST['factura_check']
     concepto = request.POST['concepto']
     costo_valor = request.POST['costo_valor']
+    unidad_productiva = request.POST['unidad_productiva']
+    unidad_productiva = get_object_or_404(UnidadProductiva, pk=unidad_productiva)
     if request.POST['ingreso_bancario'] == 'False':
         ingreso_bancario = False
     else:
@@ -247,7 +251,7 @@ def registrarEgreso(request):
         unidad_productiva = UnidadProductiva.objects.filter(nombre='Administración').first()
     else:
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-
+    
     fecha_registro = datetime.now()
 
     if factura_check == 'true':
@@ -561,7 +565,7 @@ def comprobante(request,pk):
         return redirect(f'{response}')
     except ClientError as e:
         # Manejar cualquier error de generación de URL firmada
-        print(e)
+
         return redirect('/')
 
 def aprobar_mov(request,pk):
@@ -704,6 +708,22 @@ def generar_excel_ingresos_ba(request):
 
     return excel_generado 
 
+def select_u_productiva(request):
+    try:
+        usuario = get_object_or_404(Usuario, pk=request.user.id)
+        unidad_prod = get_object_or_404(UnidadProductiva, pk=request.POST['uprodselectid'])
+        if UnidadProductiva.objects.filter(usuarioRegistro=usuario).exists():
+            usuario.last_productiva = unidad_prod.pk
+        else:
+            usuario.last_productiva = None
+        
+        messages.success(request, f'¡Seleccionaste la unidad productiva {unidad_prod.nombre}!')
+        return redirect('/')
+    except:
+        messages.success(request, f'¡Upss hubo un error!')
+        return redirect('/')
+
+
 class Pdf_ingresos (View):
     def get(self, request, *args, **kwargs):
         try:
@@ -744,7 +764,7 @@ class Pdf_ingresos (View):
             #return render(request,"pdf/pdf_tables_ingresos.html",context)
         except Exception as e:
             messages.error(request, f'¡Error al generar el pdf!')
-            print(e)
+
             return redirect(f'{URL_SERVER}tablaing/')
         
 class Pdf_ingresos_ba (View):
@@ -781,7 +801,7 @@ class Pdf_ingresos_ba (View):
 
         except Exception as e:
             messages.error(request, f'¡Error al generar el pdf!')
-            print(e)
+
             return redirect(f'{URL_SERVER}tablaingba/')
 
 class Pdf_egresos_ba (View):
@@ -807,5 +827,6 @@ class Pdf_egresos_ba (View):
             return excel_generado
         except Exception as e:
             messages.error(request, f'¡Error al generar el pdf!')
-            print(e)
+
             return redirect(f'{URL_SERVER}tablaegreba/')
+        

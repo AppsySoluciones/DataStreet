@@ -116,61 +116,7 @@
                     <span>Tabla de Egresos Bancarios</span></a>
             </li>
             {% endif %}
-            <!-- <li class="nav-item">
-                <div class="card border-left-warning">
-                    <div class="d-flex" style="min-height: 1px; padding: 1rem;" style="overflow: hidden; max-width: 100%">
-                        <div class="row no-gutters align-items-center" style="overflow: hidden; max-width: 100%">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1" style="overflow: hidden; max-width: 100%">
-                                    Ingresos Acumulados
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800" style="overflow: hidden; max-width: 100%">
-                                    <span class="text-primary"
-                                        x-data="{ ingresos: '{{ ingresos }}', textSize: '16px' }"
-                                        x-bind:style="{ 'font-size': textSize }"
-                                        x-text="ingresos"
-                                        x-init="textSize = ingresos.length > 10 ? '14px' : '16px'"
-                                    ></span>
-                                </div>
-                                
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                
-                
-            </li>
-            <li>
-                <div class="card border-left-danger">
-                    <div class="d-flex" style="min-height: 1px; padding: 1rem;">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    Egresos Acumulados
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{egresos}}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </li>
-            
-            <li>
-                <div class="card border-left-success">
-                    <div class="d-flex" style="min-height: 1px; padding: 1rem;">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                    Disponible a la fecha
-                                </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{disponible}}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </li> -->
+
             <hr class="sidebar-divider d-none d-md-block">
             <li class="nav-item">
                 <a class="nav-link" href="{{server_url}}logout/">
@@ -211,6 +157,8 @@
                     
                     
                     <ul class="navbar-nav ml-auto">
+
+                        
                         
                     
                     
@@ -226,11 +174,24 @@
                             
                         </li>
 
+                        <li>
+                            <form action='{{ server_url }}selectuprod/' method="POST"> {% csrf_token %}
+                                <select name = "uprodselectid" id="unidad-productiva-select">
+                                    {% if user.is_authenticated %}
+                                    {% for unidad_productiva in unidades_productivas %}
+                                    <option value="{{ unidad_productiva.pk }}">{{ unidad_productiva.nombre }}</option>
+                                    {% endfor %}
+                                    {% endif %}
+                                </select>
+                                <input type="submit" value="Enviar">
+                            </form>
+                        </li>
+
                         
                         <li>
                             {% if messages %}
                             <div class="alert alert-primary">
-                                <ul class="mb-0">
+                                <ul class="mb-0" style="list-style: none;">
                                     {% for message in messages %}
                                     <li>{{ message }}</li>
                                     {% endfor %}
@@ -268,6 +229,7 @@
 
                     </ul>
 
+                    
                 </nav>
                 <!-- End of Topbar -->
 
@@ -415,6 +377,8 @@
     <script src="{% static 'vendor/datatables/jquery.dataTables.js' %}"></script>
     <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
     <script src="{% static 'js/stack-pad.js' %}"></script>
+    
+    
 
 </body>
 

@@ -26,6 +26,14 @@
                             de Egresos</b>
                     </h1>
 
+                    <label>Selecciona la unidad productiva</label>
+                    <select id="unidad_productiva" name="unidad_productiva" class="col-auto mb-3 " style="width:100%;"
+                        aria-label="Default select example" required autocomplete="off">
+                        {% for unidad_productiva in unidades_productivas %}
+                        <option value="{{unidad_productiva.id}}">{{unidad_productiva.nombre}}</option>
+                        {% endfor %}
+                    </select>
+
                     <label>Selecciona el Centro de Costos</label>
                     <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%;"
                         aria-label="Default select example" required autocomplete="off">

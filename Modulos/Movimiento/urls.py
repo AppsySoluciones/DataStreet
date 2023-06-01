@@ -26,4 +26,5 @@ urlpatterns = [
     path('generarpdfing/',views.Pdf_ingresos.as_view()),
     path('generarpdfingba/',views.Pdf_ingresos_ba.as_view()),
     path('generarpdfegre/',views.Pdf_egresos_ba.as_view()),
+    path('selectuprod/',views.select_u_productiva),
     ]
