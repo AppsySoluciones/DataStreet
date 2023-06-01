@@ -26,14 +26,14 @@
 
                     <label>Selecciona el Centro de Costos</label>
                     <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%;"
-                        aria-label="Default select example" required>
+                        aria-label="Default select example" required autocomplete="off">
                         {% for centro in centros %}
                         <option value="{{centro}}">{{centro}}</option>
                         {% endfor %}
                     </select>
                     <label>Selecciona el Subcentro de Costos</label>
                     <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
-                        aria-label="Default select example">
+                        aria-label="Default select example" autocomplete="off">
                         {% for opcion in subcentros %}
                         <option value="{{ data_centros_id }}">{{ opcion }}</option>
                         {% endfor %}
@@ -41,15 +41,15 @@
 
                     <label>Seleccione la fecha del registro:</label>
                     <input type="date" id="fecha_registro" name="fecha_registro"
-                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" required>
+                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" required autocomplete="off">
                     
                     <label for="inputPassword6" class="col-form-label mb-3">Ingrese el Nombre del Proveedor:</label>
                     <input type="text" id="nom_provedor" name="nom_provedor" class="form-control"
-                        style="width:100%; box-sizing: border-box;" required>
+                        style="width:100%; box-sizing: border-box;" required autocomplete="off">
 
                     <label class="mb-3">Seleccione el tipo de Documento:</label>
                     <select class="form-select form-select-lg mb-3" style="width:100%; box-sizing: border-box;"
-                        aria-label=".form-select-lg example" id="doc_type" name="tipo_doc" required>
+                        aria-label=".form-select-lg example" id="doc_type" name="tipo_doc" required autocomplete="off">
                         <option value="CC">Cédula</option>
                         <option value="NIT">NIT</option>
                         <option value="CE">Cédula de Extrangería</option>
@@ -57,11 +57,11 @@
 
                     <label for="inputPassword6" class="col-form-label">Numero de Documento:</label>
                     <input type="text" id="num_doc" name="num_doc" class="form-control"
-                        aria-labelledby="passwordHelpInline" required>
+                        aria-labelledby="passwordHelpInline" required autocomplete="off">
 
 
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="billCheck" name="billCheck">
+                        <input class="form-check-input" type="checkbox" value="" id="billCheck" name="billCheck" autocomplete="off">
                         <label class="form-check-label" for="flexCheckDefault">
                             <input type="hidden" id="factura_check" name="factura_check" value="false">
                             Tiene factura:
@@ -75,12 +75,12 @@
                             </div>
                             <div class="col-auto">
                                 <input type="text" id="billNumber" name="num_factura" class="form-control"
-                                    aria-labelledby="passwordHelpInline">
+                                    aria-labelledby="passwordHelpInline" autocomplete="off">
                             </div>
                         </div>
 
                         <label>Adjunte el soporte:</label>
-                        <input type="file" id="soporte" name="soporte"><br><br>
+                        <input type="file" id="soporte" name="soporte" autocomplete="off"><br><br>
                         <!-- <input type="submit" value="Subir Archivo"> -->
 
 
@@ -89,18 +89,18 @@
                     <div class="form-floating  mb-3">
                         <label for="inputPassword6" class="col-form-label mb-3">Valor</label>
                         <input type="text" name="costo_valor" id="costo_valor" class="form-control" placeholder="0.00"
-                                style="width:100%; box-sizing: border-box;" onkeyup="formatCurrency(this)" required>
+                                style="width:100%; box-sizing: border-box;" onkeyup="formatCurrency(this)" required autocomplete="off">
                     </div>
 
                     <div class="mb-3">
                         <label for="exampleFormControlTextarea1" class="form-label">Digite el concepto:</label>
                         <textarea class="form-control" id="exampleFormControlTextarea1" name="concepto"
-                            rows="3"></textarea>
+                            rows="3" autocomplete="off"></textarea>
                     </div>
                     <input type="hidden" name="ingreso_bancario" id="ingreso_bancario" value="True">
 
                     <input class="btn btn-block btn-success" style="color: #fff;" type="submit"
-                        value="Registrar Egreso">
+                        value="Registrar Egreso" >
 
 
 

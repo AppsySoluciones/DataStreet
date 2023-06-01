@@ -81,15 +81,15 @@ def ValuesQuerySetToDict(vqs):
 def egresos(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
     unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-    centro_costos = CentroCosto.objects.all()
+    centro_costos = CentroCosto.objects.all().order_by('nombre')
     disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
     data_centros = {
     }
     data_centros_id= {
     }
     for centro in centro_costos:
-        data_centros[centro.nombre] = list(centro.subcentro.all().values_list('nombre',flat=True))
-        data_centros_id[centro.pk] = list(centro.subcentro.all().values_list('id',flat=True))
+        data_centros[centro.nombre] = list(centro.subcentro.all().order_by('nombre').values_list('nombre',flat=True))
+        data_centros_id[centro.pk] = list(centro.subcentro.all().order_by('nombre').values_list('id',flat=True))
     print(data_centros)
     print(data_centros_id)
     context = {
@@ -160,15 +160,15 @@ def ingresos_ba(request):
 def egresos_ba(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
     unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-    centro_costos = CentroCosto.objects.all()
+    centro_costos = CentroCosto.objects.all().order_by('nombre')
     disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
     data_centros = {
     }
     data_centros_id= {
     }
     for centro in centro_costos:
-        data_centros[centro.nombre] = list(centro.subcentro.all().values_list('nombre',flat=True))
-        data_centros_id[centro.pk] = list(centro.subcentro.all().values_list('id',flat=True))
+        data_centros[centro.nombre] = list(centro.subcentro.all().order_by('nombre').values_list('nombre',flat=True))
+        data_centros_id[centro.pk] = list(centro.subcentro.all().order_by('nombre').values_list('id',flat=True))
     print(data_centros)
     print(data_centros_id)
     context = {'server_url':URL_SERVER,
