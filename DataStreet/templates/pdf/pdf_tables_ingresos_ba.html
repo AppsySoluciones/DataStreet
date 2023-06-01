@@ -106,7 +106,12 @@
                                                 <th>Concepto</th>
                                                 <th>Valor</th>
                                                 <th>Estado</th>
+                                                <th>SubCentro de Costo</th>
+                                                <th>Tipo de Documento</th>
+                                                <th>Numero de Factura</th>
+                                                <th>Factura</th>
                                                 <th>Comprobante/Detalle</th>
+                                                <th>Accion</th>
                                                 
                                             </tr>
                                         </thead>
@@ -114,6 +119,7 @@
                                             {% for movimiento in data_movimientos %}
                                                 <tr>
                                                     <td>{{ movimiento.fecha_registro }}</td>
+                                                    <td>{{ movimiento.fecha_modificacion }}</td>
                                                     {% if movimiento.tipo_ingreso == 'OUT' %}
                                                         <td>Egreso</td>
                                                     {% elif movimiento.tipo_ingreso == 'IN' %}
@@ -131,6 +137,11 @@
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
                                                     <td>{{ movimiento.estado }}</td>
+                                                    <td>{{ movimiento.sub_centro_costo.nombre }}</td>
+                                                    <td>{{ movimiento.tipo_documento }}</td>
+                                                    <td>{{ movimiento.numero_factura }}</td>
+                                                    <td>{{ movimiento.factura }}</td>
+                                                    <td>{{ movimiento.accion }}</td>
                                                     <td>
                                                         <b>
                                                             {% if movimiento.comprobante_factura %}
