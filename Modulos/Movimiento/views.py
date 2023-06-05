@@ -239,7 +239,7 @@ def registrarIngreso(request):
         ingreso = ingreso.strip("$")
         ingreso = ingreso.replace(",", "" )
         ingreso = float(ingreso.replace(",", "." ))
-        if float(costo_valor) > ingreso:
+        if (float(costo_valor) > ingreso) and float(costo_valor) > 0:
             messages.error(request, f'¡La reducción de caja {concepto} no se registró correctamente! El valor supera el disponible en caja.')
             return redirect(f'{URL_SERVER}ingreso/')
         costo_valor = -1*float(costo_valor)
@@ -385,7 +385,7 @@ def tablas_ingresos(request,pdf=None):
 
         
         disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
-        if usuario.groups.filter(name='Administrador').exists():
+        if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
             disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
         context['disponible_ba'] = disponible_ba
         context['ingresos_ba'] = ingreso_ba
