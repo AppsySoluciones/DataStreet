@@ -137,7 +137,7 @@
                                                 <th>Fecha de Registro</th>
                                                 <th>Tipo de Movimiento</th>
                                                 <th>Unidad de Negocio</th>
-                                                <th>Admin Unidad Productiva</th>
+                                                <th>Admin/Unidad Productiva</th>
                                                 <th>Concepto</th>
                                                 <th>Valor</th>
                                                 <th>Estado</th>
@@ -149,28 +149,32 @@
                                             {% for movimiento in data_movimientos %}
                                                 <tr>
                                                     <td>{{ movimiento.fecha_registro }}</td>
+                                                    <td>{{movimiento.unidad_negocio}}</td>  
                                                     {% if movimiento.tipo_ingreso == 'OUT' %}
                                                         {% if movimiento.ingreso_bancario == True %}
                                                         <td>Egreso Bancario</td>
+                                                        <td>{{movimiento.unidad_productiva.usuarioRegistro}}</td>
                                                         {% else %}
                                                         <td>Egreso de Caja</td>
+                                                        <td>{{movimiento.unidad_productiva.nombre}}</td>
                                                         {% endif %}
                                                     {% elif movimiento.tipo_ingreso == 'IN' %}
                                                         {% if movimiento.accion == 'Reducción de Caja' %}
                                                             <td>Reducción</td>
+                                                            <td>{{movimiento.unidad_productiva.usuarioRegistro}}</td>
                                                         {% else %}
                                                             {% if movimiento.ingreso_bancario == True %}
                                                             <td>Ingreso Bancario</td>
+                                                            <td>{{movimiento.unidad_productiva.nombre}}</td>
                                                             {% else %}
                                                             <td>Ingreso de Caja</td>
+                                                            <td>{{movimiento.unidad_productiva.usuarioRegistro}}</td>
                                                             {% endif %}
                                                         {% endif %}
                                                     {% else %}
                                                         <td>Desconocido</td>
                                                     {% endif %}
                                                     
-                                                    <td>{{movimiento.unidad_negocio}}</td>    
-                                                    <td>{{movimiento.unidad_productiva.usuarioRegistro}}</td>
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
                                                     <td>{{ movimiento.estado }}</td>
@@ -188,6 +192,7 @@
                                                                     <input class="btn btn-block btn-warning" style="color: #fff;" value="Auditar">
                                                                 </a>
                                                             {% else %}
+                                                            <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
                                                                     <input class="btn btn-block btn-success" style="color: #fff;" value="Detalle">
                                                                 </a>
                                                             {% endif %}
