@@ -44,6 +44,7 @@ class Movimiento(models.Model):
     comprobante_factura = models.FileField(upload_to='comprobantes/',null=True,blank=True)
     ingreso_bancario = models.BooleanField(default=False,null=True,blank=True)
     negociacion = models.CharField(max_length=255,null=True,blank=True)
+    usuario_presupuesto = models.ForeignKey(Usuario, on_delete=models.CASCADE,null=True,blank=True)
 
     tipo_ingreso = models.CharField(
         default=TipoMovimiento.INGRESO,
@@ -158,7 +159,7 @@ def convert_xlsx_to_pdf(xlsx_file, pdf_file):
 
 def get_estado_caja(user):
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    filtros_in = Q(tipo_ingreso='IN')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)
+    filtros_in = Q(tipo_ingreso='IN')&(Q(unidad_productiva__usuarioRegistro=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)
     filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)
     filtros_in_ba = Q(tipo_ingreso='IN')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
     filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
@@ -252,7 +253,8 @@ def get_movimientos_usuario(usuario):
             union_query |= condicion
         return  Movimiento.objects.filter(union_query).all()
     else:
-        return Movimiento.objects.filter(unidad_productiva__usuarioRegistro=usuario).all()
+        filters = Q (unidad_productiva__usuarioRegistro=usuario) | Q(usuario_presupuesto=usuario)
+        return Movimiento.objects.filter(filters).all()
 
 def get_movimientos(usuario,unidad_productiva=None):
     if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
