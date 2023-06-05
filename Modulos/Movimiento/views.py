@@ -496,7 +496,7 @@ def tablas_egresos_ba(request):
 def detalle(request,pk):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
-        disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_movimientos
+        disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
     else:
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
         disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
