@@ -155,52 +155,85 @@ def convert_xlsx_to_pdf(xlsx_file, pdf_file):
 
     
 
-def get_estado_caja(user,unidad_productiva):
+def get_estado_caja(user):
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    filtros_in = Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)
-    filtros_out = Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)&Q(estado='Aprobado')
+    filtros_in = Q(tipo_ingreso='IN')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)
+    filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)
+    filtros_in_ba = Q(tipo_ingreso='IN')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
+    filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
+
     ingresos = Movimiento.objects.filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
     egresos = Movimiento.objects.filter(filtros_out).aggregate(Sum('valor'))['valor__sum']
+    ingresos_ba = Movimiento.objects.filter(filtros_in_ba).aggregate(Sum('valor'))['valor__sum']
+    egresos_ba = Movimiento.objects.filter(filtros_out_ba).aggregate(Sum('valor'))['valor__sum']
+
     if ingresos == None:
         ingresos = 0
     if egresos == None:
         egresos = 0
+
     ingresos_f = locale.currency(ingresos, symbol=True, grouping=True)
     egresos_f = locale.currency(egresos, symbol=True, grouping=True)
     diferencia = ingresos - egresos
     diferencia_f = locale.currency(diferencia, symbol=True, grouping=True)
-    return diferencia_f, ingresos_f, egresos_f
+
+    if ingresos_ba == None:
+        ingresos_ba = 0
+    if egresos_ba == None:
+        egresos_ba = 0
+    ingresos_ba_f = locale.currency(ingresos_ba, symbol=True, grouping=True)
+    egresos_ba_f = locale.currency(egresos_ba, symbol=True, grouping=True)
+    diferencia_ba = ingresos_ba - egresos_ba
+    diferencia_ba_f = locale.currency(diferencia_ba, symbol=True, grouping=True)
+
+    return diferencia_f, ingresos_f, egresos_f, diferencia_ba_f, ingresos_ba_f, egresos_ba_f
 
 def get_estado_caja_admin(user,unidad_productiva=None):
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    if unidad_productiva:
-        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-        unidad_productiva=UnidadProductiva.objects.get(id=user.last_productiva)
-        ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)&Q(ingreso_bancario=False)).aggregate(Sum('valor'))['valor__sum']
-        egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)&Q(estado='Aprobado')).aggregate(Sum('valor'))['valor__sum']
-        
-    elif user.last_productiva:
-        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-        unidad_productiva=UnidadProductiva.objects.get(id=user.last_productiva)
-        ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(unidad_productiva=unidad_productiva)&Q(ingreso_bancario=False)).aggregate(Sum('valor'))['valor__sum']
-        egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(unidad_productiva=unidad_productiva)&Q(estado='Aprobado')).aggregate(Sum('valor'))['valor__sum']
 
-    else:
-        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+    
+    unidades_negocio = UnidadNegocio.objects.filter(admin=user).all()
+    merged_queryset = None
 
-        ingresos = Movimiento.objects.filter(Q(tipo_ingreso='IN')&Q(ingreso_bancario=False)).aggregate(Sum('valor'))['valor__sum']
-        egresos = Movimiento.objects.filter(Q(tipo_ingreso='OUT')&Q(estado='Aprobado')).aggregate(Sum('valor'))['valor__sum']
+    querysets = []
+    unidades_negocio = UnidadNegocio.objects.filter(admin=user).all()
+    # Inicializa un objeto Q vacío
+    union_query = Q()
+    for unidad_negocio in unidades_negocio:
+        condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all()) 
+        union_query |= condicion
+
+
+    filtros_in = Q(tipo_ingreso='IN')&union_query&Q(ingreso_bancario=False)
+    filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=False)
+    filtros_in_ba = Q(tipo_ingreso='IN')&union_query&Q(ingreso_bancario=True)
+    filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=True)
+
+    ingresos = Movimiento.objects.filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
+    egresos = Movimiento.objects.filter(filtros_out).aggregate(Sum('valor'))['valor__sum']
+    ingresos_ba = Movimiento.objects.filter(filtros_in_ba).aggregate(Sum('valor'))['valor__sum']
+    egresos_ba = Movimiento.objects.filter(filtros_out_ba).aggregate(Sum('valor'))['valor__sum']
 
     if ingresos == None:
         ingresos = 0
     if egresos == None:
         egresos = 0
+
     ingresos_f = locale.currency(ingresos, symbol=True, grouping=True)
     egresos_f = locale.currency(egresos, symbol=True, grouping=True)
     diferencia = ingresos - egresos
     diferencia_f = locale.currency(diferencia, symbol=True, grouping=True)
 
-    return diferencia_f, ingresos_f, egresos_f
+    if ingresos_ba == None:
+        ingresos_ba = 0
+    if egresos_ba == None:
+        egresos_ba = 0
+    ingresos_ba_f = locale.currency(ingresos_ba, symbol=True, grouping=True)
+    egresos_ba_f = locale.currency(egresos_ba, symbol=True, grouping=True)
+    diferencia_ba = ingresos_ba - egresos_ba
+    diferencia_ba_f = locale.currency(diferencia_ba, symbol=True, grouping=True)
+
+    return diferencia_f, ingresos_f, egresos_f, diferencia_ba_f, ingresos_ba_f, egresos_ba_f
 
 
 
@@ -219,13 +252,16 @@ def get_movimientos_usuario(usuario):
 
 def get_movimientos(usuario,unidad_productiva=None):
     if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
-        disponible,ingreso,egreso = get_estado_caja_admin(usuario,unidad_productiva)
+        disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja_admin(usuario,unidad_productiva)
+        return  disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba
     elif usuario.groups.filter(name='Comun').exists():
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-        disponible,ingreso,egreso = get_estado_caja(usuario,unidad_productiva)
+        disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
+        return disponible,ingreso,egreso,disponible_ba,ingreso_ba,egreso_ba
     else:
-        disponible,ingreso,egreso = get_estado_caja_admin(usuario)
-    return disponible,ingreso,egreso
+        disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja_admin(usuario)
+        return disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba
+   
 
 
 

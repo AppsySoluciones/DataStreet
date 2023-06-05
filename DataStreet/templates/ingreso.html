@@ -26,18 +26,11 @@
                         <h1 class="text-center text-sm-center lead mb-3"><b>Formulario de Movimiento de Caja</b>
                         </h1>
 
-                        <label>Selecciona la unidad de negocio</label>
-                        <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%;"
+                        <label>Selecciona el usuario común de la unidad productiva</label>
+                        <select id="usuario_comun" name="usuario_comun" class="col-auto mb-3" style="width:100%;"
                             aria-label="Default select example" autocomplete="off" required>
-                            {% for centro in centros %}
-                            <option value="{{centro}}">{{centro}}</option>
-                            {% endfor %}
-                        </select>
-                        <label>Selecciona la unidad productiva</label>
-                        <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
-                            aria-label="Default select example" autocomplete="off" required>
-                            {% for opcion in subcentros %}
-                            <option value="{{ opcion }}">{{ opcion }}</option>
+                            {% for centro in usuarios_comun %}
+                            <option value="{{centro.pk}}">{{centro.nombre}}</option>
                             {% endfor %}
                         </select>
 

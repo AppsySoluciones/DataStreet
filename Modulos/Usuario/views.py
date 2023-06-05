@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.views.generic import FormView
 from django.shortcuts import render,redirect
 from django.conf import settings
+from django.core.mail import send_mail
 URL_SERVER = settings.URL_SERVER
 
 class LoginView(FormView):
@@ -25,3 +26,12 @@ def logout(request):
     if 'username' in request.session:
         del request.session['username']
     return redirect(f'{URL_SERVER}login')
+
+
+def send_correoe(request):
+        # Enviar notificación por correo electrónico
+        subject = 'Notificación'
+        from_email = 'crecentosuperadm@gmail.com'
+        recipient_list = ['eamezquita97@gmail.com']
+        correo = send_mail(subject, 'Hola el mensaje a llegado!', from_email, recipient_list)
+        return HttpResponse("return this string")

@@ -4,6 +4,9 @@
 
 {% block body %}
 {%load static%}
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Importa jQuery -->
+</head>
 
 <div class="container text-left">
 
@@ -33,6 +36,8 @@
                         <option value="{{unidad_productiva.id}}">{{unidad_productiva.nombre}}</option>
                         {% endfor %}
                     </select>
+
+                    <div id="datoss"></div>  <!-- Aquí se mostrarán los datos recibidos -->
 
                     <label>Selecciona el Centro de Costos</label>
                     <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%;"
@@ -216,6 +221,73 @@
         let value = input.value.replace(/[^0-9.]/g, '');
         input.value = parseFloat(value);
     }
+</script>
+
+<script>
+    $(document).ready(function() {
+        $.ajax({
+                url: '{{ server_url }}dispo_caja_egresos/',  // Reemplaza 'URL_DE_LA_API' con la URL real de la API que deseas llamar
+                method: 'GET',
+                data: {
+                    opcion: opcionSeleccionada  // Envía la opción seleccionada como parámetro en la solicitud GET
+                },
+                success: function(response) {
+                    // Datos de caja
+                    $('#egresos_caja').html(response.Egresos_caja);
+                    $('#disponible_caja').html(response.Disponible_caja);
+                    $('#ingresos_caja').html(response.Ingresos_caja);
+                    //Datos bancarios
+                    $('#egresos_bancarios').html(response.Egresos_bancarios);
+                    $('#disponible_bancarios').html(response.Ingresos_bancarios);
+                    $('#ingresos_bancarios').html(response.Saldo_bancario);
+                },
+                error: function() {
+                    // Maneja el error de alguna manera según tus necesidades
+                    $('#egresos_caja').html('No se pudieron obtener los datos.');
+                    $('#disponible_caja').html('No se pudieron obtener los datos.');
+                    $('#ingresos_caja').html('No se pudieron obtener los datos.');
+                    $('#egresos_bancarios').html('No se pudieron obtener los datos.');
+                    $('#disponible_bancarios').html('No se pudieron obtener los datos.');
+                    $('#ingresos_bancarios').html(response.Saldo_bancario);
+                }
+            });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#unidad_productiva').on('change', function() {
+            var opcionSeleccionada = $(this).val();  // Obtiene la opción seleccionada
+
+            // Realiza la solicitud AJAX
+            $.ajax({
+                url: '{{ server_url }}dispo_caja_egresos/',  // Reemplaza 'URL_DE_LA_API' con la URL real de la API que deseas llamar
+                method: 'GET',
+                data: {
+                    opcion: opcionSeleccionada  // Envía la opción seleccionada como parámetro en la solicitud GET
+                },
+                success: function(response) {
+                    // Datos de caja
+                    $('#egresos_caja').html(response.Egresos_caja);
+                    $('#disponible_caja').html(response.Disponible_caja);
+                    $('#ingresos_caja').html(response.Ingresos_caja);
+                    //Datos bancarios
+                    $('#egresos_bancarios').html(response.Egresos_bancarios);
+                    $('#ingresos_bancarios').html(response.Ingresos_bancarios);
+                    $('#disponible_bancarios').html(response.Saldo_bancario);
+                },
+                error: function() {
+                    // Maneja el error de alguna manera según tus necesidades
+                    $('#egresos_caja').html('No se pudieron obtener los datos.');
+                    $('#disponible_caja').html('No se pudieron obtener los datos.');
+                    $('#ingresos_caja').html('No se pudieron obtener los datos.');
+                    $('#egresos_bancarios').html('No se pudieron obtener los datos.');
+                    $('#disponible_bancarios').html('No se pudieron obtener los datos.');
+                    $('#ingresos_bancarios').html(response.Saldo_bancario);
+                }
+            });
+        });
+    });
 </script>
 
 {% endblock %}

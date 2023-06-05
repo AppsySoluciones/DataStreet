@@ -26,6 +26,34 @@
     <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
     <!-- Agrega el siguiente código en la sección head de tu página HTML -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.js" defer></script>
+
+    <title>Mi Página</title>
+    <style>
+        /* Estilos del menú */
+        .menu {
+            display: block; /* Muestra el menú por defecto */
+        }
+
+        /* Estilos del botón de toogle */
+        .toggle-button {
+            display: none; /* Oculta el botón por defecto */
+        }
+
+        /* Estilos del menú cuando se muestra en dispositivos móviles */
+        @media (max-width: 767px) {
+            .menu {
+                display: none; /* Oculta el menú en dispositivos móviles */
+            }
+
+            .toggle-button {
+                display: inline-block; /* Muestra el botón en dispositivos móviles */
+            }
+
+            .menu-toggle:checked ~ .menu {
+                display: block; /* Muestra el menú cuando el botón de toogle está seleccionado */
+            }
+        }
+    </style>
                 
 
 </head>
@@ -100,7 +128,11 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{server_url}}tablaing/">
                     <i class="fas fa-table"></i>
+                    {% if user.is_authenticated and user|has_group:"Comun" %}
+                    <span>Tabla de Movimientos</span></a>
+                    {% else %}
                     <span>Tabla de Movimientos de Caja</span></a>
+                    {% endif %}
             </li>
 
             {% if user.is_authenticated and user|has_group:"Administrador" %}
@@ -174,18 +206,7 @@
                             
                         </li>
 
-                        <li>
-                            <form action='{{ server_url }}selectuprod/' method="POST"> {% csrf_token %}
-                                <select name = "uprodselectid" id="unidad-productiva-select">
-                                    {% if user.is_authenticated %}
-                                    {% for unidad_productiva in unidades_productivas %}
-                                    <option value="{{ unidad_productiva.pk }}">{{ unidad_productiva.nombre }}</option>
-                                    {% endfor %}
-                                    {% endif %}
-                                </select>
-                                <input type="submit" value="Enviar">
-                            </form>
-                        </li>
+                        
 
                         
                         <li>
@@ -234,12 +255,16 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-                <div class="container-fluid" style="background-color: #f8f8fb;">
 
+                <div class="container-fluid" style="background-color: #f8f8fb;">
+                    
+                    <input type="checkbox" class="menu-toggle" id="menu-toggle">
+                    <label for="menu-toggle" class="toggle-button">&#9776;</label>
+                    <ui class="menu">
                     <div class="row ">
                         <div class="col-xl-12">
                             <div class="row">
-                                <div class="col-sm-4">
+                                <div class="col-sm-2">
                                     <div class="card shadow border-left-warning border-bottom-warning">
                                         <div class="card-body">
                                             <div class="d-flex align-items-center mb-3">
@@ -248,16 +273,16 @@
                                                         <i class="bx bx-copy-alt"></i>
                                                     </span>
                                                 </div>
-                                                <h5 class="font-size-14 mb-0">Ingresos Acumulados</h5>
+                                                <h5 class="font-size-14 mb-0">Ingresos de Caja Acumulados</h5>
                                             </div>
                                             <div class="text-muted mt-4">
-                                                <h4>{{ ingresos }} <i class="mdi mdi-chevron-up ms-1 text-success"></i></h4>
+                                                <h4 id="ingresos_caja">{{ ingresos }} <i class="mdi mdi-chevron-up ms-1 text-success"></i></h4>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="col-sm-4">
+                                <div class="col-sm-2">
                                     <div class="card shadow border-left-danger border-bottom-danger">
                                         <div class="card-body">
                                             <div class="d-flex align-items-center mb-3">
@@ -266,17 +291,17 @@
                                                         <i class="bx bx-archive-in"></i>
                                                     </span>
                                                 </div>
-                                                <h5 class="font-size-14 mb-0">Egresos Acumulados</h5>
+                                                <h5 class="font-size-14 mb-0">Egresos de Caja Acumulados</h5>
                                             </div>
                                             <div class="text-muted mt-4">
-                                                <h4>{{egresos}}<i class="mdi mdi-chevron-up ms-1 text-success"></i></h4>
+                                                <h4 id="egresos_caja">{{egresos}}<i class="mdi mdi-chevron-up ms-1 text-success"></i></h4>
                                                 
                                             </div>
                                         </div>
                                     </div>
                                 </div>
     
-                                <div class="col-sm-4">
+                                <div class="col-sm-2">
                                     <div class="card shadow border-left-success border-bottom-success">
                                         <div class="card-body">
                                             <div class="d-flex align-items-center mb-3">
@@ -285,10 +310,65 @@
                                                         <i class="bx bx-purchase-tag-alt"></i>
                                                     </span>
                                                 </div>
-                                                <h5 class="font-size-14 mb-0">Disponible a la fecha</h5>
+                                                <h5 class="font-size-14 mb-0">Saldo de Caja Disponible</h5>
                                             </div>
                                             <div class="text-muted mt-4">
-                                                <h4>{{disponible}}<i class="mdi mdi-chevron-up ms-1 text-success"></i></h4>
+                                                <h4 id="disponible_caja">{{disponible}}<i class="mdi mdi-chevron-up ms-1 text-success"></i></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-2">
+                                    <div class="card shadow border-left-warning border-bottom-warning">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="avatar-xs me-3">
+                                                    <span class="avatar-title rounded-circle bg-primary bg-soft text-primary font-size-18">
+                                                        <i class="bx bx-copy-alt"></i>
+                                                    </span>
+                                                </div>
+                                                <h5 class="font-size-14 mb-0">Ingresos Bancarios Acumulados</h5>
+                                            </div>
+                                            <div class="text-muted mt-4">
+                                                <h4 id="ingresos_bancarios" >{{ ingresos_ba }} <i class="mdi mdi-chevron-up ms-1 text-success"></i></h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-2">
+                                    <div class="card shadow border-left-danger border-bottom-danger">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="avatar-xs me-3">
+                                                    <span class="avatar-title rounded-circle bg-primary bg-soft text-primary font-size-18">
+                                                        <i class="bx bx-archive-in"></i>
+                                                    </span>
+                                                </div>
+                                                <h5 class="font-size-14 mb-0">Egresos Bancarios Acumulados</h5>
+                                            </div>
+                                            <div class="text-muted mt-4">
+                                                <h4 id="egresos_bancarios">{{egresos_ba}}<i class="mdi mdi-chevron-up ms-1 text-success"></i></h4>
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <div class="col-sm-2">
+                                    <div class="card shadow border-left-success border-bottom-success">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="avatar-xs me-3">
+                                                    <span class="avatar-title rounded-circle bg-primary bg-soft text-primary font-size-18">
+                                                        <i class="bx bx-purchase-tag-alt"></i>
+                                                    </span>
+                                                </div>
+                                                <h5 class="font-size-14 mb-0">Saldo Bancario Disponible</h5>
+                                            </div>
+                                            <div class="text-muted mt-4">
+                                                <h4 id="disponible_bancarios">{{disponible_ba}}<i class="mdi mdi-chevron-up ms-1 text-success"></i></h4>
                                             </div>
                                         </div>
                                     </div>
@@ -297,6 +377,7 @@
                             <!-- end row -->
                         </div>
                     </div>
+                    </ui>
                     <hr class="sidebar-divider">
                     <div class="row">
 
