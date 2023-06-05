@@ -239,7 +239,7 @@ def registrarIngreso(request):
         ingreso = ingreso.strip("$")
         ingreso = ingreso.replace(",", "" )
         ingreso = float(ingreso.replace(",", "." ))
-        if (float(costo_valor) > ingreso) and float(costo_valor) > 0:
+        if float(costo_valor) > ingreso:
             messages.error(request, f'¡La reducción de caja {concepto} no se registró correctamente! El valor supera el disponible en caja.')
             return redirect(f'{URL_SERVER}ingreso/')
         costo_valor = -1*float(costo_valor)
@@ -273,6 +273,8 @@ def registrarIngreso(request):
     else:
         usuario_presupuesto = request.POST['usuario_comun']
         usuario_presupuesto = get_object_or_404(Usuario, pk=usuario_presupuesto)
+        if request.POST['accion'] == 'Reducción de Caja':
+            usuario_presupuesto.presupuesto = usuario_presupuesto.presupuesto - float(costo_valor)
         ingreso = Movimiento.objects.create(
             fecha_registro = datetime.now(),
             accion=accion,
