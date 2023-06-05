@@ -39,6 +39,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     cedula = models.CharField(max_length=20,null=True,blank=True)
     apellido = models.CharField(max_length=50,null=True,blank=True)
     last_productiva = models.IntegerField(null=True,blank=True)
+    presupuesto = models.FloatField(null=True,blank=True,default=0)
+
 
     is_staff = models.BooleanField(default=False)
     objects = UserManager()
