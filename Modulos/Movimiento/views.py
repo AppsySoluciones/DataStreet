@@ -263,7 +263,7 @@ def registrarIngreso(request):
             accion=accion,
             valor=costo_valor,
             concepto=concepto,
-            estado='Aprobado',
+            estado='En Proceso',
             ingreso_bancario=ingreso_bancario,
             tipo_ingreso='IN',
         )
@@ -283,7 +283,7 @@ def registrarIngreso(request):
             accion=accion,
             valor=costo_valor,
             concepto=concepto,
-            estado='Aprobado',
+            estado='En Proceso',
             ingreso_bancario=ingreso_bancario,
             tipo_ingreso='IN',
             usuario_presupuesto=usuario_presupuesto,
