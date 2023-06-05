@@ -271,6 +271,8 @@ def registrarIngreso(request):
         messages.success(request, f'¡El Ingreso Bancario {concepto} se registró correctamente!')
         return redirect(f'{URL_SERVER}ingreso_ba/')
     else:
+        usuario_presupuesto = request.POST['usuario_comun']
+        usuario_presupuesto = get_object_or_404(Usuario, pk=usuario_presupuesto)
         ingreso = Movimiento.objects.create(
             fecha_registro = datetime.now(),
             accion=accion,
@@ -279,6 +281,8 @@ def registrarIngreso(request):
             estado='Aprobado',
             ingreso_bancario=ingreso_bancario,
             tipo_ingreso='IN',
+            usuario_presupuesto=usuario_presupuesto,
+
         )
         ingreso.save()
         usuario_comun = get_object_or_404(Usuario, pk=request.POST['usuario_comun'])

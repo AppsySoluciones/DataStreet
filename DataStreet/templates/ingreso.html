@@ -30,7 +30,7 @@
                         <select id="usuario_comun" name="usuario_comun" class="col-auto mb-3" style="width:100%;"
                             aria-label="Default select example" autocomplete="off" required>
                             {% for centro in usuarios_comun %}
-                            <option value="{{centro.pk}}">{{centro.nombre}}</option>
+                            <option value="{{centro.pk}}">{{centro.nombre}} {{centro.apellido}}</option>
                             {% endfor %}
                         </select>
 
