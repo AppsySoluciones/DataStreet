@@ -397,10 +397,10 @@ def tablas_ingresos(request,pdf=None):
         # if usuario.groups.filter(name='Auditor').exists():
             
         #context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
-        for movimiento in movimientos:
-            unidad_productiva = movimiento.unidad_productiva
-            unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
-            movimiento.unidad_negocio = unidad_negocio.nombre
+        # for movimiento in movimientos:
+        #     unidad_productiva = movimiento.unidad_productiva
+        #     unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
+        #     movimiento.unidad_negocio = unidad_negocio.nombre
 
         return render(request,"tables_ingresos.html",context)
 
