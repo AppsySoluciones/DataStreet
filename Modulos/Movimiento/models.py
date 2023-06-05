@@ -244,7 +244,7 @@ def get_estado_caja_admin(user,unidad_productiva=None):
 
 
 def get_movimientos_usuario(usuario):
-    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+    if usuario.groups.filter(name__in=['Administrador']).exists():
         querysets = []
         unidades_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
         # Inicializa un objeto Q vacío
@@ -255,6 +255,17 @@ def get_movimientos_usuario(usuario):
         #union_query |= Q(usuario_presupuesto=usuario)
         union_query |= Q(usuario_admin_ingreso=usuario)
         return  Movimiento.objects.filter(union_query).all()
+    elif usuario.groups.filter(name__in=['Auditor']).exists():
+        unidades_negocio = UnidadNegocio.objects.all()
+        # Inicializa un objeto Q vacío
+        union_query = Q()
+        for unidad_negocio in unidades_negocio:
+            condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all()) 
+            union_query |= condicion
+        #union_query |= Q(usuario_presupuesto=usuario)
+        union_query |= Q(usuario_admin_ingreso=usuario)
+        return  Movimiento.objects.filter(union_query).all()
+
     else:
         filters = Q (unidad_productiva__usuarioRegistro=usuario) | Q(usuario_presupuesto=usuario)
         return Movimiento.objects.filter(filters).all()
