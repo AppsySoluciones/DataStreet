@@ -137,11 +137,11 @@
                                                 <th>Fecha de Registro</th>
                                                 <th>Tipo de Movimiento</th>
                                                 <th>Unidad de Negocio</th>
-                                                <th>Unidad Productiva</th>
+                                                <th>Admin Unidad Productiva</th>
                                                 <th>Concepto</th>
                                                 <th>Valor</th>
                                                 <th>Estado</th>
-                                                <th>Comprobante/Detalle</th>
+                                                <th>Comprobante/Detalle/Eliminar</th>
                                                 
                                             </tr>
                                         </thead>
@@ -170,7 +170,7 @@
                                                     {% endif %}
                                                     
                                                     <td>{{movimiento.unidad_negocio}}</td>    
-                                                    <td>{{movimiento.unidad_productiva.nombre}}</td>
+                                                    <td>{{movimiento.unidad_productiva.usuarioRegistro}}</td>
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
                                                     <td>{{ movimiento.estado }}</td>
