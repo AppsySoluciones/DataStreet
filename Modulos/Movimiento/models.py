@@ -252,7 +252,7 @@ def get_movimientos_usuario(usuario):
         for unidad_negocio in unidades_negocio:
             condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all()) 
             union_query |= condicion
-        union_query |= Q(usuario_presupuesto=usuario)
+        #union_query |= Q(usuario_presupuesto=usuario)
         union_query |= Q(usuario_admin_ingreso=usuario)
         return  Movimiento.objects.filter(union_query).all()
     else:
