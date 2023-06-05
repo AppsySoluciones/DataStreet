@@ -43,6 +43,7 @@ class Movimiento(models.Model):
     valor = models.FloatField(default=0)
     comprobante_factura = models.FileField(upload_to='comprobantes/',null=True,blank=True)
     ingreso_bancario = models.BooleanField(default=False,null=True,blank=True)
+    negociacion = models.CharField(max_length=255,null=True,blank=True)
 
     tipo_ingreso = models.CharField(
         default=TipoMovimiento.INGRESO,

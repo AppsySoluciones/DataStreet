@@ -303,8 +303,7 @@ def registrarEgreso(request):
     factura_check = request.POST['factura_check']
     concepto = request.POST['concepto']
     costo_valor = request.POST['costo_valor']
-    unidad_productiva = request.POST['unidad_productiva']
-    unidad_productiva = get_object_or_404(UnidadProductiva, pk=unidad_productiva)
+    
     if request.POST['ingreso_bancario'] == 'False':
         ingreso_bancario = False
     else:
@@ -316,6 +315,9 @@ def registrarEgreso(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     if usuario.groups.filter(name='Administrador').exists():
         unidad_productiva = UnidadProductiva.objects.filter(nombre='Administración').first()
+    else:
+        unidad_productiva = request.POST['unidad_productiva']
+        unidad_productiva = get_object_or_404(UnidadProductiva, pk=unidad_productiva)
     
     fecha_registro = datetime.now()
 

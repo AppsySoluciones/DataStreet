@@ -47,26 +47,10 @@
                                     style="width:100%; box-sizing: border-box;"><b>Fecha de Edición:</b> {{ movimiento.fecha_modificacion }}</label></li>
                             <li class="list-group-item"><label id="doc_type" class="form-select form-select-lg mb-3"
                                 style="width:100%; box-sizing: border-box;"><b>Unidad de Negocio:</b> {{ unidad_negocio }}</label></li>
+                            {% if movimiento.tipo_ingreso == 'OUT' %}
                             <li class="list-group-item">
                                 <label id="doc_type" class="form-select form-select-lg mb-3"
                                 style="width:100%; box-sizing: border-box;"><b>Unidad Productiva:</b> {{ movimiento.unidad_productiva }}</label>
-                            </li>
-                            <li class="list-group-item">
-                                <label id="doc_type" class="form-select form-select-lg mb-3"
-                                    style="width:100%; box-sizing: border-box;"><b>Tipo Documento:</b> {{movimiento.tipo_documento }}
-                                </label>
-                            </li>
-                            
-                            <li class="list-group-item">
-                                <label id="doc_type" class="form-select form-select-lg mb-3"
-                                    style="width:100%; box-sizing: border-box;"><b>Nro Documento: </b>{{movimiento.numero_documento }}
-                                </label>
-                            </li>
-
-                            <li class="list-group-item">
-                                <label id="doc_type" class="form-select form-select-lg mb-3"
-                                    style="width:100%; box-sizing: border-box;"><b>Nombre del Proveedor:</b> {{movimiento.nombre_proveedor }}
-                                </label>
                             </li>
 
                             <li class="list-group-item">
@@ -81,6 +65,24 @@
 
                             <li class="list-group-item">
                                 <label id="doc_type" class="form-select form-select-lg mb-3"
+                                    style="width:100%; box-sizing: border-box;"><b>Nombre del Proveedor:</b> {{movimiento.nombre_proveedor }}
+                                </label>
+                            </li>
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                    style="width:100%; box-sizing: border-box;"><b>Tipo Documento:</b> {{movimiento.tipo_documento }}
+                                </label>
+                            </li>
+                            
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                    style="width:100%; box-sizing: border-box;"><b>Nro Documento: </b>{{movimiento.numero_documento }}
+                                </label>
+                            </li>
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
                                 style="width:100%; box-sizing: border-box;"><b>Número de factura:</b> {{movimiento.numero_factura }}</label>
                             </li>
 
@@ -91,7 +93,52 @@
 
                             <li class="list-group-item">
                                 <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Concepto:</b> {{ movimiento.concepto }}</label>
+                            </li class="list-group-item">
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Valor:</b> {{ valor_f }}</label>
+                            </li class="list-group-item">
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
                                 style="width:100%; box-sizing: border-box;"><b>Estado: </b>{{ movimiento.estado }}</label>
+                            </li class="list-group-item">
+
+                            {% endif %}
+
+                            {% if movimiento.tipo_ingreso == 'IN' and movimiento.ingreso_bancario == True %}
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Unidad Productiva:</b> {{ movimiento.unidad_productiva }}</label>
+                            </li>
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Tipo de Movimiento:</b> {{ movimiento.accion }}</label>
+                            </li>
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                    style="width:100%; box-sizing: border-box;"><b>Tipo Documento:</b> {{movimiento.tipo_documento }}
+                                </label>
+                            </li>
+                            
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                    style="width:100%; box-sizing: border-box;"><b>Nro Documento: </b>{{movimiento.numero_documento }}
+                                </label>
+                            </li>
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                    style="width:100%; box-sizing: border-box;"><b>Detalle de la negociación: </b>{{movimiento.negociacion }}
+                                </label>
+                            </li>
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Valor:</b> {{ valor_f }}</label>
                             </li class="list-group-item">
 
                             <li class="list-group-item">
@@ -101,8 +148,54 @@
 
                             <li class="list-group-item">
                                 <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Estado: </b>{{ movimiento.estado }}</label>
+                            </li class="list-group-item">
+
+
+
+
+                            {% endif %}
+
+                            {% if movimiento.tipo_ingreso == 'IN' and movimiento.ingreso_bancario == False %}
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Usuario Común: </b>{{ movimiento.unidad_productiva.usuarioRegistro }}</label>
+                            </li class="list-group-item">
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Tipo de Movimiento:</b> {{ movimiento.accion }}</label>
+                            </li>
+
+
+                            
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
                                 style="width:100%; box-sizing: border-box;"><b>Valor:</b> {{ valor_f }}</label>
                             </li class="list-group-item">
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Concepto:</b> {{ movimiento.concepto }}</label>
+                            </li class="list-group-item">
+
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Estado: </b>{{ movimiento.estado }}</label>
+                            </li class="list-group-item">
+
+
+
+
+
+
+                            {% endif %}
+                            
+
+                            
+                            
+
 
                         </ul>
                         <button class="btn btn-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
