@@ -132,15 +132,16 @@ def ingresos(request):
     usuarios_comun_id =[]
     for unidad in unidad_negocio:
         for unidad_productiva in unidad.unidades_productivas.all():
-            if unidad_productiva.usuarioRegistro.pk not in usuarios_comun_id:
-                usuarios_comun_id.append(unidad_productiva.usuarioRegistro.pk)
-                usuarios_comun.append(unidad_productiva.usuarioRegistro)
+            if unidad_productiva.usuarioRegistro != None:
+                if unidad_productiva.usuarioRegistro.pk not in usuarios_comun_id:
+                    usuarios_comun_id.append(unidad_productiva.usuarioRegistro.pk)
+                    usuarios_comun.append(unidad_productiva.usuarioRegistro)
 
     context = {
         'server_url':URL_SERVER,
         'usuarios_comun':usuarios_comun,
         'disponible':disponible,
-        'ingresos':ingreso,
+        'ingresos':ingreso, 
         'egresos':egreso,
         'request': request
         }
