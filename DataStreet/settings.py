@@ -191,8 +191,12 @@ URL_SERVER = 'http://50.19.129.198:8080/'
 
 # Configuración de correo electrónico
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST_USER = 'accelerate@grovity.co'
-EMAIL_HOST_PASSWORD = 'A#hj2Q&Hzf@W'
-EMAIL_HOST = 'smtp.acumbamail.com'
+EMAIL_HOST_USER = 'crecentosuperadm@gmail.com'
+EMAIL_HOST_PASSWORD = 'eoarbytsitgtzdaz'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = '587'
+EMAIL_USE_TLS = True
+
+#Config Telegram
+token = "5957775434:AAEkU2H1pt3eiTFGHq5f5A6IKlcIS7gyIrw"
 
