@@ -661,7 +661,7 @@ def aprobar_mov(request,pk):
     
     unidad_prod = movimiento.unidad_productiva
     if unidad_prod.usuarioRegistro is not None:
-        usuario = unidad_prod.usuarioRegistro.first()
+        usuario = unidad_prod.usuarioRegistro
         if movimiento.tipo_ingreso == 'IN':
             usuario.send_email('Ingreso Aprobado ',f'¡El Ingreso {movimiento.concepto} fué marcado como APROBADO!')
             messages.success(request, f'¡El Ingreso {movimiento.concepto} fué marcado como APROBADO!')
