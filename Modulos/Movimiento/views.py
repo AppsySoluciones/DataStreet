@@ -275,6 +275,9 @@ def registrarIngreso(request):
         usuario_presupuesto = get_object_or_404(Usuario, pk=usuario_presupuesto)
         if request.POST['accion'] == 'Reducción de Caja':
             usuario_presupuesto.presupuesto = usuario_presupuesto.presupuesto - float(costo_valor)
+        else:
+            usuario_presupuesto.presupuesto = usuario_presupuesto.presupuesto + float(costo_valor)
+        
         ingreso = Movimiento.objects.create(
             fecha_registro = datetime.now(),
             accion=accion,
@@ -284,6 +287,7 @@ def registrarIngreso(request):
             ingreso_bancario=ingreso_bancario,
             tipo_ingreso='IN',
             usuario_presupuesto=usuario_presupuesto,
+            usuario_admin_ingreso = usuario
 
         )
         ingreso.save()
@@ -941,6 +945,9 @@ def dispo_caja_egresos(request):
         egresos_bancarios = 0
     else:
         egresos_bancarios = egresos_bancarios['valor__sum']
+
+    if egresos_caja['valor__sum'] == None:
+        egresos_caja = 0
     saldo_bancario = ingresos_bancarios - egresos_bancarios
     data = {
         'Egresos_caja':locale.currency(egresos_caja['valor__sum'], symbol=True, grouping=True),

@@ -45,6 +45,7 @@ class Movimiento(models.Model):
     ingreso_bancario = models.BooleanField(default=False,null=True,blank=True)
     negociacion = models.CharField(max_length=255,null=True,blank=True)
     usuario_presupuesto = models.ForeignKey(Usuario, on_delete=models.CASCADE,null=True,blank=True)
+    usuario_admin_ingreso = models.ForeignKey(Usuario, on_delete=models.CASCADE,null=True,blank=True,related_name='usuario_admin_ingreso')
 
     tipo_ingreso = models.CharField(
         default=TipoMovimiento.INGRESO,
