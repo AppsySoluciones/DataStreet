@@ -718,7 +718,7 @@ def generar_excel_ingresos(request):
     for movimiento in movimientos:
         unidad_productiva = movimiento.unidad_productiva
         unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
-        if unidad_negocio.nombre != None:
+        if unidad_negocio != None:
             movimiento.unidad_negocio = unidad_negocio.nombre
         else:
             movimiento.unidad_negocio = 'N/A'
