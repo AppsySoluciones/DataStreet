@@ -63,19 +63,16 @@
 
                         
                         <label>Selecciona el tipo de ingreso</label>
-                        <select id="accion" name="accion" class="col-auto form-select mb-3" style="width:100%;"
-                            aria-label="Default select example" required autocomplete="off" onchange="mostrarSelect()">
-                            <option value="Aporte Socios">Aporte Socios</option>
-                            <option value="Ventas">Ventas</option>
-                            <option value="Rendimientos Financieros">Rendimientos Financieros</option>
+                        <select id="opciones" onchange="mostrarSelect()">
+                            <option value="0">Seleccione una opción</option>
+                            <option value="ventas">Ventas</option>
+                            <option value="otro">Otro</option>
                         </select>
-
+                        
                         <div id="selectVentas" style="display: none;">
                             <label for="tipoVentas">Selecciona el tipo de ventas:</label>
                             <select id="tipoVentas">
-                                <option value="diario">Diario</option>
-                                <option value="mensual">Mensual</option>
-                                <option value="anual">Anual</option>
+                                <!-- Las opciones se cargarán dinámicamente mediante la solicitud AJAX -->
                             </select>
                         </div>
 
@@ -313,16 +310,50 @@
             });
         });
     </script>
+    
     <script>
         function mostrarSelect() {
-            var opcionesSelect = document.getElementById("accion");
+            var opcionesSelect = document.getElementById("centro_costo");
             var selectVentas = document.getElementById("selectVentas");
 
-            if (opcionesSelect.value === "Ventas") {
+            if (opcionesSelect.value === "GANADERIA" ) {
                 selectVentas.style.display = "block";
+                cargarOpcionesTipoVentas();
             } else {
                 selectVentas.style.display = "none";
             }
+            if (opcionesSelect.value === "AGRICULTURA" ) {
+                selectVentas.style.display = "block";
+                cargarOpcionesTipoVentas();
+            }
+        }
+        
+        function cargarOpcionesTipoVentas() {
+            var opcionesSelect = document.getElementById("centro_costo");
+            $.ajax({
+                url: "{{ server_url }}dispocaja/",
+                type: "GET",
+                data: {
+                    opcion: opcionesSelect.value
+                },
+                success: function (data) {
+                    var tipoVentasSelect = document.getElementById("tipoVentas");
+
+                    // Eliminar las opciones existentes
+                    tipoVentasSelect.innerHTML = "";
+
+                    // Agregar las nuevas opciones desde la respuesta del servidor
+                    for (var i = 0; i < data.length; i++) {
+                        var option = document.createElement("option");
+                        option.value = data[i].value;
+                        option.text = data[i].label;
+                        tipoVentasSelect.appendChild(option);
+                    }
+                },
+                error: function () {
+                    console.log("Error al obtener las opciones de ventas");
+                }
+            });
         }
     </script>
 

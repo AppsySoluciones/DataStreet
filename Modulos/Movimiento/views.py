@@ -958,3 +958,26 @@ def dispo_caja_egresos(request):
         'Saldo_bancario':locale.currency(saldo_bancario, symbol=True, grouping=True),
         }
     return JsonResponse(data)
+
+def ventas(request): 
+    unidad_prod = request.GET['opcion']
+    
+    if unidad_prod == 'Agricultura':
+        opciones_ventas = [
+            {'value': 'Agucate', 'label': 'Agucate'},
+            {'value': 'Limon', 'label': 'Limon'},
+            {'value': 'Platano', 'label': 'Platano'},
+            {'value': 'Naranja', 'label': 'Naranja'},
+            {'value': 'Sili', 'label': 'Sili'},
+            {'value': 'Café', 'label': 'Café'},
+            {'value': 'Heno', 'label': 'Heno'},
+        ]
+    elif unidad_prod == 'Ganaderia':
+        opciones_ventas = [
+            {'value': 'Ganado', 'label': 'Ganado'},
+            {'value': 'Leche', 'label': 'Leche'},
+            {'value': 'Embriones', 'label': 'Embriones'},
+            {'value': 'Terneros', 'label': 'Terneros'},
+            {'value': 'Aspiraciones', 'label': 'Aspiraciones'},
+        ]
+    return JsonResponse(opciones_ventas, safe=False)    

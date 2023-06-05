@@ -28,4 +28,5 @@ urlpatterns = [
     path('generarpdfegre/',views.Pdf_egresos_ba.as_view()),
     path('selectuprod/',views.select_u_productiva),
     path('dispo_caja_egresos/',views.dispo_caja_egresos),
+    path('dispocaja/',views.ventas),
     ]
