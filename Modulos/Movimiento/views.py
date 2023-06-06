@@ -221,7 +221,7 @@ def egresos_ba(request):
 def registrarIngreso(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first() 
         
-    accion = request.POST['accion']
+    
     costo_valor = request.POST['costo_valor']
     concepto = request.POST['concepto']
     
@@ -229,10 +229,9 @@ def registrarIngreso(request):
         
     if request.POST['ingreso_bancario'] == 'False':
         ingreso_bancario = False
-    else:
-        ingreso_bancario = True
+        accion = request.POST['accion']
 
-    if request.POST['accion'] == 'Reducción de Caja':
+        if request.POST['accion'] == 'Reducción de Caja':
         _,ingreso,_,_,_,_ = get_movimientos(usuario)
         ingreso = ingreso.strip("$")
         ingreso = ingreso.replace(",", "" )
@@ -241,6 +240,10 @@ def registrarIngreso(request):
             messages.error(request, f'¡La reducción de caja {concepto} no se registró correctamente! El valor supera el disponible en caja.')
             return redirect(f'{URL_SERVER}ingreso/')
         costo_valor = -1*float(costo_valor)
+    else:
+        ingreso_bancario = True
+
+    
     
 
     if request.POST['ingreso_bancario'] == 'False':
