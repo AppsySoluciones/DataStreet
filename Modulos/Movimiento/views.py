@@ -978,7 +978,7 @@ def ventas(request):
     unidad_prod = request.GET['opcion']
     unidad_prod = unidad_prod.upper()
     
-    if unidad_prod == 'AGRICULTURA':
+    if unidad_prod == 'Agricultura':
         opciones_ventas = [
             {'value': 'Agucate', 'label': 'Agucate'},
             {'value': 'Limon', 'label': 'Limon'},
@@ -988,7 +988,7 @@ def ventas(request):
             {'value': 'Café', 'label': 'Café'},
             {'value': 'Heno', 'label': 'Heno'},
         ]
-    elif unidad_prod == 'GANADERIA':
+    elif unidad_prod == 'Ganaderia':
         opciones_ventas = [
             {'value': 'Ganado', 'label': 'Ganado'},
             {'value': 'Leche', 'label': 'Leche'},
