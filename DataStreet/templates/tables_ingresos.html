@@ -191,11 +191,11 @@
                                                             {% endif %}
                                                             {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado' %}
                                                                 <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
-                                                                    <input class="btn btn-block btn-warning" style="color: #fff;" value="Auditar">
+                                                                    <input class="btn btn-block btn-warning mb-1" style="color: #fff;" value="Auditar">
                                                                 </a>
                                                             {% else %}
                                                             <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
-                                                                    <input class="btn btn-block btn-success" style="color: #fff;" value="Detalle">
+                                                                    <input class="btn btn-block btn-success mb-1" mb-1style="color: #fff;" value="Detalle">
                                                                 </a>
                                                             {% endif %}
                                                         </b>

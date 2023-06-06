@@ -29,4 +29,6 @@ urlpatterns = [
     path('selectuprod/',views.select_u_productiva),
     path('dispo_caja_egresos/',views.dispo_caja_egresos),
     path('dispocaja/',views.ventas),
+    path('movimiento/eliminar/<int:pk>/',views.eliminar_mov),
+    path('telegram/webhook', views.telegram_webhook, name='telegram_webhook'),
     ]

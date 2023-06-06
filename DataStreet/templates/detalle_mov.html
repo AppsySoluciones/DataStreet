@@ -249,10 +249,16 @@
                         {% csrf_token %}                      
                     <div class="form-floating  mb-3">
                         
-                        <input class="btn btn-block btn-danger" style="color: #fff;" name="action" type="submit" value="Rechazar">
+                        <input class="btn btn-block btn-warning" style="color: #fff;" name="action" type="submit" value="Rechazar">
                         
                     </div>
                     </form>
+
+                    {% if user.is_authenticated and user|has_group:"Auditor" %}
+                    <a href="{{ server_url }}movimiento/eliminar/{{ movimiento.pk }}">
+                        <input class="btn btn-block btn-danger" style="color: #fff;" value="Eliminar">
+                    </a>
+                    {% endif %}
 
                     
                     

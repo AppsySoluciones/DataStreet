@@ -702,7 +702,7 @@ def rechazar_mov(request,pk):
     messages.success(request, f'¡El Movimiento {movimiento.concepto} fué marcado como RECHAZADO!')
     unidad_prod = movimiento.unidad_productiva
     if unidad_prod.usuarioRegistro is not None:
-        usuario = unidad_prod.usuarioRegistro.first()
+        usuario = unidad_prod.usuarioRegistro
         if movimiento.tipo_ingreso == 'IN':
             usuario.send_email('Ingreso Rechazado ',f'¡El Ingreso {movimiento.concepto} fué marcado como RECHAZADO!')
             messages.success(request, f'¡El Ingreso {movimiento.concepto} fué marcado como RECHAZADO!')
@@ -1000,3 +1000,27 @@ def ventas(request):
             {'value': '', 'label': ''}]
 
     return JsonResponse(opciones_ventas, safe=False)    
+
+def eliminar_mov(request,pk):
+    try:
+        usuario = get_object_or_404(Usuario, pk=request.user.id)
+        if not usuario.groups.filter(name='Auditor').exists():
+            raise Exception('No tiene permisos para realizar esta acción')
+        
+        Movimiento.objects.filter(pk=pk).delete()
+        messages.success(request, f'¡El movimiento se eliminó corretamente!')
+        return redirect(f'{URL_SERVER}tablaing/')
+
+    except Exception as e:
+        messages.error(request, f'¡Error al eliminar el movimiento!')
+        return redirect(f'{URL_SERVER}tablaing/')
+
+def telegram_webhook(request):
+    if request.method == 'POST':
+        data = request.POST
+        chat_id = data.get('message').get('chat').get('id')
+        username = data.get('message').get('from').get('username')
+        
+        usuario, created = Usuario.objects.get_or_create(chat_id=chat_id, defaults={'nombre': username})
+        
+        return HttpResponse('OK')

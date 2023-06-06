@@ -8,6 +8,10 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, Permis
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+import telegram
+from django.conf import settings
+
+#token=settings.TELEGRAM_BOT_TOKEN
 
 
 # Create your models here.
@@ -40,6 +44,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     apellido = models.CharField(max_length=50,null=True,blank=True)
     last_productiva = models.IntegerField(null=True,blank=True)
     presupuesto = models.FloatField(null=True,blank=True,default=0)
+    telegram_chat_id = models.CharField(max_length=100,null=True,blank=True)
 
 
     is_staff = models.BooleanField(default=False)
@@ -73,4 +78,14 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         
         return None
     
+    
+
+    def send_telegram_notification(self,message):
+        token = "5957775434:AAEkU2H1pt3eiTFGHq5f5A6IKlcIS7gyIrw"
+        
+        if self.telegram_chat_id:
+            bot = telegram.Bot(token=token)
+            chat_id = self.telegram_chat_id
+            bot.send_message(chat_id=chat_id, text=message)
+
 
