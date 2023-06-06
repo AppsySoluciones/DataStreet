@@ -220,9 +220,7 @@ def egresos_ba(request):
 #@grupo_requerido('Administrador')
 def registrarIngreso(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first() 
-    
-    
-    
+        
     accion = request.POST['accion']
     costo_valor = request.POST['costo_valor']
     concepto = request.POST['concepto']
@@ -251,6 +249,13 @@ def registrarIngreso(request):
         ingreso_bancario = True
 
     if ingreso_bancario == True:
+        accion = request.POST['opciones']
+        tipo_ventas = request.POST['selectVentas']
+        if tipo_ventas != '':
+            accion = request.POST['opciones']+" "+accion
+        else:
+            accion = request.POST['opciones']
+        
         if usuario.groups.filter(name='Administrador').exists():
             unidad_productiva_id = request.POST['sub_centro_costo']
             unidad_productiva = UnidadProductiva.objects.filter(nombre=unidad_productiva_id).first()
