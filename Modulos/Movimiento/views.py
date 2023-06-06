@@ -976,7 +976,6 @@ def dispo_caja_egresos(request):
 
 def ventas(request): 
     unidad_prod = request.GET['opcion']
-    unidad_prod = unidad_prod.upper()
     
     if unidad_prod == 'Agricultura':
         opciones_ventas = [
