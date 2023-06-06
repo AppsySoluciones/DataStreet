@@ -232,14 +232,14 @@ def registrarIngreso(request):
         accion = request.POST['accion']
 
         if request.POST['accion'] == 'Reducción de Caja':
-        _,ingreso,_,_,_,_ = get_movimientos(usuario)
-        ingreso = ingreso.strip("$")
-        ingreso = ingreso.replace(",", "" )
-        ingreso = float(ingreso.replace(",", "." ))
-        if float(costo_valor) > ingreso:
-            messages.error(request, f'¡La reducción de caja {concepto} no se registró correctamente! El valor supera el disponible en caja.')
-            return redirect(f'{URL_SERVER}ingreso/')
-        costo_valor = -1*float(costo_valor)
+            _,ingreso,_,_,_,_ = get_movimientos(usuario)
+            ingreso = ingreso.strip("$")
+            ingreso = ingreso.replace(",", "" )
+            ingreso = float(ingreso.replace(",", "." ))
+            if float(costo_valor) > ingreso:
+                messages.error(request, f'¡La reducción de caja {concepto} no se registró correctamente! El valor supera el disponible en caja.')
+                return redirect(f'{URL_SERVER}ingreso/')
+            costo_valor = -1*float(costo_valor)
     else:
         ingreso_bancario = True
 
