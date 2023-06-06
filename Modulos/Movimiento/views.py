@@ -980,4 +980,8 @@ def ventas(request):
             {'value': 'Terneros', 'label': 'Terneros'},
             {'value': 'Aspiraciones', 'label': 'Aspiraciones'},
         ]
+    else:
+        opciones_ventas = [
+            {'value': '', 'label': ''}]
+
     return JsonResponse(opciones_ventas, safe=False)    
