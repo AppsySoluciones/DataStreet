@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'Modulos.Movimiento.apps.MovimientoConfig',
     'Modulos.UnidadProductiva.apps.UnidadproductivaConfig',
     'Modulos.Archivo.apps.ArchivoConfig',
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
