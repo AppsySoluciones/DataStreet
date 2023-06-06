@@ -253,7 +253,7 @@ def registrarIngreso(request):
 
     if ingreso_bancario == True:
         accion = request.POST['opciones']
-        tipo_ventas = request.POST['selectVentas']
+        tipo_ventas = request.POST['tipoVentas']
         if accion == 'ventas':
             accion = request.POST['opciones']+" "+tipo_ventas
         else:
