@@ -31,6 +31,7 @@ for i in range(len(df)):
         centro = CentroCosto.objects.create(nombre=ccosto)
         subcentro = SubCentroCosto.objects.create(nombre=subccosto)
         subcentro.save()
+        centro.unegocio.add(unegocio)
         centro.subcentro.add(subcentro)
         centro.save()
     else:
@@ -40,6 +41,7 @@ for i in range(len(df)):
         else:
             subcentro = SubCentroCosto.objects.create(nombre=subccosto)
             centro.subcentro.add(subcentro)
+            centro.unegocio.add(unegocio)
             centro.save()
         
         centro.save()
