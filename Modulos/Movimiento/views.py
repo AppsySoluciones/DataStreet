@@ -962,7 +962,7 @@ def dispo_caja_egresos(request):
 def ventas(request): 
     unidad_prod = request.GET['opcion']
     
-    if unidad_prod == 'Agricultura':
+    if unidad_prod == 'AGRICULTURA':
         opciones_ventas = [
             {'value': 'Agucate', 'label': 'Agucate'},
             {'value': 'Limon', 'label': 'Limon'},
@@ -972,7 +972,7 @@ def ventas(request):
             {'value': 'Café', 'label': 'Café'},
             {'value': 'Heno', 'label': 'Heno'},
         ]
-    elif unidad_prod == 'Ganaderia':
+    elif unidad_prod == 'GANADERIA':
         opciones_ventas = [
             {'value': 'Ganado', 'label': 'Ganado'},
             {'value': 'Leche', 'label': 'Leche'},
