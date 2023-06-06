@@ -19,6 +19,7 @@ for i in range(len(df)):
     unegocio = df.iloc[i]['Unidad de Negocio']
     ccosto = df.iloc[i]['Centro de Costo']
     subccosto = df.iloc[i]['Subcentro de Costo']
+    print(unegocio,ccosto,subccosto)
 
     if UnidadesNegocio.filter(nombre=unegocio).exists():
         unegocio = UnidadesNegocio.filter(nombre=unegocio).first()
@@ -28,12 +29,10 @@ for i in range(len(df)):
     
     if not CentroCosto_lista.filter(nombre=ccosto).exists():
         centro = CentroCosto.objects.create(nombre=ccosto)
-        if not SubCentroCosto_lista.filter(nombre=subccosto).exists():
-            subcentro = SubCentroCosto.objects.create(nombre=subccosto)
-            subcentro.save()
-            centro.subcentro.add(subcentro)
-            centro.unegocio.add(unegocio)
-            centro.save()
+        subcentro = SubCentroCosto.objects.create(nombre=subccosto)
+        subcentro.save()
+        centro.subcentro.add(subcentro)
+        centro.save()
     else:
         centro = CentroCosto_lista.filter(nombre=ccosto).get()
         if centro.subcentro.filter(nombre=subccosto).exists():
@@ -41,7 +40,6 @@ for i in range(len(df)):
         else:
             subcentro = SubCentroCosto.objects.create(nombre=subccosto)
             centro.subcentro.add(subcentro)
-            centro.unegocio.add(unegocio)
             centro.save()
         
         centro.save()
