@@ -63,13 +63,13 @@
 
                         
                         <label>Selecciona el tipo de ingreso</label>
-                        <select id="opciones" onchange="mostrarSelect()">
+                        <select id="opciones" name="opciones" onchange="mostrarSelect()">
                             <option value="Aporte de Socios">Aporte de Socios</option>
                             <option value="ventas">Ventas</option>
                             <option value="otro">Rendimientos Financieros</option>
                         </select>
                         
-                        <div id="selectVentas" style="display: none;">
+                        <div id="selectVentas" name="selectVentas" style="display: none;">
                             <label for="tipoVentas">Selecciona el tipo de ventas:</label>
                             <select id="tipoVentas">
                                 <!-- Las opciones se cargarán dinámicamente mediante la solicitud AJAX -->
