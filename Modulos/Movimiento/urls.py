@@ -31,4 +31,5 @@ urlpatterns = [
     path('dispocaja/',views.ventas),
     path('movimiento/eliminar/<int:pk>/',views.eliminar_mov),
     path('telegram/webhook', views.telegram_webhook, name='telegram_webhook'),
+    path('filter_graphs/', views.filter_graphs, name='filter_graphs'),
     ]

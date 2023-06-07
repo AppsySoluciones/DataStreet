@@ -97,29 +97,59 @@
                     <div class="row" style="display: flex;">
                         <!-- Costos Pie Chart -->
                         <div class="col-xl-4 col-lg-5" style="flex: 1; display: flex; flex-direction: column;">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
+                            <div class="card shadow">
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Centro Costos</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Top Egresos Subcentro de Costos</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                                         </a>
                                                                             </div>
                                 </div>
-                                <!-- Card Body -->
                                 <div class="card-body">
-                                    <div class="chart-pie pt-4 pb-2"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
-                                        <canvas id="costosPieChart" width="276" height="245" style="display: block; width: 276px; height: 245px;" class="chartjs-render-monitor"></canvas>
+                                    <h4 class="card-title mb-4"></h4>
+                    
+                                    <div class="text-center">
+                                        <div class="mb-4">
+                                            <i class="bx bx-map-pin text-primary display-4"></i>
+                                        </div>
+                                        <h3>{% for item in top_3_egresos_centrocostos %}
+                                            {% if forloop.counter == 1 %}
+                                            {{item.suma_valor}}
+                                            {% endif %}
+                                            {% endfor %}</h3>
+                                        <p>
+                                            {% for item in top_3_egresos_centrocostos %}
+                                            {% if forloop.counter == 1 %}
+                                            {{item.sub_centro_costo}}
+                                            {% endif %}
+                                            {% endfor %} </p>
+                                        </div>
+                    
+                                    <div class="table-responsive mt-4">
+                                        <table class="table align-middle table-nowrap">
+                                            <tbody>
+                                                
+                                                {% for uprod in top_3_egresos_centrocostos %}
+                                                <tr>
+                                                    <td style="width: 30%">
+                                                        <p class="mb-0">{{uprod.sub_centro_costo}}</p>
+                                                    </td>
+                                                    <td style="width: 25%">
+                                                        <h5 class="mb-0">{{uprod.sub_centro_costo}}</h5>
+                                                    </td>
+                                                    <td>
+                                                        <div class="progress bg-transparent progress-sm">
+                                                            <div class="progress-bar bg-success rounded" role="progressbar"
+                                                                style="width: {{uprod.with}}%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <!-- <div class="mt-4 text-center small">
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-success"></i> Ingresos (%)
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-danger"></i> Egresos (%)
-                                        </span>
-                                    </div> -->
                                 </div>
                             </div>
                         </div>

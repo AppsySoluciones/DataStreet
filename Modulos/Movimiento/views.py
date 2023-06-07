@@ -76,7 +76,7 @@ def home(request):
     context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
     context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
     context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
-    context['pie_centrocostos'] = centro_costos_uprod(movimientos)
+    context['top_3_egresos_centrocostos'] = centro_costos_uprod(movimientos)
 
     context['unidades_productivas'] = unidades_productivas
 

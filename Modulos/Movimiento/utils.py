@@ -135,11 +135,66 @@ def mayor_egreso_uproductiva(movimientos):
             return [],[]
         
 def centro_costos_uprod(movimientos):
-    resultados = movimientos.values('sub_centro_costo__nombre').annotate(suma_valor=Sum('valor'))
+    filters = Q(tipo_ingreso="OUT")
+    resultados = movimientos.filter(filters).values('sub_centro_costo__nombre').annotate(suma_valor=Sum('valor'))
+    subcentro_costo = movimientos.filter(filters).values('sub_centro_costo')
     lista_resultados = []
     for resultado in resultados:
         sub_centro_costo = resultado['sub_centro_costo__nombre']
         suma_valor = int(resultado['suma_valor'])
         lista_resultados.append({'sub_centro_costo': sub_centro_costo, 'suma_valor': suma_valor})
     
-    return lista_resultados
+    lista_resultados = sorted(lista_resultados, key=lambda x: x['suma_valor'], reverse=True)
+
+
+    width = [94,82,70]
+    i = 0
+
+    if lista_resultados:
+        if len(lista_resultados)>3:
+            lista_resultados = lista_resultados[:3]
+        else:
+            lista_resultados = lista_resultados[:len(lista_resultados)]
+        for suma_unidad_productiva in lista_resultados:
+            suma_unidad_productiva['with'] = width[i]
+            suma_unidad_productiva['suma_valor'] = locale.currency(suma_unidad_productiva['suma_valor'], symbol=True, grouping=True)
+            i +=1
+        return lista_resultados
+    else:
+        return [],[]
+
+def mayor_egreso_uproductivas(movimientos):
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
+        # Obtener las unidades productivas y sus sumas de movimientos
+        unidades_productivas = UnidadProductiva.objects.all()
+        suma_unidades_productivas = []
+
+        for unidad_productiva in unidades_productivas:
+            filter = Q(tipo_ingreso="OUT") & Q(unidad_productiva=unidad_productiva) & Q(estado="Aprobado")
+            suma = movimientos.filter(filter).aggregate(Sum('valor'))['valor__sum']
+            suma_unidades_productivas.append({
+                'unidad_productiva': unidad_productiva.nombre,
+                'suma': suma if suma else 0
+            })
+
+        # Ordenar por la suma en orden descendente
+        suma_unidades_productivas = sorted(suma_unidades_productivas, key=lambda x: x['suma'], reverse=True)
+
+        width = [94,82,70]
+        i = 0
+
+        if suma_unidades_productivas:
+            if len(suma_unidades_productivas)>3:
+                suma_unidades_productivas = suma_unidades_productivas[:3]
+            else:
+                suma_unidades_productivas = suma_unidades_productivas[:len(suma_unidades_productivas)]
+            for suma_unidad_productiva in suma_unidades_productivas:
+                suma_unidad_productiva['with'] = width[i]
+                suma_unidad_productiva['suma'] = locale.currency(suma_unidad_productiva['suma'], symbol=True, grouping=True)
+                i +=1
+            return suma_unidades_productivas
+        else:
+            return [],[]
+        
+
