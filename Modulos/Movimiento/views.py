@@ -343,6 +343,10 @@ def registrarEgreso(request):
     if factura_check == 'true':
         num_factura = request.POST['num_factura']
         comprobante_factura = request.FILES['soporte']
+        if usuario.groups.filter(name='Administrador').exists():
+            usuario_admin_ingreso = usuario
+        else:
+            usuario_admin_ingreso = None
         egreso = Movimiento.objects.create(
         sub_centro_costo=sub_centro_costo,
         fecha_registro=fecha_registro,
@@ -357,10 +361,15 @@ def registrarEgreso(request):
         unidad_productiva=unidad_productiva,
         comprobante_factura=comprobante_factura,
         ingreso_bancario=ingreso_bancario,
+        usuario_admin_ingreso = usuario_admin_ingreso
         )
         egreso.save()
     
     else:
+        if usuario.groups.filter(name='Administrador').exists():
+            usuario_admin_ingreso = usuario
+        else:
+            usuario_admin_ingreso = None
         egreso = Movimiento.objects.create(
             sub_centro_costo=sub_centro_costo,
             fecha_registro=fecha_registro,
@@ -373,6 +382,7 @@ def registrarEgreso(request):
             valor=costo_valor,
             unidad_productiva=unidad_productiva,
             ingreso_bancario=ingreso_bancario,
+            usuario_admin_ingreso = usuario_admin_ingreso
         )
         egreso.save()
 
@@ -1024,3 +1034,10 @@ def telegram_webhook(request):
         usuario, created = Usuario.objects.get_or_create(chat_id=chat_id, defaults={'nombre': username})
         
         return HttpResponse('OK')
+    
+def filter_graphs(request):
+    context={}
+    context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
+    context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
+    context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
+    context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
