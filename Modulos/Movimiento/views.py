@@ -218,8 +218,21 @@ def egresos_ba(request):
         'egresos':egreso,
         'ingresos':ingreso,
         'request': request,
-        'unidades_productivas':query_acumulativo,
+        
         }
+
+    if usuario.groups.filter(name='Administrador').exists():
+        disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
+        union_query = Q()
+        unidades_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
+        query_acumulativo = None
+        for unidad_negocio in unidades_negocio:
+            if query_acumulativo is None:
+                query_acumulativo = unidad_negocio.unidades_productivas.all()
+            else:
+                query_acumulativo = query_acumulativo.union(unidad_negocio.unidades_productivas.all())
+        context['unidades_productivas']=query_acumulativo
+        
     context['disponible_ba'] = disponible_ba
     context['ingresos_ba'] = ingreso_ba
     context['egresos_ba'] = egreso_ba
