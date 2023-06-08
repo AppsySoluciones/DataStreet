@@ -159,8 +159,13 @@
                             {% if movimiento.tipo_ingreso == 'IN' and movimiento.ingreso_bancario == False %}
 
                             <li class="list-group-item">
+                                {% if movimiento.unidad_productiva %}
                                 <label id="doc_type" class="form-select form-select-lg mb-3"
                                 style="width:100%; box-sizing: border-box;"><b>Usuario Común: </b>{{ movimiento.unidad_productiva.usuarioRegistro }}</label>
+                                {% else %}
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Usuario Común: </b>{{ movimiento.unidad_productiva_admin }}</label>
+                                {% endif %}
                             </li class="list-group-item">
 
                             <li class="list-group-item">
@@ -224,7 +229,9 @@
                 </form>
                     {% endif %}
                     
-                    {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado' %}
+                    {% if user.is_authenticated and user|has_group:"Auditor" %}
+
+                    {% if movimiento.estado == 'En Proceso' %}
 
                     <form method="POST" action="{{server_url}}movimiento/addnote/{{movimiento.pk}}/">
                         {% csrf_token %}
@@ -253,6 +260,7 @@
                         
                     </div>
                     </form>
+                    
 
                     {% if user.is_authenticated and user|has_group:"Auditor" %}
                     <a href="{{ server_url }}movimiento/eliminar/{{ movimiento.pk }}">
@@ -261,7 +269,8 @@
                     {% endif %}
 
                     
-                    
+                    {% endif %}
+
                     {% endif %}
 
                 </div>

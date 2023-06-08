@@ -4,6 +4,9 @@
 
 {% block body %}
 {%load static%}
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Importa jQuery -->
+</head>
 
 <div class="container text-left">
     <div class="row">
@@ -24,20 +27,21 @@
                             de Egresos Bancarios</b>
                     </h1>
 
-                    <label>Selecciona el Centro de Costos</label>
-                    <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%;"
+                    <label>Selecciona la unidad productiva</label>
+                    <select id="unidad_productiva" name="unidad_productiva" class="col-auto mb-3" style="width:100%;"
                         aria-label="Default select example" required autocomplete="off">
-                        {% for centro in centros %}
-                        <option value="{{centro}}">{{centro}}</option>
+                        {% for unidad_productiva in unidades_productivas %}
+                        <option value="{{unidad_productiva.id}}">{{unidad_productiva.nombre}}</option>
                         {% endfor %}
                     </select>
+
+                    <label>Selecciona el Centro de Costos</label>
+                    <select id="centro_costo" name="centro_costo" class="col-auto mb-3" style="width:100%;"
+                        aria-label="Default select example" required autocomplete="off"></select>
+
                     <label>Selecciona el Subcentro de Costos</label>
                     <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
-                        aria-label="Default select example" autocomplete="off">
-                        {% for opcion in subcentros %}
-                        <option value="{{ data_centros_id }}">{{ opcion }}</option>
-                        {% endfor %}
-                    </select><br>
+                        aria-label="Default select example" required autocomplete="off"></select>
 
                     <label>Seleccione la fecha del registro:</label>
                     <input type="date" id="fecha_registro" name="fecha_registro"
@@ -115,37 +119,58 @@
 
 <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 <script>
-    var centro_costo = document.getElementById('centro_costo');
-    var sub_centro_costo = document.getElementById('sub_centro_costo');
-    var subcentros = "{{centros}}";
-    subcentros = subcentros.replace(/&#x27;/g, '"');
-    subcentros = subcentros.replace(/""/g, "''");
-    subcentros = subcentros.replace(/None/g, '"none"');
-    subcentros = JSON.parse(subcentros);
-    centro_costo.addEventListener('change', function () {
-        var seleccion = centro_costo.value;
-        sub_centro_costo.innerHTML = '';
-        subcentros[seleccion].forEach(function (data_centros_id, opcion) {
-            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
-            sub_centro_costo.innerHTML += opcion_html;
+    $(document).ready(function() {
+        // Evento de cambio en el select de unidad productiva
+        $('#unidad_productiva').change(function() {
+            var unidadProductivaId = $(this).val();
+            // Realizar una petición AJAX para obtener los centros de costo
+            $.ajax({
+                url: '{{server_url}}get_centro_costos/',
+                data: {
+                    'unidad_productiva_id': unidadProductivaId
+                },
+                dataType: 'json',
+                success: function(data) {
+                    // Limpiar el select de centros de costo
+                    $('#centro_costo').empty();
+                    // Agregar las opciones al select de centros de costo
+                    $.each(data, function(index, centroCosto) {
+                        $('#centro_costo').append($('<option>', {
+                            value: centroCosto.id,
+                            text: centroCosto.nombre
+                        }));
+                    });
+                    // Limpiar el select de subcentros de costo
+                    $('#sub_centro_costo').empty();
+                }
+            });
+        });
+    
+        // Evento de cambio en el select de centro de costo
+        $('#centro_costo').change(function() {
+            var centroCostoId = $(this).val();
+            // Realizar una petición AJAX para obtener los subcentros de costo
+            $.ajax({
+                url: '{{server_url}}get_subcentro_costos/',
+                data: {
+                    'centro_costo_id': centroCostoId
+                },
+                dataType: 'json',
+                success: function(data) {
+                    // Limpiar el select de subcentros de costo
+                    $('#sub_centro_costo').empty();
+                    // Agregar las opciones al select de subcentros de costo
+                    $.each(data, function(index, subCentroCosto) {
+                        $('#sub_centro_costo').append($('<option>', {
+                            value: subCentroCosto.id,
+                            text: subCentroCosto.nombre
+                        }));
+                    });
+                }
+            });
         });
     });
-    // Cargar el primer centro de costo y sus subcentros correspondientes
-    var primerCentroCosto = centro_costo.options[1].value; // Obtener el valor del primer centro de costo (asumiendo que el índice 1 corresponde al primero)
-    cargarSubcentros(primerCentroCosto); // Llamar a la función para cargar los subcentros correspondientes al primer centro de costo
-
-    // Función para cargar los subcentros de costo correspondientes a un centro de costo seleccionado
-    function cargarSubcentros(centroSeleccionado) {
-        sub_centro_costo.innerHTML = ''; // Limpiar las opciones anteriores
-        subcentros[centroSeleccionado].forEach(function (data_centros_id, opcion) {
-            var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
-            sub_centro_costo.innerHTML += opcion_html;
-        });
-    }
-
-    // Disparar el evento de cambio manualmente para cargar las opciones de subcentro de costo correspondientes al primer centro de costo
-    centro_costo.dispatchEvent(new Event('change'));
-</script>
+    </script>
 
 <script>
     var checkbox = document.getElementById('billCheck');

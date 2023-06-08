@@ -5,7 +5,7 @@
 {% block body %}
 {%load static%}
 
-<body>
+<body onload="precargarValores()">
 
     <div class="container text-left">
         <br>
@@ -148,6 +148,22 @@
             let input = document.getElementById('costo_valor');
             let value = input.value.replace(/[^0-9.]/g, '');
             input.value = parseFloat(value);
+        }
+    </script>
+    <script>
+        function precargarValores() {
+            // Precargar valores del movimiento
+            document.getElementById('centro_costo').value = "{{ movimiento.centro_costo }}";
+            document.getElementById('sub_centro_costo').value = "{{ movimiento.sub_centro_costo }}";
+            document.getElementById('fecha_registro').value = "{{ movimiento.fecha_registro }}";
+            document.getElementById('opciones').value = "{{ movimiento.accion }}";
+            document.getElementById('doc_type').value = "{{ movimiento.tipo_documento }}";
+            document.getElementById('num_doc').value = "{{ movimiento.numero_documento }}";
+            document.getElementById('negociacion').value = "{{ movimiento.negociacion }}";
+            document.getElementById('costo_valor').value = "{{ movimiento.valor }}";
+            document.getElementById('concepto').value = "{{ movimiento.concepto }}";
+            // ... Precargar otros valores aquí ...
+            
         }
     </script>
 

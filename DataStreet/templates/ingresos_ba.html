@@ -5,11 +5,13 @@
 {% block body %}
 {%load static%}
 {% load auth_extras %}
+{% load tz %}
+
 
 <head>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Importa jQuery -->
 </head>
-<body>
+<body onload="precargarValores()">
 
     <div class="container text-left">
         <br>
@@ -90,8 +92,8 @@
 
 
                         <label for="inputPassword6" class="col-form-label">Detalle de la negociación:</label>
-                        <textarea class="form-control" placeholder="Ingresa aquí el Detalle de la negociación" id="num_doc"
-                                name="num_doc" required autocomplete="off"></textarea>
+                        <textarea class="form-control" placeholder="Ingresa aquí el Detalle de la negociación" id="negociacion"
+                                name="negociacion" required autocomplete="off"></textarea>
 
                         <div class="form-floating  mb-3">
                             <label for="inputPassword6" class="col-form-label mb-3">Valor</label>
@@ -354,6 +356,22 @@
                     console.log("Error al obtener las opciones de ventas");
                 }
             });
+        }
+    </script>
+    <script>
+        function precargarValores() {
+            // Precargar valores del movimiento
+            //document.getElementById('centro_costo').value = "{{ centros }}";
+            //document.getElementById('sub_centro_costo').value = "10";
+            document.getElementById('fecha_registro').value = "{{ movimiento.fecha_registro|date:'Y-m-d' }}";
+            document.getElementById('opciones').value = "{{ movimiento.accion }}";
+            document.getElementById('doc_type').value = "{{ movimiento.tipo_documento }}";
+            document.getElementById('num_doc').value = "{{ movimiento.numero_documento }}";
+            document.getElementById('negociacion').value = "{{ movimiento.negociacion }}";
+            document.getElementById('costo_valor').value = "{{ movimiento.valor }}";
+            document.getElementById('concepto').value = "{{ movimiento.concepto }}";
+            // ... Precargar otros valores aquí ...
+            
         }
     </script>
 

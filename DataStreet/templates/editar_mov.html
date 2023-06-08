@@ -3,8 +3,9 @@
 {% load static %}
 
 {% block body %}
+{% load auth_extras %}
 
-<body>
+<body onload="precargarValores()">
 
     
         <div class="col-sm-2"></div>
@@ -19,142 +20,109 @@
                                                         border-bottom-right-radius: 30px;
                                                         box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.075);">
 
-                {% if 'IN' == movimiento.tipo_ingreso %}
-                <form action="{{server_url}}movimiento/editar/{{movimiento.pk}}/edit" method="POST"> {% csrf_token %}
-                    <h1 class="text-center text-sm-center lead mb-3"><b>Formulario de Movimiento de Ingresos</b>
-                    </h1>
-
-                    <label>Selecciona Unidad de Negocio</label>
-                    <select id="unidad_negocio" name="unidad_negocio" class="col-auto mb-3 " style="width:100%;"
-                        aria-label="Default select example" required>
-                        <option default value="">{{ unidad_negocio }}</option>
+                {% if 'IN' == movimiento.tipo_ingreso and True == movimiento.ingreso_bancario %}
+                <form action="{{ server_url }}registraringreso/" method="POST" onsubmit="convertToNumber()">
+                    {% csrf_token %}
+                    <h1 class="text-center text-sm-center lead mb-3"><b>Formulario de Movimiento de Ingresos Bancarios</b></h1>
+                
+                    {% if user.is_authenticated and user|has_group:"Administrador" %}
+                    <label for="centro_costo">Selecciona la unidad de negocio</label>
+                    <select id="centro_costo" name="centro_costo" class="col-auto mb-3" style="width: 100%;" required>
                         {% for centro in centros %}
-                        <option value="{{centro}}">{{centro}}</option>
+                        <option value="{{ centro }}">{{ centro }}</option>
                         {% endfor %}
                     </select>
-                    <label>Selecciona Unidad Productiva</label>
-                    <select id="unidad_productiva" name="unidad_productiva" class="col-auto mb-3"
-                        style="width:100%;" aria-label="Default select example" disabled>
-                        <option default value="">{{ movimiento.unidad_productiva }}</option>
-                    </select>
-                    <!-- <label class="mb-3">Seleccione la fecha del registro:</label>
-
-                    <input type="date" id="fecha_registro" name="fecha_registro"
-                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" default="{{movimiento.fecha_registro}}" disabled> -->
-
-                    <label>Selecciona la acción a realizar</label>
-                    <select id="accion" name="accion" class="col-auto form-select mb-3" style="width:100%;"
-                        aria-label="Default select example" required>
-                        <option default value="">{{ movimiento.accion }}</option>
-                        <option value="Ingreso de Caja Inicial">Ingreso de Caja Inicial</option>
-                        <option value="Adición a Caja">Adición a Caja</option>
-                        <option value="Reducción de Caja">Reducción de Caja</option>
-                    </select>
-                    <div class="form-floating  mb-3">
-                        <label for="inputPassword6" class="col-form-label mb-3">Valor</label>
-                        <input type="number" name="costo_valor" id="costo_valor" class="form-control"
-                            placeholder="{{movimiento.valor}}" style="width:100%; box-sizing: border-box;" required>
-                    </div>
-
-
-
-                    <div class="form-floating  mb-3">
-                        <label>Concepto</label>
-                        <textarea class="form-control" placeholder="{{movimiento.concepto}}" id="concepto"
-                            name="concepto" required></textarea>
-                    </div>
-
-
-                    <input class="btn btn-block btn-primary" style="color: #fff;" type="submit"
-                        value="Editar Ingreso">
-
-                </form>
-                {%elif 'OUT' == movimiento.tipo_ingreso %}
-                <form action="{{server_url}}movimiento/editar/{{movimiento.pk}}/edit" method="POST" enctype="multipart/form-data"> {% csrf_token %}
-                    <h1 class="text-center text-sm-center lead mb-3" style="color: black;"><b>Formulario de Movimiento
-                            de Egresos</b>
-                    </h1>
-
-                    <label>Selecciona el Centro de Costos</label>
-                    <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%;"
-                        aria-label="Default select example" required>
-                        {% for centro in centros %}
-                        <option value="{{centro}}">{{centro}}</option>
-                        {% endfor %}
-                    </select>
-                    <label>Selecciona el Subcentro de Costos</label>
-                    <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
-                        aria-label="Default select example "required>
+                
+                    <label for="sub_centro_costo">Selecciona la unidad productiva</label>
+                    <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width: 100%;" required disabled>
                         {% for opcion in subcentros %}
-                        <option value="{{ data_centros_id }}">{{ opcion }}</option>
+                        <option value="{{ opcion }}">{{ opcion }}</option>
                         {% endfor %}
-                    </select><br>
-                    <!-- <label>Seleccione la fecha del registro:</label>
-                    <input type="date" id="fecha_registro" name="fecha_registro"
-                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" required> -->
-
-                    <label for="inputPassword6" class="col-form-label mb-3">Ingrese el Nombre del Proveedor:</label>
-                    <input type="text" id="nom_provedor" name="nom_provedor" class="form-control"
-                        style="width:100%; box-sizing: border-box;" placeholder="{{movimiento.nombre_proveedor}}" value="{{movimiento.nombre_proveedor}}" required>
-
-                    <label class="mb-3">Seleccione el tipo de Documento:</label>
-                    <select class="form-select form-select-lg mb-3" style="width:100%; box-sizing: border-box;"
+                    </select>
+                    {% endif %}
+                
+                    {% if user.is_authenticated and user|has_group:"Comun" %}
+                    <label for="unidad_productiva">Selecciona la unidad productiva</label>
+                    <select id="unidad_productiva" name="unidad_productiva" class="col-auto mb-3" style="width: 100%;" required
+                        disabled>
+                        <option value="{{ movimiento.unidad_productiva.pk }}">{{ movimiento.unidad_productiva.nombre }}</option>
+                    </select>
+                    {% endif %}
+                
+                    <label for="fecha_registro" class="mb-3">Seleccione la fecha del registro:</label>
+                    <input type="date" id="fecha_registro" name="fecha_registro" style="width: 100%; box-sizing: border-box;"
+                        class="input-group mb-3" required>
+                
+                    <label for="opciones">Selecciona el tipo de ingreso</label>
+                    <select id="opciones" name="opciones" onchange="mostrarSelect()">
+                        <option value="Aporte de Socios">Aporte de Socios</option>
+                        <option value="Ventas">Ventas</option>
+                        <option value="Rendimientos Financieros">Rendimientos Financieros</option>
+                    </select>
+                
+                    <div id="selectVentas" name="selectVentas" style="display: none;">
+                        <label for="tipoVentas">Selecciona el tipo de ventas:</label>
+                        <select id="tipoVentas" name="tipoVentas">
+                            <!-- Las opciones se cargarán dinámicamente mediante la solicitud AJAX -->
+                        </select>
+                    </div>
+                
+                    <label for="doc_type" class="mb-3">Seleccione el tipo de Documento:</label>
+                    <select class="form-select form-select-lg mb-3" style="width: 100%; box-sizing: border-box;"
                         aria-label=".form-select-lg example" id="doc_type" name="tipo_doc" required>
-                        <option default value="{{ movimiento.tipo_documento }}">{{ movimiento.tipo_documento }}</option>
                         <option value="CC">Cédula</option>
                         <option value="NIT">NIT</option>
                         <option value="CE">Cédula de Extrangería</option>
                     </select>
-
-                    <label for="inputPassword6" class="col-form-label">Numero de Documento:</label>
-                    <input type="text" id="num_doc" name="num_doc" class="form-control"
-                        aria-labelledby="passwordHelpInline" placeholder="{{movimiento.numero_documento}}" value="{{movimiento.numero_documento}}" required>
-
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="billCheck" name="billCheck">
-                        <label class="form-check-label" for="flexCheckDefault">
-                            <input type="hidden" id="factura_check" name="factura_check" value="false">
-                            Tiene factura:
-                        </label>
+                
+                    <label for="num_doc" class="col-form-label">Numero de Documento:</label>
+                    <input type="text" id="num_doc" name="num_doc" class="form-control" aria-labelledby="passwordHelpInline" required>
+                
+                    <label for="negociacion" class="col-form-label">Detalle de la negociación:</label>
+                    <textarea class="form-control" placeholder="Ingresa aquí el Detalle de la negociación" id="negociacion"
+                        name="negociacion" required></textarea>
+                
+                    <div class="form-floating mb-3">
+                        <label for="costo_valor" class="col-form-label mb-3">Valor</label>
+                        <input type="text" name="costo_valor" id="costo_valor" class="form-control" placeholder="0.00"
+                            style="width: 100%; box-sizing: border-box;" onkeyup="formatCurrency(this)" required>
                     </div>
-
-                    <div id="seccion" style="display: none;">
-                        <div class="row g-3 align-items-center">
-                            <div class="col-auto">
-                                <label for="inputPassword6" class="col-form-label">Digite el número de factura:</label>
-                            </div>
-                            <div class="col-auto">
-                                <input type="text" id="billNumber" name="num_factura" class="form-control"
-                                    aria-labelledby="passwordHelpInline" placeholder="{{movimiento.numero_factura}}" value="{{movimiento.numero_factura}}">
-                            </div>
-                        </div>
-
-                        <label>Adjunte el soporte:</label>
-                        <input type="file" id="soporte" name="soporte"><br><br>
-                        <!-- <input type="submit" value="Subir Archivo"> -->
-
-
+                
+                    <label for="soporte">Adjunte el soporte:</label>
+                    <input type="file" id="soporte" name="soporte"><br><br>
+                
+                    <div class="form-floating mb-3">
+                        <label for="concepto">Concepto</label>
+                        <textarea class="form-control" placeholder="Ingresa aquí el concepto" id="concepto" name="concepto"
+                            required value = "{{ movimiento.concepto }}"></textarea>
                     </div>
-
-                    <div class="form-floating  mb-3">
-                        <label for="inputPassword6" class="col-form-label mb-3">Valor</label>
-                        <input type="text" name="costo_valor" id="costo_valor" class="form-control" style="width:100%; box-sizing: border-box;" value="{{ movimiento.valor }}" required>
-
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="exampleFormControlTextarea1" class="form-label">Digite el concepto:</label>
-                        <textarea class="form-control" id="exampleFormControlTextarea1" name="concepto"
-                            rows="3" placeholder="{{movimiento.concepto}}">{{movimiento.concepto}}</textarea>
-                    </div>
-
-                    <input class="btn btn-block btn-primary" style="color: #fff;" type="submit"
-                        value="Editar Egreso">
-
-
-
+                
+                    <input type="hidden" name="ingreso_bancario" id="ingreso_bancario" value="True">
+                
+                    <script>
+                        function precargarValores() {
+                            // Precargar valores del movimiento
+                            document.getElementById('centro_costo').value = "{{ movimiento.centro_costo }}";
+                            document.getElementById('sub_centro_costo').value = "{{ movimiento.sub_centro_costo }}";
+                            document.getElementById('fecha_registro').value = "{{ movimiento.fecha_registro }}";
+                            document.getElementById('opciones').value = "{{ movimiento.opciones }}";
+                            document.getElementById('doc_type').value = "{{ movimiento.tipo_doc }}";
+                            document.getElementById('num_doc').value = "{{ movimiento.num_doc }}";
+                            document.getElementById('negociacion').value = "{{ movimiento.negociacion }}";
+                            document.getElementById('costo_valor').value = "{{ movimiento.costo_valor }}";
+                            document.getElementById('concepto').value = "{{ movimiento.concepto }}";
+                            // ... Precargar otros valores aquí ...
+                            
+                        }
+                    </script>
+                    <input class="btn btn-block btn-success" style="color: #fff;" type="submit" value="Registrar ingreso">
+                    
                 </form>
+
+                {% elif 'IN' == movimiento.tipo_ingreso and False == movimiento.ingreso_bancario %}
+                
+                {% elif 'OUT' == movimiento.tipo_ingreso %}
+                
 
 
                 {% endif %}
@@ -199,9 +167,6 @@
     crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"
     integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE"
-    crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"
-    integrity="sha384-Y4oOpwW3duJdCWv5ly8SCFYWqFDsfob/3GkgExXKV4idmbt98QcxXYs9UoXAB7BZ"
     crossorigin="anonymous"></script>
 <script>
     var checkbox = document.getElementById('billCheck');

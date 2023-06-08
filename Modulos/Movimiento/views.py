@@ -190,11 +190,19 @@ def ingresos_ba(request):
 
 def egresos_ba(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
-    unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+    
     centro_costos = CentroCosto.objects.all().order_by('nombre')
     disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
     if usuario.groups.filter(name='Administrador').exists():
         disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
+        union_query = Q()
+        unidades_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
+        query_acumulativo = None
+        for unidad_negocio in unidades_negocio:
+            if query_acumulativo is None:
+                query_acumulativo = unidad_negocio.unidades_productivas.all()
+            else:
+                query_acumulativo = query_acumulativo.union(unidad_negocio.unidades_productivas.all())
     data_centros = {
     }
     data_centros_id= {
@@ -209,7 +217,8 @@ def egresos_ba(request):
         'disponible':disponible,
         'egresos':egreso,
         'ingresos':ingreso,
-        'request': request
+        'request': request,
+        'unidades_productivas':query_acumulativo,
         }
     context['disponible_ba'] = disponible_ba
     context['ingresos_ba'] = ingreso_ba
@@ -224,6 +233,8 @@ def registrarIngreso(request):
     
     costo_valor = request.POST['costo_valor']
     concepto = request.POST['concepto']
+    
+
     
     
         
@@ -253,6 +264,9 @@ def registrarIngreso(request):
 
     if ingreso_bancario == True:
         accion = request.POST['opciones']
+        numero_documento = request.POST['num_doc']
+        tipo_documento = request.POST['tipo_doc']
+        detalle = request.POST['negociacion']
         
         if accion == 'ventas':
             tipo_ventas = request.POST['tipoVentas']
@@ -266,6 +280,7 @@ def registrarIngreso(request):
         else:
             unidad_productiva_id = request.POST['unidad_productiva']
             unidad_productiva = get_object_or_404(UnidadProductiva, pk=unidad_productiva_id)  
+        
         ingreso = Movimiento.objects.create(
             fecha_registro = datetime.now(),
             unidad_productiva=unidad_productiva,
@@ -275,6 +290,10 @@ def registrarIngreso(request):
             estado='En Proceso',
             ingreso_bancario=ingreso_bancario,
             tipo_ingreso='IN',
+            tipo_documento=tipo_documento,
+            numero_documento=numero_documento,
+            negociacion=detalle
+
         )
         ingreso.save()
         messages.success(request, f'¡El Ingreso Bancario {concepto} se registró correctamente!')
@@ -434,10 +453,13 @@ def tablas_ingresos(request,pdf=None):
         # if usuario.groups.filter(name='Auditor').exists():
             
         #context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
-        # for movimiento in movimientos:
-        #     unidad_productiva = movimiento.unidad_productiva
-        #     unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
-        #     movimiento.unidad_negocio = unidad_negocio.nombre
+        for movimiento in movimientos:
+            unidad_productiva = movimiento.unidad_productiva
+            if movimiento.unidad_productiva == None:
+                movimiento.unidad_productiva_admin = movimiento.usuario_presupuesto.nombre + " " +movimiento.usuario_presupuesto.apellido
+            unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
+            movimiento.unidad_negocio = unidad_negocio.nombre
+        context['data_movimientos'] = movimientos
 
         return render(request,"tables_ingresos.html",context)
 
@@ -560,6 +582,9 @@ def detalle(request,pk):
     context['disponible_ba'] = disponible_ba
     context['ingresos_ba'] = ingreso_ba
     context['egresos_ba'] = egreso_ba
+    if movimientos.unidad_productiva == None:
+        movimientos.unidad_productiva_admin = movimientos.usuario_presupuesto.nombre + " " +movimientos.usuario_presupuesto.apellido
+        context['movimiento'] = movimientos
     return render(request,"detalle_mov.html",context)
 
 def edicion_mov(request,pk):
@@ -567,6 +592,7 @@ def edicion_mov(request,pk):
     unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
     disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
     movimientos = get_object_or_404(Movimiento,pk=pk)
+    unidad_productiva = movimientos.unidad_productiva
     unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=movimientos.unidad_productiva).first()
     centro_costo = CentroCosto.objects.filter(subcentro=movimientos.sub_centro_costo).first()
 
@@ -589,10 +615,20 @@ def edicion_mov(request,pk):
         'centros_id':data_centros_id,
         'estado':'En proceso',
         'unidad_negocio':unidad_negocio,
-        'centro_costo':centro_costo
+        'centro_costo':centro_costo,
+        'unidad_productiva':unidad_productiva,
 
         }
-    return render(request,"editar_mov.html",context)
+    if movimientos.ingreso_bancario == True and movimientos.tipo_ingreso =='IN':
+        return render(request,"ingresos_ba.html",context)
+    elif movimientos.ingreso_bancario == False and movimientos.tipo_ingreso =='IN':
+        return render(request,"ingreso.html",context)
+    elif movimientos.ingreso_bancario == False and movimientos.tipo_ingreso =='OUT':
+        return render(request,"egreso.html",context)
+    elif movimientos.ingreso_bancario == True and movimientos.tipo_ingreso =='OUT':
+        return render(request,"egresos_ba.html",context)
+    else:
+        return render(request,"404.html",context)
 
 
 def agregar_comentario(request,pk):
@@ -955,7 +991,7 @@ class Pdf_egresos_ba (View):
             return redirect(f'{URL_SERVER}tablaegreba/')
 
 def dispo_caja_egresos(request):
-    id = request.GET['opcion']
+    id = int(request.GET['opcion'])
     unidad_prod = get_object_or_404(UnidadProductiva, pk=id)
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     egresos_caja = Movimiento.objects.filter(Q(ingreso_bancario=False) & Q(tipo_ingreso='OUT') & Q(unidad_productiva=unidad_prod)).all().aggregate(Sum('valor'))    
@@ -975,7 +1011,7 @@ def dispo_caja_egresos(request):
         egresos_caja = 0
     saldo_bancario = ingresos_bancarios - egresos_bancarios
     data = {
-        'Egresos_caja':locale.currency(egresos_caja['valor__sum'], symbol=True, grouping=True),
+        'Egresos_caja':locale.currency(egresos_caja, symbol=True, grouping=True),
         'Disponible_caja': '-',
         'Ingresos_caja': '-',
         'Egresos_bancarios':locale.currency(egresos_bancarios, symbol=True, grouping=True),
@@ -1042,29 +1078,16 @@ def filter_graphs(request):
     context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
     context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
 
-def get_centro_costos(request,pk):
-    unidad_prod = get_object_or_404(UnidadProductiva, pk=pk)
+def get_centro_costos(request):
+    unidad_prod = get_object_or_404(UnidadProductiva, pk=request.GET['unidad_productiva_id'])
     unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_prod).all()
-    centro_costos = CentroCosto.objects.filter(unegocio__in=unidad_negocio).all().order_by('nombre').values_list('nombre',flat=True)
+    centros_costo = CentroCosto.objects.filter(unegocio__in=unidad_negocio).all().order_by('nombre')
+    data = [{'id': cc.id, 'nombre': cc.nombre} for cc in centros_costo]
+    return JsonResponse(data, safe=False)
 
-    data_centros = {
-        }
-    data_centros_id= {
-    }
-    for centro in centro_costos:
-        data_centros[centro.nombre] = list(centro.subcentro.all().order_by('nombre').values_list('nombre',flat=True))
-        data_centros_id[centro.pk] = list(centro.subcentro.all().order_by('nombre').values_list('id',flat=True))
-    return JsonResponse({'centros':centro_costos,'centros_id':data_centros_id})
+def get_subcentros(request):
+    centro_costo = get_object_or_404(CentroCosto, pk=request.GET['centro_costo_id'])
+    subcentros = centro_costo.subcentro.order_by('nombre') 
 
-def get_subcentros(request,pk):
-    centro_costo = get_object_or_404(CentroCosto, pk=pk)
-    subcentros = SubCentroCosto.objects.filter(centro_costo=centro_costo).all().order_by('nombre') 
-
-    data_subcentros = {
-        }
-    data_subcentros_id= {
-    }
-    for subcentro in subcentros:
-        data_subcentros[subcentro.nombre] = list(subcentro.all().order_by('nombre').values_list('nombre',flat=True))
-        data_subcentros_id[subcentro.pk] = list(subcentro.all().order_by('pk').values_list('nombre',flat=True))
-    return JsonResponse({'subcentros':subcentros,'subcentros_id':data_subcentros})
+    data = [{'id': cc.id, 'nombre': cc.nombre} for cc in subcentros]
+    return JsonResponse(data, safe=False)
