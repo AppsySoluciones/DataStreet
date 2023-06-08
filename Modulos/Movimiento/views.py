@@ -454,8 +454,10 @@ def tablas_ingresos(request,pdf=None):
             unidad_productiva = movimiento.unidad_productiva
             if movimiento.unidad_productiva == None:
                 movimiento.unidad_productiva_admin = movimiento.usuario_presupuesto.nombre + " " +movimiento.usuario_presupuesto.apellido
-            unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
-            movimiento.unidad_negocio = unidad_negocio.nombre
+            
+            if UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).exists():
+                unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
+                movimiento.unidad_negocio = unidad_negocio.nombre
         context['data_movimientos'] = movimientos
 
         return render(request,"tables_ingresos.html",context)
