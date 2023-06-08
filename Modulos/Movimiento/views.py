@@ -464,7 +464,7 @@ def tablas_ingresos(request,pdf=None):
 
     except Exception as e:
         messages.error(request, f'¡Error! {e}')
-        return redirect(f'{URL_SERVER}ingreso/')
+        return redirect(f'{URL_SERVER}/')
 def tablas_egresos(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     if usuario.groups.filter(name='Administrador').exists():
