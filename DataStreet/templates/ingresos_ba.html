@@ -33,14 +33,14 @@
                         </h1>
                         {% if user.is_authenticated and user|has_group:"Administrador" %}
                         <label>Selecciona la unidad de negocio</label>
-                        <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%;"
+                        <select id="centro_costo" name="centro_costo"  onchange="mostrarSelect()" class="col-auto mb-3 " style="width:100%;"
                             aria-label="Default select example" required autocomplete="off">
                             {% for centro in centros %}
                             <option value="{{centro}}">{{centro}}</option>
                             {% endfor %}
                         </select>
                         <label>Selecciona la unidad productiva</label>
-                        <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
+                        <select id="sub_centro_costo" onchange="mostrarSelect()" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
                             aria-label="Default select example" required autocomplete="off">
                             {% for opcion in subcentros %}
                             <option value="{{ opcion }}">{{ opcion }}</option>
@@ -50,7 +50,7 @@
 
                         {% if user.is_authenticated and user|has_group:"Comun" %}
                         <label>Selecciona la unidad productiva</label>
-                        <select id="unidad_productiva" name="unidad_productiva" class="col-auto mb-3" style="width:100%;"
+                        <select id="unidad_productiva" onchange="mostrarSelect()" name="unidad_productiva" class="col-auto mb-3" style="width:100%;"
                             aria-label="Default select example" required autocomplete="off">
                             {% for opcion in unidades_productivas %}
                             <option value="{{ opcion.pk }}">{{ opcion.nombre }}</option>
@@ -71,7 +71,7 @@
                             <option value="Rendimientos Financieros">Rendimientos Financieros</option>
                         </select>
                         
-                        <div id="selectVentas" name="selectVentas" style="display: none;">
+                        <div id="selectVentas" name="selectVentas" onchange="mostrarSelect()" style="display: none;">
                             <label for="tipoVentas">Selecciona el tipo de ventas:</label>
                             <select id="tipoVentas" name="tipoVentas">
                                 <!-- Las opciones se cargarán dinámicamente mediante la solicitud AJAX -->
@@ -316,15 +316,16 @@
     <script>
         function mostrarSelect() {
             var opcionesSelect = document.getElementById("centro_costo");
+            var opcionesTipo = document.getElementById("opciones");
             var selectVentas = document.getElementById("selectVentas");
 
-            if (opcionesSelect.value === "Ganaderia" ) {
+            if (opcionesSelect.value === "Ganaderia" &&  opcionesTipo.value==="ventas") {
                 selectVentas.style.display = "block";
                 cargarOpcionesTipoVentas();
             } else {
                 selectVentas.style.display = "none";
             }
-            if (opcionesSelect.value === "Agricultura" ) {
+            if (opcionesSelect.value === "Agricultura" &&  opcionesTipo.value==="ventas" ) {
                 selectVentas.style.display = "block";
                 cargarOpcionesTipoVentas();
             }

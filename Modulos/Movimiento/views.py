@@ -287,7 +287,7 @@ def registrarIngreso(request):
             accion=accion,
             valor=costo_valor,
             concepto=concepto,
-            estado='En Proceso',
+            estado='En proceso',
             ingreso_bancario=ingreso_bancario,
             tipo_ingreso='IN',
             tipo_documento=tipo_documento,
@@ -351,11 +351,8 @@ def registrarEgreso(request):
     sub_centro_costo= SubCentroCosto.objects.filter(pk=sub_centro_costo_id).first()
     
     usuario = get_object_or_404(Usuario, pk=request.user.id)
-    if usuario.groups.filter(name='Administrador').exists():
-        unidad_productiva = UnidadProductiva.objects.filter(nombre='Administración').first()
-    else:
-        unidad_productiva = request.POST['unidad_productiva']
-        unidad_productiva = get_object_or_404(UnidadProductiva, pk=unidad_productiva)
+    unidad_productiva = request.POST['unidad_productiva']
+    unidad_productiva = get_object_or_404(UnidadProductiva, pk=unidad_productiva)
     
     fecha_registro = datetime.now()
 
@@ -406,7 +403,7 @@ def registrarEgreso(request):
         egreso.save()
 
     messages.success(request, f'¡El Egreso {concepto} se registró correctamente!')
-    return redirect(f'{URL_SERVER}egreso/')
+    return redirect(f'{URL_SERVER}egreso_ba/')
 
 def tablas_ingresos(request,pdf=None):
     try:
