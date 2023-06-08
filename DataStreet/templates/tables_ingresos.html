@@ -140,6 +140,7 @@
                                                 <th>Unidad de Negocio</th>
                                                 <th>Tipo de Movimiento</th>
                                                 <th>Admin/Unidad Productiva</th>
+                                                <th>Usuario Admin</th>
                                                 <th>Concepto</th>
                                                 <th>Valor</th>
                                                 <th>Estado</th>
@@ -176,7 +177,7 @@
                                                     {% else %}
                                                         <td>Desconocido</td>
                                                     {% endif %}
-                                                    
+                                                    <td>{{ movimiento.usuario_admin_ingreso.nombre }}</td>
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
                                                     <td>{{ movimiento.estado }}</td>

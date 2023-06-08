@@ -160,15 +160,13 @@ def convert_xlsx_to_pdf(xlsx_file, pdf_file):
 
 def get_estado_caja(user):
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    filtros_in = Q(tipo_ingreso='IN')&(Q(unidad_productiva__usuarioRegistro=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)
+    filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&(Q(unidad_productiva__usuarioRegistro=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)
     filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)
-    filtros_in_ba = Q(tipo_ingreso='IN')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
+    filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
     filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
 
-    if user.groups.filter(name='Comun').exists():
-        ingresos = user.presupuesto
-    else:
-        ingresos =  Movimiento.objects.filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
+
+    ingresos =  Movimiento.objects.filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
     egresos = Movimiento.objects.filter(filtros_out).aggregate(Sum('valor'))['valor__sum']
     ingresos_ba = Movimiento.objects.filter(filtros_in_ba).aggregate(Sum('valor'))['valor__sum']
     egresos_ba = Movimiento.objects.filter(filtros_out_ba).aggregate(Sum('valor'))['valor__sum']
@@ -177,6 +175,9 @@ def get_estado_caja(user):
         ingresos = 0
     if egresos == None:
         egresos = 0
+
+    user.presupuesto=ingresos
+    user.save()
 
     ingresos_f = locale.currency(ingresos, symbol=True, grouping=True)
     egresos_f = locale.currency(egresos, symbol=True, grouping=True)

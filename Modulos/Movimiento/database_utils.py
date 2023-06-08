@@ -14,11 +14,16 @@ UnidadesNegocio = UnidadNegocio.objects.all()
 CentroCosto_lista = CentroCosto.objects.all()
 SubCentroCosto_lista = SubCentroCosto.objects.all()
 
+# Eliminar los duplicados de la columna "columna_a"
+df_sin_duplicados = df['Unidad de Negocio'].drop_duplicates().to_list()
+
+print(df_sin_duplicados)
 
 for i in range(len(df)):
     unegocio = df.iloc[i]['Unidad de Negocio']
     ccosto = df.iloc[i]['Centro de Costo']
     subccosto = df.iloc[i]['Subcentro de Costo']
+    
     print(unegocio,ccosto,subccosto)
 
     if UnidadesNegocio.filter(nombre=unegocio).exists():
@@ -45,7 +50,3 @@ for i in range(len(df)):
             centro.save()
         
         centro.save()
-
-
-
-

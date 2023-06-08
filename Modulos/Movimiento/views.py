@@ -292,7 +292,7 @@ def registrarIngreso(request):
             accion=accion,
             valor=costo_valor,
             concepto=concepto,
-            estado='En Proceso',
+            estado='Aprobado',
             ingreso_bancario=ingreso_bancario,
             tipo_ingreso='IN',
             usuario_presupuesto=usuario_presupuesto,
@@ -1041,3 +1041,30 @@ def filter_graphs(request):
     context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
     context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
     context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
+
+def get_centro_costos(request,pk):
+    unidad_prod = get_object_or_404(UnidadProductiva, pk=pk)
+    unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_prod).all()
+    centro_costos = CentroCosto.objects.filter(unegocio__in=unidad_negocio).all().order_by('nombre').values_list('nombre',flat=True)
+
+    data_centros = {
+        }
+    data_centros_id= {
+    }
+    for centro in centro_costos:
+        data_centros[centro.nombre] = list(centro.subcentro.all().order_by('nombre').values_list('nombre',flat=True))
+        data_centros_id[centro.pk] = list(centro.subcentro.all().order_by('nombre').values_list('id',flat=True))
+    return JsonResponse({'centros':centro_costos,'centros_id':data_centros_id})
+
+def get_subcentros(request,pk):
+    centro_costo = get_object_or_404(CentroCosto, pk=pk)
+    subcentros = SubCentroCosto.objects.filter(centro_costo=centro_costo).all().order_by('nombre') 
+
+    data_subcentros = {
+        }
+    data_subcentros_id= {
+    }
+    for subcentro in subcentros:
+        data_subcentros[subcentro.nombre] = list(subcentro.all().order_by('nombre').values_list('nombre',flat=True))
+        data_subcentros_id[subcentro.pk] = list(subcentro.all().order_by('pk').values_list('nombre',flat=True))
+    return JsonResponse({'subcentros':subcentros,'subcentros_id':data_subcentros})
