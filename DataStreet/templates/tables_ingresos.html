@@ -180,7 +180,7 @@
                                                             {% else %}
                                                                 <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante" disabled>
                                                             {% endif %}
-                                                            {% if user.is_authenticated and user|has_group:"Auditor" and not movimiento.estado == 'Aprobado' %}
+                                                            {% if user.is_authenticated and user|has_group:"Auditor" and movimiento.estado == 'En proceso' %}
                                                                 <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
                                                                     <input class="btn btn-block btn-warning mb-1" style="color: #fff;" value="Auditar">
                                                                 </a>
