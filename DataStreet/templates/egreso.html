@@ -135,59 +135,96 @@
 <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 
 <script>
-    $(document).ready(function() {
-        // Evento de cambio en el select de unidad productiva
-        $('#unidad_productiva').change(function() {
-            var unidadProductivaId = $(this).val();
-            // Realizar una petición AJAX para obtener los centros de costo
-            $.ajax({
-                url: '{{server_url}}get_centro_costos/',
-                data: {
-                    'unidad_productiva_id': unidadProductivaId
-                },
-                dataType: 'json',
-                success: function(data) {
-                    // Limpiar el select de centros de costo
-                    $('#centro_costo').empty();
-                    // Agregar las opciones al select de centros de costo
-                    $.each(data, function(index, centroCosto) {
-                        $('#centro_costo').append($('<option>', {
-                            value: centroCosto.id,
-                            text: centroCosto.nombre
-                        }));
-                    });
-                    
-                    // Limpiar el select de subcentros de costo
+$(document).ready(function() {
+    // Evento de cambio en el select de unidad productiva
+    $('#unidad_productiva').change(function() {
+        var unidadProductivaId = $(this).val();
+        // Realizar una petición AJAX para obtener los centros de costo
+        $.ajax({
+            url: '{{server_url}}get_centro_costos/',
+            data: {
+                'unidad_productiva_id': unidadProductivaId
+            },
+            dataType: 'json',
+            success: function(data) {
+                // Limpiar el select de centros de costo
+                $('#centro_costo').empty();
+                // Agregar las opciones al select de centros de costo
+                $.each(data, function(index, centroCosto) {
+                    $('#centro_costo').append($('<option>', {
+                        value: centroCosto.id,
+                        text: centroCosto.nombre
+                    }));
+                });
+                var opcionesSelect = document.getElementById("centro_costo");
+
+                console.log(opcionesSelect.value);
+                if (opcionesSelect.options.length > 0){
                     $('#sub_centro_costo').empty();
-                }
-            });
-        });
-    
-        // Evento de cambio en el select de centro de costo
-        $('#centro_costo').change(function() {
-            var centroCostoId = $(this).val();
-            // Realizar una petición AJAX para obtener los subcentros de costo
-            $.ajax({
-                url: '{{server_url}}get_subcentro_costos/',
-                data: {
-                    'centro_costo_id': centroCostoId
-                },
-                dataType: 'json',
-                success: function(data) {
-                    // Limpiar el select de subcentros de costo
-                    $('#sub_centro_costo').empty();
-                    // Agregar las opciones al select de subcentros de costo
-                    $.each(data, function(index, subCentroCosto) {
-                        $('#sub_centro_costo').append($('<option>', {
-                            value: subCentroCosto.id,
-                            text: subCentroCosto.nombre
-                        }));
+                    $.ajax({
+                        url: '{{server_url}}get_subcentro_costos/',
+                        data: {
+                            'centro_costo_id': opcionesSelect.value
+                        },
+                        dataType: 'json',
+                        success: function(data) {
+                            // Limpiar el select de subcentros de costo
+                            $('#sub_centro_costo').empty();
+                            // Agregar las opciones al select de subcentros de costo
+                            $.each(data, function(index, subCentroCosto) {
+                                $('#sub_centro_costo').append($('<option>', {
+                                    value: subCentroCosto.id,
+                                    text: subCentroCosto.nombre
+                                }));
+                            });
+                        }
                     });
                 }
-            });
+                
+
+                // Limpiar el select de subcentros de costo
+                $('#sub_centro_costo').empty();
+            }
         });
     });
-    {% if centro_costo %}
+
+    // Evento de cambio en el select de centro de costo
+    $('#centro_costo').change(function() {
+        var centroCostoId = $(this).val();
+        var opcionesSelect = document.getElementById("centro_costo");
+        console.log(opcionesSelect);
+        
+                //opcionesSelect.options[0].selected = true;
+                
+
+        // Realizar una petición AJAX para obtener los subcentros de costo
+        $.ajax({
+            url: '{{server_url}}get_subcentro_costos/',
+            data: {
+                'centro_costo_id': centroCostoId
+            },
+            dataType: 'json',
+            success: function(data) {
+                // Limpiar el select de subcentros de costo
+                $('#sub_centro_costo').empty();
+                // Agregar las opciones al select de subcentros de costo
+                $.each(data, function(index, subCentroCosto) {
+                    $('#sub_centro_costo').append($('<option>', {
+                        value: subCentroCosto.id,
+                        text: subCentroCosto.nombre
+                    }));
+                });
+            }
+        });
+    });
+
+    // Cargar automáticamente los elementos dependientes al cargar la página
+    $('#unidad_productiva').trigger('change');
+    $('#centro_costo').trigger('change');
+});
+
+
+    {% if movimiento %}
     function cargarOpcionesCentroCostos() {
         var unidadProductivaId =  "{{ unidad_productiva.id }}"
         var centroCostoId = "{{centro_costo.id}}"
