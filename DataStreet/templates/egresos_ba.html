@@ -158,7 +158,7 @@
                     });
                     var opcionesSelect = document.getElementById("centro_costo");
     
-                    console.log(opcionesSelect.value);
+                    
                     if (opcionesSelect.options.length > 0){
                         $('#sub_centro_costo').empty();
                         $.ajax({
@@ -192,7 +192,7 @@
         $('#centro_costo').change(function() {
             var centroCostoId = $(this).val();
             var opcionesSelect = document.getElementById("centro_costo");
-            console.log(opcionesSelect);
+            
             
                     //opcionesSelect.options[0].selected = true;
                     
@@ -247,7 +247,7 @@
                         });
                         
                         centro_cost = document.getElementById("centro_costo");
-                        console.log(centro_cost)
+                        
                         $(centro_costo.options).each(function(index, option) {
                             var optionValue = option.value;
     
@@ -268,7 +268,7 @@
                 });
                 
                 // Realizar una petición AJAX para obtener los subcentros de costo
-                console.log(centroCostoId)
+                
                 $.ajax({
                     url: '{{server_url}}get_subcentro_costos/',
                     data: {
@@ -491,14 +491,14 @@
                 
                 factura_check.value = true;
                 seccion.style.display = 'block';
-                console.log("entro");
+                
             } else {
                 checkbox = false;
                 billNumber.required = false;
                 
                 factura_check.value = false;
                 seccion.style.display = 'none';
-                console.log("no entro");
+                
             }
             
             

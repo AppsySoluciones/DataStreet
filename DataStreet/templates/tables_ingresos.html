@@ -253,7 +253,7 @@
                 $(document).ready(function () {
                     // Inicializar la tabla
                     var dataTable = $('#dataTable').DataTable();
-                    tabla.order( [ 0, 'desc' ] ).draw();
+                    dataTable.order( [ 0, 'desc' ] ).draw();
 
                     // Aplicar el filtro cuando cambie el valor del select
                     $('#filtro').on('change', function () {
@@ -287,6 +287,8 @@
             <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
             <script src="{% static 'vendor/datatables/jquery.dataTables.js' %}"></script>
             <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+            <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
             
 
         </body>
