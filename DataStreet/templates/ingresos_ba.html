@@ -49,6 +49,13 @@
                         {% endif %}
 
                         {% if user.is_authenticated and user|has_group:"Comun" %}
+                        <label hidden>Selecciona la unidad de negocio</label>
+                        <select hidden id="centro_costo" name="centro_costo"  onchange="mostrarSelect()" class="col-auto mb-3 " style="width:100%;"
+                            aria-label="Default select example" required autocomplete="off">
+                            {% for centro in centros %}
+                            <option value="{{centro}}">{{centro}}</option>
+                            {% endfor %}
+                        </select>
                         <label>Selecciona la unidad productiva</label>
                         <select id="unidad_productiva" onchange="mostrarSelect()" name="unidad_productiva" class="col-auto mb-3" style="width:100%;"
                             aria-label="Default select example" required autocomplete="off">
@@ -206,6 +213,7 @@
 
 <script>
     $(document).ready(function() {
+        var opcionSeleccionada = $(this).val();
         $.ajax({
                 url: '{{ server_url }}dispo_caja_egresos/',  // Reemplaza 'URL_DE_LA_API' con la URL real de la API que deseas llamar
                 method: 'GET',
@@ -224,12 +232,12 @@
                 },
                 error: function() {
                     // Maneja el error de alguna manera según tus necesidades
-                    $('#egresos_caja').html('No se pudieron obtener los datos.');
-                    $('#disponible_caja').html('No se pudieron obtener los datos.');
-                    $('#ingresos_caja').html('No se pudieron obtener los datos.');
-                    $('#egresos_bancarios').html('No se pudieron obtener los datos.');
-                    $('#disponible_bancarios').html('No se pudieron obtener los datos.');
-                    $('#ingresos_bancarios').html(response.Saldo_bancario);
+                    $('#egresos_caja').html('$0.00');
+                    $('#disponible_caja').html('$0.00');
+                    $('#ingresos_caja').html('$0.00');
+                    $('#egresos_bancarios').html('$0.00');
+                    $('#disponible_bancarios').html('$0.00');
+                    $('#ingresos_bancarios').html('$0.00');
                 }
             });
     });
@@ -259,12 +267,12 @@
                 },
                 error: function() {
                     // Maneja el error de alguna manera según tus necesidades
-                    $('#egresos_caja').html('No se pudieron obtener los datos.');
-                    $('#disponible_caja').html('No se pudieron obtener los datos.');
-                    $('#ingresos_caja').html('No se pudieron obtener los datos.');
-                    $('#egresos_bancarios').html('No se pudieron obtener los datos.');
-                    $('#disponible_bancarios').html('No se pudieron obtener los datos.');
-                    $('#ingresos_bancarios').html(response.Saldo_bancario);
+                    $('#egresos_caja').html('$0.00');
+                    $('#disponible_caja').html('$0.00');
+                    $('#ingresos_caja').html('$0.00');
+                    $('#egresos_bancarios').html('$0.00');
+                    $('#disponible_bancarios').html('$0.00');
+                    $('#ingresos_bancarios').html('$0.00');
                 }
             });
         });
@@ -319,14 +327,20 @@
             var opcionesSelect = document.getElementById("centro_costo");
             var opcionesTipo = document.getElementById("opciones");
             var selectVentas = document.getElementById("selectVentas");
+            {% if user.is_authenticated and user|has_group:"Comun" %}
+            var uprod = '{{unidad_negocio.nombre}}';
+            {% else %}
+            var uprod = opcionesSelect.value
+            {% endif %}
 
-            if (opcionesSelect.value === "Ganaderia" &&  opcionesTipo.value==="ventas") {
+            if (uprod === "Ganaderia" &&  opcionesTipo.value==="ventas") {
                 selectVentas.style.display = "block";
                 cargarOpcionesTipoVentas();
+                
             } else {
                 selectVentas.style.display = "none";
             }
-            if (opcionesSelect.value === "Agricultura" &&  opcionesTipo.value==="ventas" ) {
+            if (uprod === "Agricultura" &&  opcionesTipo.value==="ventas" ) {
                 selectVentas.style.display = "block";
                 cargarOpcionesTipoVentas();
             }
@@ -334,11 +348,16 @@
         
         function cargarOpcionesTipoVentas() {
             var opcionesSelect = document.getElementById("centro_costo");
+            {% if user.is_authenticated and user|has_group:"Comun" %}
+            var uprod = '{{unidad_negocio.nombre}}';
+            {% else %}
+            var uprod = opcionesSelect.value
+            {% endif %}
             $.ajax({
                 url: "{{ server_url }}dispocaja/",
                 type: "GET",
                 data: {
-                    opcion: opcionesSelect.value
+                    opcion: uprod
                 },
                 success: function (data) {
                     var tipoVentasSelect = document.getElementById("tipoVentas");
@@ -360,6 +379,7 @@
             });
         }
     </script>
+    {% if movimiento %}
     <script>
         function precargarValores() {
             // Precargar valores del movimiento
@@ -372,18 +392,62 @@
             document.getElementById('negociacion').value = "{{ movimiento.negociacion }}";
             document.getElementById('costo_valor').value = "{{ movimiento.valor }}";
             document.getElementById('concepto').value = "{{ movimiento.concepto }}";
-            // ... Precargar otros valores aquí ...
-            var selectVentas = document.getElementById('tipoVentas');
-            var data = ['Opción 1', 'Opción 2', 'Opción 3']
+            // ... Precargar unidad productiva ...
+            var unidad_productiva= document.getElementById('unidad_productiva');
+            unidad_productiva.innerHTML = "";
+            var data= "{{ unidades_productivas }}";
+            data = data.replace(/&quot;/g, '"');
+            data =  JSON.parse(data);
             for (var i = 0; i < data.length; i++) {
                 var opcion = document.createElement('option');
-                opcion.value = data[i];
-                opcion.text = data[i];
-                selectVentas.appendChild(opcion);
+                opcion.value = data[i].id;
+                opcion.text = data[i].nombre;
+                unidad_productiva.appendChild(opcion);
             }
+            var uprodSeleccionada= "{{ unidad_productiva.id }}";
+            
+            for (var i = 0; i < unidad_productiva.options.length; i++) {
+                if (unidad_productiva.options[i].value === uprodSeleccionada) {
+                    unidad_productiva.options[i].selected = true;
+                    break;
+                }
+                }
+            // ... Precargar ventas ...
+            var opciones = document.getElementById('opciones');
+            var tipoventas = document.getElementById('tipoVentas');
+
+            var ventas = "{{ movimiento.accion }}";
+            var frases = ventas.split(" "); // Dividir el texto en frases utilizando el punto como separador
+            var primeraFrase = frases[0];
+            var restoFrases = frases.slice(1); // Obtener el resto de las frases (desde la segunda frase hasta el final)
+            var textoResto = restoFrases.join(".")
+            console.log(primeraFrase)
+            console.log(textoResto)
+            
+
+            for (var i = 0; i < opciones.options.length; i++) {
+                if (ventas.includes(opciones.options[i].value)) {
+                    opciones.options[i].selected = true;
+                    mostrarSelect()
+                    for (var i = 0; i < tipoventas.options.length; i++) {
+                        if (textoResto.includes(tipoventas.options[i].value)) {
+                            tipoventas.options[i].selected = true;
+                            break;
+                    }
+
+                    break;
+                }
+            }
+
+
+
+            
+
+            
             
         }
     </script>
+    {% endif %}
     
 
 {% endblock %}

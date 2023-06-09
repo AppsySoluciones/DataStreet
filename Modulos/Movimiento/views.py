@@ -605,13 +605,14 @@ def detalle(request,pk):
 
 def edicion_mov(request,pk):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
-    unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
+    unidad_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
     disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
     movimientos = get_object_or_404(Movimiento,pk=pk)
     unidad_productiva = movimientos.unidad_productiva
     unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=movimientos.unidad_productiva).first()
     centro_costo = CentroCosto.objects.filter(subcentro=movimientos.sub_centro_costo).first()
-
+    data_uprod = [{'id': uprod.id, 'nombre': uprod.nombre} for uprod in unidad_productivas]
+    
     centro_costos = CentroCosto.objects.all()
     data_centros = {
     }
@@ -633,6 +634,7 @@ def edicion_mov(request,pk):
         'unidad_negocio':unidad_negocio,
         'centro_costo':centro_costo,
         'unidad_productiva':unidad_productiva,
+        'unidades_productivas':json.dumps(data_uprod),
 
         }
     if movimientos.ingreso_bancario == True and movimientos.tipo_ingreso =='IN':
