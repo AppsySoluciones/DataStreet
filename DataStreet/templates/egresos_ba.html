@@ -7,22 +7,30 @@
 <head>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Importa jQuery -->
 </head>
-
+<body onload="precargarValores()">
 <div class="container text-left">
+
+
     <div class="row">
         <div class="col-sm-2">
 
         </div>
-        <div class="col-sm-8 p-3">
+        <div class="col-sm-8 p-3 col-xl-12">
             <div class="registration-form" style="background-color: #fff;max-width: 600px;
                                 margin: auto;
-                                padding: 50px 70px;
+                                padding: 60px 20px;
                                 border-top-left-radius: 30px;
                                 border-top-right-radius: 30px;
                                 border-bottom-left-radius: 30px;
                                 border-bottom-right-radius: 30px;
                                 box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.075);">
-                <form action="{{server_url}}registraregreso/" method="POST" enctype="multipart/form-data" onsubmit="convertToNumber()" > {% csrf_token %}
+                {% if movimiento %}
+                <form action="{{server_url}}movimiento/editaregreso/{{movimiento.id}}/edit" method="POST" enctype="multipart/form-data" onsubmit="convertToNumber()"> {% csrf_token %}
+                {% else %}
+                <form action="{{server_url}}registraregreso/" method="POST" enctype="multipart/form-data" onsubmit="convertToNumber()"> {% csrf_token %}
+
+                {% endif %}
+                
                     <h1 class="text-center text-sm-center lead mb-3" style="color: black;"><b>Formulario de Movimiento
                             de Egresos Bancarios</b>
                     </h1>
@@ -42,15 +50,14 @@
                     <label>Selecciona el Subcentro de Costos</label>
                     <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%;"
                         aria-label="Default select example" required autocomplete="off"></select>
-
                     <label>Seleccione la fecha del registro:</label>
                     <input type="date" id="fecha_registro" name="fecha_registro"
-                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" required autocomplete="off">
-                    
+                        style="width:100%; box-sizing: border-box;" class="input-group mb-3" required>
+
                     <label for="inputPassword6" class="col-form-label mb-3">Ingrese el Nombre del Proveedor:</label>
                     <input type="text" id="nom_provedor" name="nom_provedor" class="form-control"
                         style="width:100%; box-sizing: border-box;" required autocomplete="off">
-
+                    <br>
                     <label class="mb-3">Seleccione el tipo de Documento:</label>
                     <select class="form-select form-select-lg mb-3" style="width:100%; box-sizing: border-box;"
                         aria-label=".form-select-lg example" id="tipo_doc" name="tipo_doc" required autocomplete="off">
@@ -82,14 +89,22 @@
                                     aria-labelledby="passwordHelpInline" autocomplete="off">
                             </div>
                         </div>
-
+                        <br>
+                        {% if movimiento %}
+                        
+                        <label for="inputPassword6" class="col-form-label">Adjunte otro archivo si desea replazar el anterior:</label>
+                        <input type="file" id="soporteb" name="soporteb"><br>
+                        Comprobante actual: <a href="{{server_url}}movimiento/comprobante/{{movimiento.pk}}" target="_blank"> {{movimiento.comprobante_factura }}</a>
+                        {% else %}
                         <label>Adjunte el soporte:</label>
-                        <input type="file" id="soporte" name="soporte" autocomplete="off"><br><br>
+                        <input type="file" id="soporte" name="soporte"><br><br>
+
+                        {% endif %}
                         <!-- <input type="submit" value="Subir Archivo"> -->
 
 
                     </div>
-
+                    <br>
                     <div class="form-floating  mb-3">
                         <label for="inputPassword6" class="col-form-label mb-3">Valor</label>
                         <input type="text" name="costo_valor" id="costo_valor" class="form-control" placeholder="0.00"
@@ -98,26 +113,27 @@
 
                     <div class="mb-3">
                         <label for="exampleFormControlTextarea1" class="form-label">Digite el concepto:</label>
-                        <textarea class="form-control" id="exampleFormControlTextarea1" name="concepto"
+                        <textarea class="form-control" name="concepto" id="concepto"
                             rows="3" autocomplete="off"></textarea>
                     </div>
                     <input type="hidden" name="ingreso_bancario" id="ingreso_bancario" value="True">
 
-                    <input class="btn btn-block btn-success" id="submitBtn" style="color: #fff;" type="submit"
-                        value="Registrar Egreso" >
+                    <input class="btn btn-block btn-success" style="color: #fff;" type="submit"
+                        value="Registrar Egreso" id="submitBtn" autocomplete="off">
 
 
 
                 </form>
             </div>
         </div>
-        <div class="col">
+        <div class="col-sm-2">
 
         </div>
     </div>
 </div>
 
 <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
 <script>
     $(document).ready(function() {
         // Evento de cambio en el select de unidad productiva
@@ -140,6 +156,7 @@
                             text: centroCosto.nombre
                         }));
                     });
+                    
                     // Limpiar el select de subcentros de costo
                     $('#sub_centro_costo').empty();
                 }
@@ -170,7 +187,89 @@
             });
         });
     });
+    {% if centro_costo %}
+    function cargarOpcionesCentroCostos() {
+        var unidadProductivaId =  "{{ unidad_productiva.id }}"
+        var centroCostoId = "{{centro_costo.id}}"
+        $.ajax({
+                url: '{{server_url}}get_centro_costos/',
+                data: {
+                    'unidad_productiva_id': unidadProductivaId
+                },
+                dataType: 'json',
+                success: function(data) {
+                    // Limpiar el select de centros de costo
+                    $('#centro_costo').empty();
+                    // Agregar las opciones al select de centros de costo
+
+                    $.each(data, function(index, centroCosto) {
+                        $('#centro_costo').append($('<option>', {
+                            value: centroCosto.id,
+                            text: centroCosto.nombre
+                        }));
+                    });
+                    
+                    centro_cost = document.getElementById("centro_costo");
+                    console.log(centro_cost)
+                    $(centro_costo.options).each(function(index, option) {
+                        var optionValue = option.value;
+
+                        if (optionValue === centroCostoId) {
+                            option.selected = true;
+                            
+                            return false; // Sale del bucle each cuando se encuentra la opción deseada
+                        }
+                        });
+                    
+
+                    
+                    
+                    
+                    // Limpiar el select de subcentros de costo
+                    $('#sub_centro_costo').empty();
+                }
+            });
+            
+            // Realizar una petición AJAX para obtener los subcentros de costo
+            console.log(centroCostoId)
+            $.ajax({
+                url: '{{server_url}}get_subcentro_costos/',
+                data: {
+                    'centro_costo_id': centroCostoId
+                },
+                dataType: 'json',
+                success: function(data) {
+                    // Limpiar el select de subcentros de costo
+                    $('#sub_centro_costo').empty();
+                    // Agregar las opciones al select de subcentros de costo
+                    $.each(data, function(index, subCentroCosto) {
+                        $('#sub_centro_costo').append($('<option>', {
+                            value: subCentroCosto.id,
+                            text: subCentroCosto.nombre
+                        }));
+                    });
+                    var subcentroCostoId = "{{movimiento.sub_centro_costo.id}}"
+                    $(sub_centro_costo.options).each(function(index, option) {
+                        var optionValue = option.value;
+
+                        if (optionValue === subcentroCostoId) {
+                            option.selected = true;
+                            
+                            return false; // Sale del bucle each cuando se encuentra la opción deseada
+                        }
+                        });
+
+                    
+                }
+            });
+                            
+                    
+    }
+    {% endif %}
+        
     </script>
+    
+
 
 <script>
     var checkbox = document.getElementById('billCheck');
@@ -194,23 +293,9 @@
             seccion.style.display = 'none';
         }
     });
-    {% if movimiento %}
-        checkbox.addEventListener('load', function () {
-            if (checkbox.checked) {
-                billNumber.required = true;
-                soporte.required = true;
-                factura_check.value = true;
-                seccion.style.display = 'block';
-            } else {
-                billNumber.required = false;
-                soporte.required = false;
-                factura_check.value = false;
-                seccion.style.display = 'none';
-            }
-        });
-
-    {% endif %}
 </script>
+
+
 <script>
     function formatCurrency(input) {
         // Obtener el valor ingresado por el usuario
@@ -248,4 +333,150 @@
     }
 </script>
 
+<!-- <script>
+    $(document).ready(function() {
+        var opcionSeleccionada = $(this).val();  // Obtiene la opción seleccionada
+        $.ajax({
+                url: '{{ server_url }}dispo_caja_egresos/',  // Reemplaza 'URL_DE_LA_API' con la URL real de la API que deseas llamar
+                method: 'GET',
+                data: {
+                    opcion: opcionSeleccionada  // Envía la opción seleccionada como parámetro en la solicitud GET
+                },
+                success: function(response) {
+                    // Datos de caja
+                    $('#egresos_caja').html(response.Egresos_caja);
+                    $('#disponible_caja').html(response.Disponible_caja);
+                    $('#ingresos_caja').html(response.Ingresos_caja);
+                    //Datos bancarios
+                    $('#egresos_bancarios').html(response.Egresos_bancarios);
+                    $('#disponible_bancarios').html(response.Ingresos_bancarios);
+                    $('#ingresos_bancarios').html(response.Saldo_bancario);
+                },
+                error: function() {
+                    // Maneja el error de alguna manera según tus necesidades
+                    $('#egresos_caja').html('$0.00');
+                    $('#disponible_caja').html('$0.00');
+                    $('#ingresos_caja').html('$0.00');
+                    $('#egresos_bancarios').html('$0.00');
+                    $('#disponible_bancarios').html('$0.00');
+                    $('#ingresos_bancarios').html('$0.00');
+                }
+            });
+    });
+</script> -->
+
+<script>
+    $(document).ready(function() {
+        $('#unidad_productiva').on('change', function() {
+            var opcionSeleccionada = $(this).val();  // Obtiene la opción seleccionada
+
+            // Realiza la solicitud AJAX
+            $.ajax({
+                url: '{{ server_url }}dispo_caja_egresos/',  // Reemplaza 'URL_DE_LA_API' con la URL real de la API que deseas llamar
+                method: 'GET',
+                data: {
+                    opcion: opcionSeleccionada  // Envía la opción seleccionada como parámetro en la solicitud GET
+                },
+                success: function(response) {
+                    // Datos de caja
+                    $('#egresos_caja').html(response.Egresos_caja);
+                    $('#disponible_caja').html(response.Disponible_caja);
+                    $('#ingresos_caja').html(response.Ingresos_caja);
+                    //Datos bancarios
+                    $('#egresos_bancarios').html(response.Egresos_bancarios);
+                    $('#ingresos_bancarios').html(response.Ingresos_bancarios);
+                    $('#disponible_bancarios').html(response.Saldo_bancario);
+                },
+                error: function() {
+                    // Maneja el error de alguna manera según tus necesidades
+                    $('#egresos_caja').html('$0.00');
+                    $('#disponible_caja').html('$0.00');
+                    $('#ingresos_caja').html('$0.00');
+                    $('#egresos_bancarios').html('$0.00');
+                    $('#disponible_bancarios').html('$0.00');
+                    $('#ingresos_bancarios').html('$0.00');
+                }
+            });
+        });
+    });
+</script>
+</body>
+{% if movimiento %}
+    <script>
+        function precargarValores() {
+            // Precargar valores del movimiento
+
+            document.getElementById('nom_provedor').value = "{{ movimiento.nombre_proveedor }}";
+            document.getElementById('tipo_doc').value = "{{ movimiento.tipo_documento }}";
+            document.getElementById('num_doc').value = "{{ movimiento.numero_documento }}";
+            document.getElementById('billNumber').value = "{{ movimiento.numero_factura }}";
+            
+            document.getElementById('costo_valor').value = "{{ movimiento.valor }}";
+            document.getElementById('concepto').value = "{{ movimiento.concepto }}";
+            // ... Precargar unidad productiva ...
+            var unidad_productiva= document.getElementById('unidad_productiva');
+            unidad_productiva.innerHTML = "";
+            var data= "{{ unidades_productivas }}";
+            data = data.replace(/&quot;/g, '"');
+            data =  JSON.parse(data);
+            for (var i = 0; i < data.length; i++) {
+                var opcion = document.createElement('option');
+                opcion.value = data[i].id;
+                opcion.text = data[i].nombre;
+                unidad_productiva.appendChild(opcion);
+            }
+            var uprodSeleccionada= "{{ unidad_productiva.id }}";
+            
+            for (var i = 0; i < unidad_productiva.options.length; i++) {
+                if (unidad_productiva.options[i].value === uprodSeleccionada) {
+                    unidad_productiva.options[i].selected = true;
+                    cargarOpcionesCentroCostos();
+                    break;
+                }
+                }
+             
+            
+
+            
+                
+            // ... Precargar  seccion factura comprobante...
+            var checkbox = document.getElementById('billCheck');
+            var factura_check_data = "{{ movimiento.factura }}";
+            var seccion = document.getElementById('seccion');
+            var billNumber = document.getElementById('billNumber');
+            
+            var factura_check = document.getElementById('factura_check');
+            
+            if  (factura_check_data == "True") {
+                checkbox.checked = true;
+                billNumber.required = true;
+                billNumber.value = "{{ movimiento.numero_factura }}";
+                
+                factura_check.value = true;
+                seccion.style.display = 'block';
+                console.log("entro");
+            } else {
+                checkbox = false;
+                billNumber.required = false;
+                
+                factura_check.value = false;
+                seccion.style.display = 'none';
+                console.log("no entro");
+            }
+            
+            
+
+
+            
+
+            
+            
+        }
+    </script>
+    {% else %}
+    <script>
+        function precargarValores() {}
+    </script>
+
+    {% endif %}
 {% endblock %}

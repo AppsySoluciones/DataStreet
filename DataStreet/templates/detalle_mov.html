@@ -221,12 +221,18 @@
                     </div>
                     
                     <div class="mb-3">
-                    {% if 'Rechazado' == movimiento.estado and user.is_authenticated and user|has_group:"Comun"%}
+                    {% if 'Rechazado' == movimiento.estado and user.is_authenticated and user|has_group:"Comun" %}
                     <form method="GET" action="{{server_url}}movimiento/editar/{{movimiento.pk}}">
                     <div class="form-floating  mb-3">
                         <input class="btn btn-block btn-primary" style="color: #fff;" type="submit" value="Corregir Movimiento">
                     </div>
                 </form>
+                    {% elif 'Rechazado' == movimiento.estado and user.is_authenticated and user|has_group:"Administrador" %}
+                    <form method="GET" action="{{server_url}}movimiento/editar/{{movimiento.pk}}">
+                        <div class="form-floating  mb-3">
+                            <input class="btn btn-block btn-primary" style="color: #fff;" type="submit" value="Corregir Movimiento">
+                        </div>
+                    </form>
                     {% endif %}
                     
                     {% if user.is_authenticated and user|has_group:"Auditor" %}

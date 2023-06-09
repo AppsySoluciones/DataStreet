@@ -614,7 +614,10 @@ def detalle(request,pk):
 
 def edicion_mov(request,pk):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
-    unidad_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
+    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+        unidad_productivas = UnidadProductiva.objects.filter(unidadnegocio__admin=usuario)#.values('unidadproductiva__usuarioRegistro')   
+    else:
+        unidad_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
     disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
     movimientos = get_object_or_404(Movimiento,pk=pk)
     unidad_productiva = movimientos.unidad_productiva
