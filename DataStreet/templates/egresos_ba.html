@@ -103,7 +103,7 @@
                     </div>
                     <input type="hidden" name="ingreso_bancario" id="ingreso_bancario" value="True">
 
-                    <input class="btn btn-block btn-success" style="color: #fff;" type="submit"
+                    <input class="btn btn-block btn-success" id="submitBtn" style="color: #fff;" type="submit"
                         value="Registrar Egreso" >
 
 
@@ -228,6 +228,7 @@
         let input = document.getElementById('costo_valor');
         let value = input.value.replace(/[^0-9.]/g, '');
         input.value = parseFloat(value);
+        document.getElementById("submitBtn").disabled = true;
     }
 </script>
 

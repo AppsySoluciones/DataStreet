@@ -415,8 +415,12 @@ def registrarEgreso(request):
         )
         egreso.save()
 
-    messages.success(request, f'¡El Egreso {concepto} se registró correctamente!')
-    return redirect(f'{URL_SERVER}egreso_ba/')
+    if ingreso_bancario == True:
+        messages.success(request, f'¡El Egreso {concepto} se registró correctamente!')
+        return redirect(f'{URL_SERVER}egreso_ba/')
+    else:
+        messages.success(request, f'¡El Egreso {concepto} se registró correctamente!')
+        return redirect(f'{URL_SERVER}egreso/')
 
 def tablas_ingresos(request,pdf=None):
     try:
