@@ -53,7 +53,7 @@
 
                     <label class="mb-3">Seleccione el tipo de Documento:</label>
                     <select class="form-select form-select-lg mb-3" style="width:100%; box-sizing: border-box;"
-                        aria-label=".form-select-lg example" id="doc_type" name="tipo_doc" required autocomplete="off">
+                        aria-label=".form-select-lg example" id="tipo_doc" name="tipo_doc" required autocomplete="off">
                         <option value="CC">Cédula</option>
                         <option value="NIT">NIT</option>
                         <option value="CE">Cédula de Extrangería</option>
@@ -194,6 +194,22 @@
             seccion.style.display = 'none';
         }
     });
+    {% if movimiento %}
+        checkbox.addEventListener('load', function () {
+            if (checkbox.checked) {
+                billNumber.required = true;
+                soporte.required = true;
+                factura_check.value = true;
+                seccion.style.display = 'block';
+            } else {
+                billNumber.required = false;
+                soporte.required = false;
+                factura_check.value = false;
+                seccion.style.display = 'none';
+            }
+        });
+
+    {% endif %}
 </script>
 <script>
     function formatCurrency(input) {

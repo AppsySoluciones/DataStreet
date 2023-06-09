@@ -7,7 +7,7 @@
 <head>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Importa jQuery -->
 </head>
-
+<body onload="precargarValores()">
 <div class="container text-left">
 
 
@@ -54,7 +54,7 @@
                     <br>
                     <label class="mb-3">Seleccione el tipo de Documento:</label>
                     <select class="form-select form-select-lg mb-3" style="width:100%; box-sizing: border-box;"
-                        aria-label=".form-select-lg example" id="doc_type" name="tipo_doc" required autocomplete="off">
+                        aria-label=".form-select-lg example" id="tipo_doc" name="tipo_doc" required autocomplete="off">
                         <option value="CC">Cédula</option>
                         <option value="NIT">NIT</option>
                         <option value="CE">Cédula de Extrangería</option>
@@ -99,7 +99,7 @@
 
                     <div class="mb-3">
                         <label for="exampleFormControlTextarea1" class="form-label">Digite el concepto:</label>
-                        <textarea class="form-control" id="exampleFormControlTextarea1" name="concepto"
+                        <textarea class="form-control" name="concepto" id="concepto"
                             rows="3" autocomplete="off"></textarea>
                     </div>
                     <input type="hidden" name="ingreso_bancario" id="ingreso_bancario" value="False">
@@ -142,6 +142,7 @@
                             text: centroCosto.nombre
                         }));
                     });
+                    
                     // Limpiar el select de subcentros de costo
                     $('#sub_centro_costo').empty();
                 }
@@ -172,6 +173,92 @@
             });
         });
     });
+    {% if centro_costo %}
+    function cargarOpcionesCentroCostos() {
+        var unidadProductivaId =  "{{ unidad_productiva.id }}"
+        $.ajax({
+                url: '{{server_url}}get_centro_costos/',
+                data: {
+                    'unidad_productiva_id': unidadProductivaId
+                },
+                dataType: 'json',
+                success: function(data) {
+                    // Limpiar el select de centros de costo
+                    $('#centro_costo').empty();
+                    // Agregar las opciones al select de centros de costo
+
+                    $.each(data, function(index, centroCosto) {
+                        $('#centro_costo').append($('<option>', {
+                            value: centroCosto.id,
+                            text: centroCosto.nombre
+                        }));
+                    });
+                    
+                    var centroCostoId = "{{centro_costo.id}}"
+                    $(centro_costo.options).each(function(index, option) {
+                        var optionValue = option.value;
+
+                        if (optionValue === centroCostoId) {
+                            option.selected = true;
+                            
+                            return false; // Sale del bucle each cuando se encuentra la opción deseada
+                        }
+                        });
+                    
+                        var centroCostoId = "{{centro_costo.id}}"
+                    $(centro_costo.options).each(function(index, option) {
+                        var optionValue = option.value;
+
+                        if (optionValue === centroCostoId) {
+                            option.selected = true;
+                            
+                            return false; // Sale del bucle each cuando se encuentra la opción deseada
+                        }
+                        });
+                    
+                    
+                    // Limpiar el select de subcentros de costo
+                    $('#sub_centro_costo').empty();
+                }
+            });
+            var centroCostoId = "{{centro_costo.id}}"
+            // Realizar una petición AJAX para obtener los subcentros de costo
+            $.ajax({
+                url: '{{server_url}}get_subcentro_costos/',
+                data: {
+                    'centro_costo_id': centroCostoId
+                },
+                dataType: 'json',
+                success: function(data) {
+                    // Limpiar el select de subcentros de costo
+                    $('#sub_centro_costo').empty();
+                    // Agregar las opciones al select de subcentros de costo
+                    $.each(data, function(index, subCentroCosto) {
+                        $('#sub_centro_costo').append($('<option>', {
+                            value: subCentroCosto.id,
+                            text: subCentroCosto.nombre
+                        }));
+                    });
+                    var subcentroCostoId = "{{movimiento.sub_centro_costo.id}}"
+                    $(sub_centro_costo.options).each(function(index, option) {
+                        var optionValue = option.value;
+
+                        if (optionValue === subcentroCostoId) {
+                            option.selected = true;
+                            
+                            return false; // Sale del bucle each cuando se encuentra la opción deseada
+                        }
+                        });
+
+                    
+                }
+            });
+                          
+                            
+                    
+    }
+    {% endif %}
+        
     </script>
     
 
@@ -294,16 +381,94 @@
                 },
                 error: function() {
                     // Maneja el error de alguna manera según tus necesidades
-                    $('#egresos_caja').html('No se pudieron obtener los datos.');
-                    $('#disponible_caja').html('No se pudieron obtener los datos.');
-                    $('#ingresos_caja').html('No se pudieron obtener los datos.');
-                    $('#egresos_bancarios').html('No se pudieron obtener los datos.');
-                    $('#disponible_bancarios').html('No se pudieron obtener los datos.');
-                    $('#ingresos_bancarios').html('No se pudieron obtener los datos.');
+                    $('#egresos_caja').html('$0.00');
+                    $('#disponible_caja').html('$0.00');
+                    $('#ingresos_caja').html('$0.00');
+                    $('#egresos_bancarios').html('$0.00');
+                    $('#disponible_bancarios').html('$0.00');
+                    $('#ingresos_bancarios').html('$0.00');
                 }
             });
         });
     });
 </script>
+</body>
+{% if movimiento %}
+    <script>
+        function precargarValores() {
+            // Precargar valores del movimiento
 
+            document.getElementById('nom_provedor').value = "{{ movimiento.nombre_proveedor }}";
+            document.getElementById('tipo_doc').value = "{{ movimiento.tipo_documento }}";
+            document.getElementById('num_doc').value = "{{ movimiento.numero_documento }}";
+            document.getElementById('billNumber').value = "{{ movimiento.numero_factura }}";
+            document.getElementById('soporte').value = "{{ movimiento.comprobante_factura. }}";
+            document.getElementById('costo_valor').value = "{{ movimiento.valor }}";
+            document.getElementById('concepto').value = "{{ movimiento.concepto }}";
+            // ... Precargar unidad productiva ...
+            var unidad_productiva= document.getElementById('unidad_productiva');
+            unidad_productiva.innerHTML = "";
+            var data= "{{ unidades_productivas }}";
+            data = data.replace(/&quot;/g, '"');
+            data =  JSON.parse(data);
+            for (var i = 0; i < data.length; i++) {
+                var opcion = document.createElement('option');
+                opcion.value = data[i].id;
+                opcion.text = data[i].nombre;
+                unidad_productiva.appendChild(opcion);
+            }
+            var uprodSeleccionada= "{{ unidad_productiva.id }}";
+            
+            for (var i = 0; i < unidad_productiva.options.length; i++) {
+                if (unidad_productiva.options[i].value === uprodSeleccionada) {
+                    unidad_productiva.options[i].selected = true;
+                    cargarOpcionesCentroCostos();
+                    break;
+                }
+                }
+             
+            
+
+            
+                
+            // ... Precargar  seccion factura comprobante...
+            var checkbox = document.getElementById('billCheck');
+            var factura_check_data = "{{ movimiento.factura }}";
+            var seccion = document.getElementById('seccion');
+            var billNumber = document.getElementById('billNumber');
+            var soporte = document.getElementById('soporte');
+            var factura_check = document.getElementById('factura_check');
+            
+            if  (factura_check_data == "True") {
+                checkbox.checked = true;
+                billNumber.required = true;
+                billNumber.value = "{{ movimiento.numero_factura }}";
+                soporte.required = true;
+                factura_check.value = true;
+                seccion.style.display = 'block';
+                console.log("entro");
+            } else {
+                checkbox = false;
+                billNumber.required = false;
+                soporte.required = false;
+                factura_check.value = false;
+                seccion.style.display = 'none';
+                console.log("no entro");
+            }
+            
+            
+
+
+            
+
+            
+            
+        }
+    </script>
+    {% else %}
+    <script>
+        function precargarValores() {}
+    </script>
+
+    {% endif %}
 {% endblock %}

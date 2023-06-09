@@ -159,6 +159,7 @@ def ingresos_ba(request):
     
     if usuario.groups.filter(name__in=['Comun']).exists():
         unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
+        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).first()
         unidad_negocio_nombres = []
         unidad_negocio_id = []
     else:
@@ -181,10 +182,16 @@ def ingresos_ba(request):
         'egresos':egreso,
         'request': request,
         'unidades_productivas':unidades_productivas,
+        
         }
     context['disponible_ba'] = disponible_ba
     context['ingresos_ba'] = ingreso_ba
     context['egresos_ba'] = egreso_ba
+
+    if usuario.groups.filter(name__in=['Comun']).exists():
+        unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
+        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).first()
+        context['unidad_negocio'] = unidad_negocio
     
     return render(request,"ingresos_ba.html",context)
 
@@ -390,7 +397,8 @@ def registrarEgreso(request):
         unidad_productiva=unidad_productiva,
         comprobante_factura=comprobante_factura,
         ingreso_bancario=ingreso_bancario,
-        usuario_admin_ingreso = usuario_admin_ingreso
+        usuario_admin_ingreso = usuario_admin_ingreso,
+        factura=True
         )
         egreso.save()
     
@@ -411,7 +419,8 @@ def registrarEgreso(request):
             valor=costo_valor,
             unidad_productiva=unidad_productiva,
             ingreso_bancario=ingreso_bancario,
-            usuario_admin_ingreso = usuario_admin_ingreso
+            usuario_admin_ingreso = usuario_admin_ingreso,
+            factura=False
         )
         egreso.save()
 

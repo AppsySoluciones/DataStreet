@@ -78,7 +78,7 @@
                             <option value="Rendimientos Financieros">Rendimientos Financieros</option>
                         </select>
                         
-                        <div id="selectVentas" name="selectVentas" onchange="mostrarSelect()" style="display: none;">
+                        <div id="selectVentas" name="selectVentas" style="display: none;">
                             <label for="tipoVentas">Selecciona el tipo de ventas:</label>
                             <select id="tipoVentas" name="tipoVentas">
                                 <!-- Las opciones se cargarán dinámicamente mediante la solicitud AJAX -->
@@ -328,10 +328,15 @@
             var opcionesTipo = document.getElementById("opciones");
             var selectVentas = document.getElementById("selectVentas");
             {% if user.is_authenticated and user|has_group:"Comun" %}
-            var uprod = '{{unidad_negocio.nombre}}';
+                {% if unidad_negocio%}
+                var uprod = '{{unidad_negocio.nombre}}';
+                {% else %}
+                var uprod = '{{centros.nombre}}';
+                {% endif %}
             {% else %}
             var uprod = opcionesSelect.value
             {% endif %}
+            console.log(uprod);
 
             if (uprod === "Ganaderia" &&  opcionesTipo.value==="ventas") {
                 selectVentas.style.display = "block";
@@ -372,6 +377,20 @@
                         option.text = data[i].label;
                         tipoVentasSelect.appendChild(option);
                     }
+                    {% if movimiento.accion %}
+                    var ventas = "{{ movimiento.accion }}";
+                    var frases = ventas.split(" "); // Dividir el texto en frases utilizando el punto como separador
+                    var primeraFrase = frases[0];
+                    var restoFrases = frases.slice(1); // Obtener el resto de las frases (desde la segunda frase hasta el final)
+                    var textoResto = restoFrases.join(".");
+                    for (var i = 0; i < tipoVentasSelect.options.length; i++) {
+                        console.log(tipoVentasSelect.options[i].value);
+                        if (textoResto.includes(tipoVentasSelect.options[i].value)) {
+                            tipoVentasSelect.options[i].selected = true;
+                            break;
+                        }
+                    }
+                    {% endif %}
                 },
                 error: function () {
                     console.log("Error al obtener las opciones de ventas");
@@ -414,31 +433,25 @@
                 }
             // ... Precargar ventas ...
             var opciones = document.getElementById('opciones');
-            var tipoventas = document.getElementById('tipoVentas');
+            
 
             var ventas = "{{ movimiento.accion }}";
             var frases = ventas.split(" "); // Dividir el texto en frases utilizando el punto como separador
             var primeraFrase = frases[0];
             var restoFrases = frases.slice(1); // Obtener el resto de las frases (desde la segunda frase hasta el final)
             var textoResto = restoFrases.join(".")
-            console.log(primeraFrase)
-            console.log(textoResto)
+            
             
 
             for (var i = 0; i < opciones.options.length; i++) {
                 if (ventas.includes(opciones.options[i].value)) {
                     opciones.options[i].selected = true;
                     mostrarSelect()
-                    for (var i = 0; i < tipoventas.options.length; i++) {
-                        if (textoResto.includes(tipoventas.options[i].value)) {
-                            tipoventas.options[i].selected = true;
-                            break;
-                    }
+                    
 
                     break;
                 }
             }
-
 
 
             
@@ -447,6 +460,11 @@
             
         }
     </script>
+    {% else %}
+    <script>
+        function precargarValores() {}
+    </script>
+
     {% endif %}
     
 
