@@ -646,6 +646,8 @@ def edicion_mov(request,pk):
         'unidades_productivas':json.dumps(data_uprod),
 
         }
+    
+    
     if movimientos.ingreso_bancario == True and movimientos.tipo_ingreso =='IN':
         return render(request,"ingresos_ba.html",context)
     elif movimientos.ingreso_bancario == False and movimientos.tipo_ingreso =='IN':
@@ -691,21 +693,39 @@ def edicion_form(request,pk):
 
     if factura_check == 'true':
         num_factura = request.POST['num_factura']
-        comprobante_factura = request.FILES['soporte']
-        egreso = Movimiento.objects.filter(pk=pk).update(
-        sub_centro_costo=sub_centro_costo,
-        fecha_registro=fecha_registro,
-        nombre_proveedor=nom_provedor,
-        tipo_documento=tipo_doc,
-        numero_documento=num_doc,
-        numero_factura=num_factura,
-        concepto = concepto,
-        estado='En proceso',
-        tipo_ingreso='OUT',
-        valor=costo_valor,
-        unidad_productiva=unidad_productiva,
-        comprobante_factura=comprobante_factura
-        )
+        if 'soporte'in request.FILES:
+            comprobante_factura = request.FILES['soporteb']
+            egreso = Movimiento.objects.filter(pk=pk).update(
+            sub_centro_costo=sub_centro_costo,
+            fecha_registro=fecha_registro,
+            nombre_proveedor=nom_provedor,
+            tipo_documento=tipo_doc,
+            numero_documento=num_doc,
+            numero_factura=num_factura,
+            concepto = concepto,
+            estado='En proceso',
+            tipo_ingreso='OUT',
+            valor=costo_valor,
+            unidad_productiva=unidad_productiva,
+            comprobante_factura=comprobante_factura
+            )
+            
+        else:
+            comprobante_factura = None
+            egreso = Movimiento.objects.filter(pk=pk).update(
+            sub_centro_costo=sub_centro_costo,
+            fecha_registro=fecha_registro,
+            nombre_proveedor=nom_provedor,
+            tipo_documento=tipo_doc,
+            numero_documento=num_doc,
+            numero_factura=num_factura,
+            concepto = concepto,
+            estado='En proceso',
+            tipo_ingreso='OUT',
+            valor=costo_valor,
+            unidad_productiva=unidad_productiva
+            )
+            
     
     else:
         egreso = Movimiento.objects.filter(pk=pk).update(
@@ -721,6 +741,74 @@ def edicion_form(request,pk):
         )
     return redirect(f'{URL_SERVER}movimiento/editar/{movimiento.pk}/')
 
+
+def edicion_form_egreso(request,pk):
+    movimiento = get_object_or_404(Movimiento,pk=pk)
+    usuario = Usuario.objects.filter(pk=request.user.id).first()
+    centro_costo=request.POST['centro_costo']
+    sub_centro_costo_id=request.POST['sub_centro_costo']
+    nom_provedor = request.POST['nom_provedor']
+    tipo_doc = request.POST['tipo_doc']
+    num_doc = request.POST['num_doc']
+    factura_check = request.POST['factura_check']
+    concepto = request.POST['concepto']
+    
+    costo_valor =request.POST['costo_valor']
+    costo_valor = float(costo_valor.replace(",", "." ))
+    
+    sub_centro_costo= SubCentroCosto.objects.filter(pk=sub_centro_costo_id).first()
+    unidad_productiva = UnidadProductiva.objects.filter(pk=request.POST['unidad_productiva']).first()
+    fecha_registro = datetime.now()
+
+    if factura_check == 'true':
+        num_factura = request.POST['num_factura']
+        if 'soporteb'in request.FILES:
+            comprobante_factura = request.FILES['soporteb']
+            egreso = Movimiento.objects.filter(pk=pk).update(
+            sub_centro_costo=sub_centro_costo,
+            fecha_registro=fecha_registro,
+            nombre_proveedor=nom_provedor,
+            tipo_documento=tipo_doc,
+            numero_documento=num_doc,
+            numero_factura=num_factura,
+            concepto = concepto,
+            estado='En proceso',
+            tipo_ingreso='OUT',
+            valor=costo_valor,
+            unidad_productiva=unidad_productiva,
+            comprobante_factura=comprobante_factura
+            )
+            
+        else:
+            comprobante_factura = None
+            egreso = Movimiento.objects.filter(pk=pk).update(
+            sub_centro_costo=sub_centro_costo,
+            fecha_registro=fecha_registro,
+            nombre_proveedor=nom_provedor,
+            tipo_documento=tipo_doc,
+            numero_documento=num_doc,
+            numero_factura=num_factura,
+            concepto = concepto,
+            estado='En proceso',
+            tipo_ingreso='OUT',
+            valor=costo_valor,
+            unidad_productiva=unidad_productiva
+            )
+            
+    
+    else:
+        egreso = Movimiento.objects.filter(pk=pk).update(
+            fecha_registro=fecha_registro,
+            nombre_proveedor=nom_provedor,
+            tipo_documento=tipo_doc,
+            numero_documento=num_doc,
+            concepto = concepto,
+            estado='En proceso',
+            tipo_ingreso='OUT',
+            valor=costo_valor,
+            unidad_productiva=unidad_productiva,
+        )
+    return redirect(f'{URL_SERVER}movimiento/detalle/{movimiento.pk}/')
 def select_unidad_prod(request):
     usuario = get_object_or_404(Usuario,pk=request.user.id)
     if request.POST['unidad_productiva'] == 'None':

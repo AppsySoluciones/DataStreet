@@ -24,7 +24,13 @@
                                 border-bottom-left-radius: 30px;
                                 border-bottom-right-radius: 30px;
                                 box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.075);">
+                {% if movimiento %}
+                <form action="{{server_url}}movimiento/editaregreso/{{movimiento.id}}/edit" method="POST" enctype="multipart/form-data" onsubmit="convertToNumber()"> {% csrf_token %}
+                {% else %}
                 <form action="{{server_url}}registraregreso/" method="POST" enctype="multipart/form-data" onsubmit="convertToNumber()"> {% csrf_token %}
+
+                {% endif %}
+                
                     <h1 class="text-center text-sm-center lead mb-3" style="color: black;"><b>Formulario de Movimiento
                             de Egresos</b>
                     </h1>
@@ -83,14 +89,22 @@
                                     aria-labelledby="passwordHelpInline" autocomplete="off">
                             </div>
                         </div>
-
+                        <br>
+                        {% if movimiento %}
+                        
+                        <label for="inputPassword6" class="col-form-label">Adjunte otro archivo si desea replazar el anterior:</label>
+                        <input type="file" id="soporteb" name="soporteb"><br>
+                        Comprobante actual: <a href="{{server_url}}movimiento/comprobante/{{movimiento.pk}}" target="_blank"> {{movimiento.comprobante_factura }}</a>
+                        {% else %}
                         <label>Adjunte el soporte:</label>
                         <input type="file" id="soporte" name="soporte"><br><br>
+
+                        {% endif %}
                         <!-- <input type="submit" value="Subir Archivo"> -->
 
 
                     </div>
-
+                    <br>
                     <div class="form-floating  mb-3">
                         <label for="inputPassword6" class="col-form-label mb-3">Valor</label>
                         <input type="text" name="costo_valor" id="costo_valor" class="form-control" placeholder="0.00"
@@ -176,6 +190,7 @@
     {% if centro_costo %}
     function cargarOpcionesCentroCostos() {
         var unidadProductivaId =  "{{ unidad_productiva.id }}"
+        var centroCostoId = "{{centro_costo.id}}"
         $.ajax({
                 url: '{{server_url}}get_centro_costos/',
                 data: {
@@ -194,7 +209,8 @@
                         }));
                     });
                     
-                    var centroCostoId = "{{centro_costo.id}}"
+                    centro_cost = document.getElementById("centro_costo");
+                    console.log(centro_cost)
                     $(centro_costo.options).each(function(index, option) {
                         var optionValue = option.value;
 
@@ -205,24 +221,17 @@
                         }
                         });
                     
-                        var centroCostoId = "{{centro_costo.id}}"
-                    $(centro_costo.options).each(function(index, option) {
-                        var optionValue = option.value;
 
-                        if (optionValue === centroCostoId) {
-                            option.selected = true;
-                            
-                            return false; // Sale del bucle each cuando se encuentra la opción deseada
-                        }
-                        });
+                    
                     
                     
                     // Limpiar el select de subcentros de costo
                     $('#sub_centro_costo').empty();
                 }
             });
-            var centroCostoId = "{{centro_costo.id}}"
+            
             // Realizar una petición AJAX para obtener los subcentros de costo
+            console.log(centroCostoId)
             $.ajax({
                 url: '{{server_url}}get_subcentro_costos/',
                 data: {
@@ -253,7 +262,6 @@
                     
                 }
             });
-                          
                             
                     
     }
@@ -402,7 +410,7 @@
             document.getElementById('tipo_doc').value = "{{ movimiento.tipo_documento }}";
             document.getElementById('num_doc').value = "{{ movimiento.numero_documento }}";
             document.getElementById('billNumber').value = "{{ movimiento.numero_factura }}";
-            document.getElementById('soporte').value = "{{ movimiento.comprobante_factura. }}";
+            
             document.getElementById('costo_valor').value = "{{ movimiento.valor }}";
             document.getElementById('concepto').value = "{{ movimiento.concepto }}";
             // ... Precargar unidad productiva ...
@@ -436,21 +444,21 @@
             var factura_check_data = "{{ movimiento.factura }}";
             var seccion = document.getElementById('seccion');
             var billNumber = document.getElementById('billNumber');
-            var soporte = document.getElementById('soporte');
+            
             var factura_check = document.getElementById('factura_check');
             
             if  (factura_check_data == "True") {
                 checkbox.checked = true;
                 billNumber.required = true;
                 billNumber.value = "{{ movimiento.numero_factura }}";
-                soporte.required = true;
+                
                 factura_check.value = true;
                 seccion.style.display = 'block';
                 console.log("entro");
             } else {
                 checkbox = false;
                 billNumber.required = false;
-                soporte.required = false;
+                
                 factura_check.value = false;
                 seccion.style.display = 'none';
                 console.log("no entro");
