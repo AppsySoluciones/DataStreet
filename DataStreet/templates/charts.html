@@ -20,6 +20,14 @@
 
     <!-- Custom styles for this template-->
     <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
+    <!-- Include Required Prerequisites -->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />
+    
+    <!-- Include Date Range Picker -->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 
 </head>
 
@@ -43,6 +51,18 @@
 
                     <!-- Page Heading -->
                     <h1 class="h3 mb-2 text-gray-800">Dashboard</h1>
+                    <div class="row justify-content-center">
+                        <label>Ingrese un rango de fechas:</label>
+                        <div class="col-3" style="align-content: center;">
+                            <input type="text" name="daterange" id="daterange" value="" onchange="filtrarfechas()"/>
+                        </div>
+                        <div class="col-3">
+                            
+                        </div>
+                        <div class="col-3"></div>
+                        <div class="col-3"></div>
+                    
+                    </div>
 
                     <!-- Content Row -->
                     <div class="row">
@@ -113,12 +133,12 @@
                                         <div class="mb-4">
                                             <i class="bx bx-map-pin text-primary display-4"></i>
                                         </div>
-                                        <h3>{% for item in top_3_egresos_centrocostos %}
+                                        <h3 id="valuetopegresos">{% for item in top_3_egresos_centrocostos %}
                                             {% if forloop.counter == 1 %}
                                             {{item.suma_valor}}
                                             {% endif %}
                                             {% endfor %}</h3>
-                                        <p>
+                                        <p id="labeltopegresos">
                                             {% for item in top_3_egresos_centrocostos %}
                                             {% if forloop.counter == 1 %}
                                             {{item.sub_centro_costo}}
@@ -128,7 +148,7 @@
                     
                                     <div class="table-responsive mt-4">
                                         <table class="table align-middle table-nowrap">
-                                            <tbody>
+                                            <tbody id="topegresos_centrocostos_contendor">
                                                 
                                                 {% for uprod in top_3_egresos_centrocostos %}
                                                 <tr>
@@ -170,12 +190,12 @@
                                         <div class="mb-4">
                                             <i class="bx bx-map-pin text-primary display-4"></i>
                                         </div>
-                                        <h3>{% for item in top_3_ingresos %}
+                                        <h3 id="value_top_ingresos">{% for item in top_3_ingresos %}
                                             {% if forloop.counter == 1 %}
                                             {{item.suma}}
                                             {% endif %}
                                             {% endfor %}</h3>
-                                        <p>
+                                        <p id="label_top_ingresos">
                                             {% for item in top_3_ingresos %}
                                             {% if forloop.counter == 1 %}
                                             {{item.unidad_productiva}}
@@ -197,7 +217,7 @@
                                                     </td>
                                                     <td>
                                                         <div class="progress bg-transparent progress-sm">
-                                                            <div class="progress-bar bg-success rounded" role="progressbar"
+                                                            <div class="progress-bar bg-primary rounded" role="progressbar"
                                                                 style="width: {{uprod.with}}%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">
                                                             </div>
                                                         </div>
@@ -227,12 +247,12 @@
                                         <div class="mb-4">
                                             <i class="bx bx-map-pin text-primary display-4"></i>
                                         </div>
-                                        <h3>{% for item in top_3_egresos %}
+                                        <h3 id="value_top_egresos">{% for item in top_3_egresos %}
                                             {% if forloop.counter == 1 %}
                                             {{item.suma}}
                                             {% endif %}
                                             {% endfor %}</h3>
-                                        <p>
+                                        <p id="label_top_egresos">
                                             {% for item in top_3_egresos %}
                                             {% if forloop.counter == 1 %}
                                             {{item.unidad_productiva}}
@@ -303,6 +323,116 @@
     <!-- <script src="{% static 'js/demo/chart-pie-demo.js' %}"></script> -->
     <script src="{% static 'js/demo/chart-bar-demo.js' %}"></script>
 
+    <script>
+        function  filtrarfechas() {
+            var data_line;
+            var daterange = document.getElementById('daterange').value;
+
+            console.log('se filtraron las fechas!!')
+            console.log(daterange)
+            $.ajax({
+                url: "{{ server_url }}get_filtred_data/",
+                type: "GET",
+                data: {
+                    'daterange': daterange
+                },
+                success: function (data) {
+                    data_line = data;
+                    console.log(data_line)
+                    myLineChart.data.labels = data_line.fechas ;
+                    myLineChart.data.datasets[0].data = data_line.ingresos_chart;
+                    myLineChart.data.datasets[1].data = data_line.egresos_chart;
+                    myLineChart.update();
+                    myPieChart.data.datasets[0].data = [data_line.pie_ingresos, data_line.pie_egresos];
+                    myPieChart.update();
+
+                    var valuetopegresos = document.getElementById('valuetopegresos');
+                    valuetopegresos.innerHTML = data_line.top_3_egresos_centrocostos[0].suma_valor;
+                    var labeltopegresos = document.getElementById('labeltopegresos');
+                    labeltopegresos.innerHTML = data_line.top_3_egresos_centrocostos[0].sub_centro_costo;
+                    var lista = data_line.top_3_egresos_centrocostos;
+                    var seccionHtml = '';
+
+                    for (var i = 0; i < lista.length; i++) {
+                        var dato = lista[i];
+                        
+                        seccionHtml += '<tr>' +
+                            '<td style="width: 30%">' +
+                                '<p class="mb-0">' + dato.sub_centro_costo + '</p>' +
+                            '</td>' +
+                            '<td style="width: 25%">' +
+                                '<h5 class="mb-0">' + dato.suma_valor + '</h5>' +
+                            '</td>' +
+                            '<td>' +
+                                '<div class="progress bg-transparent progress-sm">' +
+                                    '<div class="progress-bar bg-success rounded" role="progressbar" style="width: ' + dato.with + '%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">' +
+                                    '</div>' +
+                                '</div>' +
+                            '</td>' +
+                        '</tr>';
+                    }
+                    var contenedor = document.getElementById('topegresos_centrocostos_contendor');
+                    contenedor.innerHTML = seccionHtml;
+
+                    var value_top_ingresos = document.getElementById('value_top_ingresos');
+                    value_top_ingresos.innerHTML = data_line.top_3_ingresos[0].suma;
+                    var label_top_ingresos = document.getElementById('label_top_ingresos');
+                    label_top_ingresos.innerHTML = data_line.top_3_ingresos[0].unidad_productiva;
+                    var lista_egresos = data_line.top_3_ingresos;
+                    var seccionHtml = '';
+                    for (var i = 0; i < lista.length; i++) {
+                        var dato = lista_egresos[i];
+                        
+                        seccionHtml += '<tr>' +
+                            '<td style="width: 30%">' +
+                                '<p class="mb-0">' + dato.unidad_productiva + '</p>' +
+                            '</td>' +
+                            '<td style="width: 25%">' +
+                                '<h5 class="mb-0">' + dato.suma + '</h5>' +
+                            '</td>' +
+                            '<td>' +
+                                '<div class="progress bg-transparent progress-sm">' +
+                                    '<div class="progress-bar bg-primary rounded" role="progressbar" style="width: ' + dato.with + '%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">' +
+                                    '</div>' +
+                                '</div>' +
+                            '</td>' +
+                        '</tr>';
+                    }
+
+
+                    var value_top_egresos = document.getElementById('value_top_egresos');
+                    value_top_egresos.innerHTML = data_line.top_3_egresos[0].suma;
+                    var label_top_egresos = document.getElementById('label_top_egresos');
+                    label_top_egresos.innerHTML = data_line.top_3_egresos[0].unidad_productiva;
+                    var lista_egresos = data_line.top_3_egresos;
+                    var seccionHtml = '';
+                    for (var i = 0; i < lista.length; i++) {
+                        var dato = lista_egresos[i];
+                        
+                        seccionHtml += '<tr>' +
+                            '<td style="width: 30%">' +
+                                '<p class="mb-0">' + dato.unidad_productiva + '</p>' +
+                            '</td>' +
+                            '<td style="width: 25%">' +
+                                '<h5 class="mb-0">' + dato.suma + '</h5>' +
+                            '</td>' +
+                            '<td>' +
+                                '<div class="progress bg-transparent progress-sm">' +
+                                    '<div class="progress-bar bg-primary rounded" role="progressbar" style="width: ' + dato.with + '%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">' +
+                                    '</div>' +
+                                '</div>' +
+                            '</td>' +
+                        '</tr>';
+                    }
+
+                    
+
+                }})
+            
+    
+        }
+    </script>
+
     
 
 
@@ -340,10 +470,10 @@ return s.join(dec);
 
 // Area Chart Example
 var ctx = document.getElementById("myAreaChart");
-var myLineChart = new Chart(ctx, {
+const myLineChart = new Chart(ctx, {
 type: 'line',
 data: {
-    labels: [{%for data in fechas %}'{{data}}',{% endfor %}],
+labels: [{%for data in fechas %}'{{data}}',{% endfor %}],
 datasets: [{
     label: "Ingresos acumulados",
     lineTension: 0.3,
@@ -531,6 +661,29 @@ var myPieChart = new Chart(ctx, {
     });
     
     </script>
+
+
+
+<!-- Include Required Prerequisites -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />
+ 
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+<script type="text/javascript">
+$('input[name="daterange"]').daterangepicker(
+{
+    locale: {
+      format: 'YYYY-MM-DD'
+    },
+    startDate: '2023-01-01',
+    endDate: '2023-12-31'
+});
+
+
+</script>
 
 
 {% endblock %}

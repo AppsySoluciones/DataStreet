@@ -20,6 +20,9 @@ import json
 from django.http import JsonResponse
 from django.views.generic import View
 from django.http import HttpResponse
+from dateutil.parser import parse
+from dateutil.rrule import rrule, DAILY
+from datetime import timedelta
 
 
 URL_SERVER = settings.URL_SERVER
@@ -300,9 +303,10 @@ def registrarIngreso(request):
         else:
             unidad_productiva_id = request.POST['unidad_productiva']
             unidad_productiva = get_object_or_404(UnidadProductiva, pk=unidad_productiva_id)  
-        
+        fecha_registro = request.POST['fecha_registro']
+        fecha_datetime = datetime.strptime(fecha_registro, "%Y-%m-%d")
         ingreso = Movimiento.objects.create(
-            fecha_registro = datetime.now(),
+            fecha_registro = fecha_datetime,
             unidad_productiva=unidad_productiva,
             accion=accion,
             valor=costo_valor,
@@ -315,6 +319,9 @@ def registrarIngreso(request):
             negociacion=detalle
 
         )
+        ingreso.save()
+        ingreso = Movimiento.objects.get(id=ingreso.id)
+        ingreso.fecha_registro = fecha_datetime
         ingreso.save()
         messages.success(request, f'¡El Ingreso Bancario {concepto} se registró correctamente!')
         return redirect(f'{URL_SERVER}ingreso_ba/')
@@ -1230,3 +1237,39 @@ def get_unegocio(request):
     unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__pk=unidad_prod_id.id).first()
     data = {'id': unidad_negocio.id, 'nombre': unidad_negocio.nombre} 
     return JsonResponse(data, safe=False)
+
+def filtrar_data_dashboard(request):
+    
+
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    if usuario.groups.filter(name__in=['Auditor']).exists():
+        filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
+        movimientos = get_movimientos_usuario(usuario).filter(filters)
+
+    else:
+        movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+    
+
+    if usuario.groups.filter(name='Auditor').exists():
+        movimientos = movimientos.filter(tipo_ingreso='OUT')
+
+    if 'daterange' in request.GET:
+        fecha_str = request.GET['daterange']
+        
+
+        # Obtén las fechas de inicio y fin del rango 
+        fecha_inicio, fecha_fin = map(parse, fecha_str.split(' - '))
+
+        # Genera una lista de fechas dentro del rango utilizando rrule y DAILY
+        
+
+        # Filtra el objeto utilizando el rango de fechas 
+        movimientos = movimientos.filter(Q(fecha_registro__gte=fecha_inicio.replace(hour=0,minute=0), fecha_registro__lte=fecha_fin.replace(hour=23,minute=59)))
+    context = {}
+    context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
+    context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
+    context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
+    context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
+    context['top_3_egresos_centrocostos'] = centro_costos_uprod(movimientos)
+
+    return JsonResponse(context, safe=False)

@@ -10,6 +10,7 @@ from openpyxl import load_workbook
 import locale
 import uuid
 import openpyxl
+from django.utils import timezone
 from openpyxl.utils import get_column_letter
 from openpyxl import Workbook
 from django.http import HttpResponse
@@ -37,7 +38,7 @@ class Movimiento(models.Model):
     estado = models.CharField(max_length=10,null=True,blank=True)
     accion = models.CharField(max_length=200,null=True,blank=True)
     uuid = models.SlugField(blank=True)
-    fecha_registro = models.DateTimeField(auto_now=True,null=True,blank=True)
+    fecha_registro = models.DateTimeField(default=timezone.now, null=True, blank=True, editable=True)
     fecha_modificacion = models.DateTimeField(auto_now_add=True,null=True,blank=True)
     concepto = models.CharField(max_length=200,null=True,blank=True)
     valor = models.FloatField(default=0)
