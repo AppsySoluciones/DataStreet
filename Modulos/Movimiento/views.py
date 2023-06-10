@@ -188,10 +188,10 @@ def ingresos_ba(request):
     context['ingresos_ba'] = ingreso_ba
     context['egresos_ba'] = egreso_ba
 
-    if usuario.groups.filter(name__in=['Comun']).exists():
+    """ if usuario.groups.filter(name__in=['Comun']).exists():
         unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
-        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).first()
-        context['unidad_negocio'] = unidad_negocio
+        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).all()
+        context['unidad_negocio'] = unidad_negocio """
     
     return render(request,"ingresos_ba.html",context)
 
@@ -1109,12 +1109,24 @@ class Pdf_egresos_ba (View):
             return redirect(f'{URL_SERVER}tablaegreba/')
 
 def dispo_caja_egresos(request):
-    id = int(request.GET['opcion'])
-    unidad_prod = get_object_or_404(UnidadProductiva, pk=id)
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    egresos_caja = Movimiento.objects.filter(Q(ingreso_bancario=False) & Q(tipo_ingreso='OUT') & Q(unidad_productiva=unidad_prod)).all().aggregate(Sum('valor'))    
-    egresos_bancarios = Movimiento.objects.filter(Q(ingreso_bancario=True) & Q(tipo_ingreso='OUT') & Q(unidad_productiva=unidad_prod)).all().aggregate(Sum('valor'))
-    ingresos_bancarios = Movimiento.objects.filter(Q(ingreso_bancario=True) & Q(tipo_ingreso='IN') & Q(unidad_productiva=unidad_prod)).all().aggregate(Sum('valor'))
+    filtros_egresos_caja = Q(ingreso_bancario=False) & Q(tipo_ingreso='OUT')
+    filtros_egresos_bancarios = Q(ingreso_bancario=True) & Q(tipo_ingreso='OUT')
+    filtros_ingresos_bancarios = Q(ingreso_bancario=True) & Q(tipo_ingreso='IN')
+    filtros_ingresos_caja = Q(ingreso_bancario=False) & Q(tipo_ingreso='IN')
+    
+    if not request.GET['opcion'] == '':
+        id = int(request.GET['opcion'])
+        unidad_prod = get_object_or_404(UnidadProductiva, pk=id)
+        filtros_egresos_caja &= Q(unidad_productiva=unidad_prod)
+        filtros_egresos_bancarios &= Q(unidad_productiva=unidad_prod)
+        filtros_ingresos_bancarios &= Q(unidad_productiva=unidad_prod)
+        filtros_ingresos_caja &= Q(unidad_productiva=unidad_prod)
+        
+    egresos_caja = Movimiento.objects.filter(filtros_egresos_caja).all().aggregate(Sum('valor'))    
+    egresos_bancarios = Movimiento.objects.filter(filtros_egresos_bancarios).all().aggregate(Sum('valor'))
+    ingresos_bancarios = Movimiento.objects.filter(filtros_ingresos_bancarios).all().aggregate(Sum('valor'))
+    ingresos_caja = Movimiento.objects.filter(filtros_ingresos_caja).all().aggregate(Sum('valor'))
     if ingresos_bancarios['valor__sum'] == None:
         ingresos_bancarios = 0
     else:
@@ -1127,6 +1139,8 @@ def dispo_caja_egresos(request):
 
     if egresos_caja['valor__sum'] == None:
         egresos_caja = 0
+    else:
+        egresos_caja = egresos_caja['valor__sum']
     saldo_bancario = ingresos_bancarios - egresos_bancarios
     data = {
         'Egresos_caja':locale.currency(egresos_caja, symbol=True, grouping=True),
@@ -1208,4 +1222,11 @@ def get_subcentros(request):
     subcentros = centro_costo.subcentro.order_by('nombre') 
 
     data = [{'id': cc.id, 'nombre': cc.nombre} for cc in subcentros]
+    return JsonResponse(data, safe=False)
+
+def get_unegocio(request):
+    pk = request.GET['unidad_productiva_id']
+    unidad_prod_id = get_object_or_404(UnidadProductiva, pk=pk)
+    unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__pk=unidad_prod_id.id).first()
+    data = {'id': unidad_negocio.id, 'nombre': unidad_negocio.nombre} 
     return JsonResponse(data, safe=False)

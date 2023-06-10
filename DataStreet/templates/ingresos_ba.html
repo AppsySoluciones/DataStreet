@@ -80,7 +80,7 @@
                         
                         <div id="selectVentas" name="selectVentas" style="display: none;">
                             <label for="tipoVentas">Selecciona el tipo de ventas:</label>
-                            <select id="tipoVentas" name="tipoVentas">
+                            <select id="tipoVentas" name="tipoVentas" onchange="mostrarSelect()">
                                 <!-- Las opciones se cargarán dinámicamente mediante la solicitud AJAX -->
                             </select>
                         </div>
@@ -310,12 +310,12 @@
                     },
                     error: function() {
                         // Maneja el error de alguna manera según tus necesidades
-                        $('#egresos_caja').html('No se pudieron obtener los datos.');
-                        $('#disponible_caja').html('No se pudieron obtener los datos.');
-                        $('#ingresos_caja').html('No se pudieron obtener los datos.');
-                        $('#egresos_bancarios').html('No se pudieron obtener los datos.');
-                        $('#disponible_bancarios').html('No se pudieron obtener los datos.');
-                        $('#ingresos_bancarios').html(response.Saldo_bancario);
+                        $('#egresos_caja').html('$0.00');
+                        $('#disponible_caja').html('$0.00');
+                        $('#ingresos_caja').html('$0.00');
+                        $('#egresos_bancarios').html('$0.00');
+                        $('#disponible_bancarios').html('$0.00');
+                        $('#ingresos_bancarios').html('$0.00');
                     }
                 });
             });
@@ -323,20 +323,57 @@
     </script>
     
     <script>
+        var totaluprod;
+        var uprod;
         function mostrarSelect() {
             var opcionesSelect = document.getElementById("centro_costo");
             var opcionesTipo = document.getElementById("opciones");
             var selectVentas = document.getElementById("selectVentas");
+            
             {% if user.is_authenticated and user|has_group:"Comun" %}
-                {% if unidad_negocio%}
-                var uprod = '{{unidad_negocio.nombre}}';
-                {% else %}
-                var uprod = '{{centros.nombre}}';
-                {% endif %}
+                
+                
+
+                function miFuncion(callback) {
+                var unidad_productivaId = document.getElementById("unidad_productiva").value;
+                $.ajax({
+                    url: '{{server_url}}get_unegocio/',
+                    data: {
+                    'unidad_productiva_id': unidad_productivaId
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                    uprod = data.nombre; // Asignar el valor a la variable uprod
+                    callback(uprod);
+                    }
+                });
+                }
+
+                miFuncion(function(resultado) {
+                    // Imprimirá el valor de uprod fuera de miFuncion
+                totaluprod = uprod;
+                if (uprod === "Ganaderia" &&  opcionesTipo.value==="ventas") {
+                selectVentas.style.display = "block";
+                cargarOpcionesTipoVentas();
+                
+                    } else {
+                        selectVentas.style.display = "none";
+                    }
+                    if (uprod === "Agricultura" &&  opcionesTipo.value==="ventas" ) {
+                        selectVentas.style.display = "block";
+                        cargarOpcionesTipoVentas();
+                    }
+                });
+
+
+
+
+                
             {% else %}
-            var uprod = opcionesSelect.value
+            ;
+            uprod = opcionesSelect.value
             {% endif %}
-            console.log(uprod);
+
 
             if (uprod === "Ganaderia" &&  opcionesTipo.value==="ventas") {
                 selectVentas.style.display = "block";
@@ -354,15 +391,14 @@
         function cargarOpcionesTipoVentas() {
             var opcionesSelect = document.getElementById("centro_costo");
             {% if user.is_authenticated and user|has_group:"Comun" %}
-            var uprod = '{{unidad_negocio.nombre}}';
-            {% else %}
-            var uprod = opcionesSelect.value
-            {% endif %}
+            console.log(uprod);
+            
+        
             $.ajax({
                 url: "{{ server_url }}dispocaja/",
                 type: "GET",
                 data: {
-                    opcion: uprod
+                    'opcion': uprod
                 },
                 success: function (data) {
                     var tipoVentasSelect = document.getElementById("tipoVentas");
@@ -384,7 +420,6 @@
                     var restoFrases = frases.slice(1); // Obtener el resto de las frases (desde la segunda frase hasta el final)
                     var textoResto = restoFrases.join(".");
                     for (var i = 0; i < tipoVentasSelect.options.length; i++) {
-                        console.log(tipoVentasSelect.options[i].value);
                         if (textoResto.includes(tipoVentasSelect.options[i].value)) {
                             tipoVentasSelect.options[i].selected = true;
                             break;
@@ -393,7 +428,47 @@
                     {% endif %}
                 },
                 error: function () {
-                    console.log("Error al obtener las opciones de ventas");
+                    console.log("Error al obtener las opciones de ventas 1");
+                }
+            });
+            {% else %}
+            uprod = opcionesSelect.value
+            {% endif %}
+            $.ajax({
+                url: "{{ server_url }}dispocaja/",
+                type: "GET",
+                data: {
+                    'opcion': uprod
+                },
+                success: function (data) {
+                    var tipoVentasSelect = document.getElementById("tipoVentas");
+
+                    // Eliminar las opciones existentes
+                    tipoVentasSelect.innerHTML = "";
+
+                    // Agregar las nuevas opciones desde la respuesta del servidor
+                    for (var i = 0; i < data.length; i++) {
+                        var option = document.createElement("option");
+                        option.value = data[i].value;
+                        option.text = data[i].label;
+                        tipoVentasSelect.appendChild(option);
+                    }
+                    {% if movimiento.accion %}
+                    var ventas = "{{ movimiento.accion }}";
+                    var frases = ventas.split(" "); // Dividir el texto en frases utilizando el punto como separador
+                    var primeraFrase = frases[0];
+                    var restoFrases = frases.slice(1); // Obtener el resto de las frases (desde la segunda frase hasta el final)
+                    var textoResto = restoFrases.join(".");
+                    for (var i = 0; i < tipoVentasSelect.options.length; i++) {
+                        if (textoResto.includes(tipoVentasSelect.options[i].value)) {
+                            tipoVentasSelect.options[i].selected = true;
+                            break;
+                        }
+                    }
+                    {% endif %}
+                },
+                error: function () {
+                    console.log("Error al obtener las opciones de ventas 2");
                 }
             });
         }

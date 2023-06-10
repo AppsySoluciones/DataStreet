@@ -35,4 +35,5 @@ urlpatterns = [
     path('filter_graphs/', views.filter_graphs, name='filter_graphs'),
     path('get_centro_costos/', views.get_centro_costos, name='get_centro_costos'),
     path('get_subcentro_costos/', views.get_subcentros, name='get_subcentro_costos'),
+    path('get_unegocio/', views.get_unegocio, name='get_unegocio'),
     ]
