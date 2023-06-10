@@ -68,7 +68,22 @@ def home(request):
     context['disponible_ba'] = disponible_ba
     context['ingresos_ba'] = ingreso_ba
     context['egresos_ba'] = egreso_ba
-        
+
+    if usuario.groups.filter(name__in=['Comun']).exists():
+        unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
+        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).first()
+        unidad_negocio_nombres = []
+        unidad_negocio_id = []
+    else:
+        unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all() 
+        unidad_negocio_nombres = {
+        }
+        unidad_negocio_id= {
+        }
+        for unidad in unidad_negocio:
+            unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('nombre',flat=True))
+            unidad_negocio_id[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
+        unidades_productivas = []
 
     if usuario.groups.filter(name='Auditor').exists():
         movimientos = movimientos.filter(tipo_ingreso='OUT')
@@ -80,8 +95,9 @@ def home(request):
     context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
     context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
     context['top_3_egresos_centrocostos'] = centro_costos_uprod(movimientos)
-
     context['unidades_productivas'] = unidades_productivas
+    context['centros'] = unidad_negocio_nombres
+    context['centros_id'] = unidad_negocio_id
 
     return render(request,"charts.html",context) 
 
@@ -1265,6 +1281,12 @@ def filtrar_data_dashboard(request):
 
         # Filtra el objeto utilizando el rango de fechas 
         movimientos = movimientos.filter(Q(fecha_registro__gte=fecha_inicio.replace(hour=0,minute=0), fecha_registro__lte=fecha_fin.replace(hour=23,minute=59)))
+    
+    if 'unidad_productiva' in request.GET:
+        unidad_prod = request.GET['unidad_productiva']
+        if unidad_prod != '':
+            movimientos = movimientos.filter(unidad_productiva__nombre=unidad_prod)
+
     context = {}
     context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
     context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
