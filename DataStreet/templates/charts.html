@@ -22,12 +22,14 @@
     <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
     <!-- Include Required Prerequisites -->
     <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
-    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <!-- <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script> -->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
     <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />
     
     <!-- Include Date Range Picker -->
     <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
     <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+    <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
 
 </head>
 
@@ -52,15 +54,14 @@
                     <!-- Page Heading -->
                     <h1 class="h3 mb-2 text-gray-800">Dashboard</h1>
                     <div class="row justify-content-center">
-                        <label>Ingrese un rango de fechas:</label>
-                        <div class="col-3" style="align-content: center;">
-                            <input type="text" name="daterange" id="daterange" value="" onchange="filtrarfechas()"/>
+                        <div class="col-4" style="align-content: center;">
+                            <label class="mb-3">Ingrese un rango de fechas:</label>
+                            <input type="text" name="daterange" id="daterange" style="width:100%; box-sizing: border-box;" class="input-group mb-3" value="" onchange="filtrarfechas()"/>
                         </div>
-                        <div class="col-3">
-                            
+                        <div class="col-4">
+
                         </div>
-                        <div class="col-3"></div>
-                        <div class="col-3"></div>
+                        <div class="col-4"></div>
                     
                     </div>
 
@@ -666,13 +667,15 @@ var myPieChart = new Chart(ctx, {
 
 <!-- Include Required Prerequisites -->
 <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
-<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<!-- <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script> -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />
  
 <!-- Include Date Range Picker -->
 <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
 <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 <script type="text/javascript">
+moment.locale('es');
 $('input[name="daterange"]').daterangepicker(
 {
     locale: {
