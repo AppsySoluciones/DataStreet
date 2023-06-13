@@ -71,11 +71,27 @@ def home(request):
 
     if usuario.groups.filter(name__in=['Comun']).exists():
         unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
-        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).first()
-        unidad_negocio_nombres = []
-        unidad_negocio_id = []
-    else:
+        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).all()
+        unidad_negocio_nombres = {}
+        unidad_negocio_id = {}
+
+        for unidad in unidad_negocio:
+            unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.filter(id__in=unidades_productivas).values_list('nombre', flat=True))
+            unidad_negocio_id[unidad.nombre] = list(unidad.unidades_productivas.filter(id__in=unidades_productivas).values_list('id', flat=True))
+
+
+    elif usuario.groups.filter(name__in=['Administrador']).exists():
         unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all() 
+        unidad_negocio_nombres = {
+        }
+        unidad_negocio_id= {
+        }
+        for unidad in unidad_negocio:
+            unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('nombre',flat=True))
+            unidad_negocio_id[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
+        unidades_productivas = []
+    else:
+        unidad_negocio = UnidadNegocio.objects.all()
         unidad_negocio_nombres = {
         }
         unidad_negocio_id= {
@@ -86,7 +102,16 @@ def home(request):
         unidades_productivas = []
 
     if usuario.groups.filter(name='Auditor').exists():
-        movimientos = movimientos.filter(tipo_ingreso='OUT')
+        movimientos = movimientos.filter(unidad_productiva__usuarioAuditor=usuario)
+
+        unidades_productivas = UnidadProductiva.objects.filter(usuarioAuditor=usuario).all()
+        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).all()
+        unidad_negocio_nombres = {}
+        unidad_negocio_id = {}
+
+        for unidad in unidad_negocio:
+            unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.filter(id__in=unidades_productivas).values_list('nombre', flat=True))
+            unidad_negocio_id[unidad.nombre] = list(unidad.unidades_productivas.filter(id__in=unidades_productivas).values_list('id', flat=True))
 
     unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
 

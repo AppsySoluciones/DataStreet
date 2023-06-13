@@ -30,7 +30,7 @@ def area_chart_data(movimientos):
         else:
             fechas.append(movimiento.fecha_registro.strftime("%d/%m/%Y"))
         
-        if movimiento.tipo_ingreso == "IN":
+        if movimiento.tipo_ingreso == "IN" and movimiento.estado == "Aprobado":
             acumulado_egresos = acumulado_egresos+0
             acumulado_ingresos = acumulado_ingresos+int(movimiento.valor)
         elif movimiento.tipo_ingreso == "OUT" and movimiento.estado == "Aprobado":
