@@ -1,6 +1,6 @@
 from Modulos.UnidadProductiva.models import UnidadProductiva
 from Modulos.UnidadNegocio.models import UnidadNegocio
-from Modulos.CentroCostos.models import SubCentroCosto
+from Modulos.CentroCostos.models import SubCentroCosto,CentroCosto
 from Modulos.Usuario.models import Usuario
 from django.db.models import Sum
 from django.db.models import Q
@@ -74,7 +74,7 @@ def export_to_excel(queryset,to_pdf=False):
     worksheet = workbook.active
 
     # Escribir los encabezados de las columnas
-    headers = ['Fecha de Registro', 'Fecha Aprobado', 'Tipo de Ingreso', 'Unidad Productiva', 'Concepto', 'Valor', 'SubCentro Costo', 'Numero de Factura', 'Tipo de Documento', 'Factura', 'Estado', 'Accion', 'Comprobante Factura']
+    headers = ['Fecha de Registro', 'Fecha Aprobado', 'Tipo de Ingreso', 'Unidad Productiva','Usuario Ingreso Caja', 'Concepto', 'Valor','Centro Costo', 'SubCentro Costo', 'Numero de Factura', 'Tipo de Documento','Nro Documento', 'Factura', 'Estado', 'Accion', 'Comprobante Factura']
     for col_num, header in enumerate(headers, 1):
         worksheet.cell(row=1, column=col_num, value=header)
 
@@ -100,22 +100,32 @@ def export_to_excel(queryset,to_pdf=False):
             tipo_ingreso = 'N/A'
 
         if not obj.sub_centro_costo:
+            centro_costo = 'N/A'
             sub_centro_costo_nombre = 'N/A'
         else:
             sub_centro_costo_nombre = obj.sub_centro_costo.nombre
+            centro_costo = CentroCosto.objects.filter(subcentro=obj.sub_centro_costo).first().nombre
+        
+        if not obj.usuario_presupuesto:
+            usuario_presupuesto = 'N/A'
+        else:
+            usuario_presupuesto = obj.usuario_presupuesto.nombre + ' ' + obj.usuario_presupuesto.apellido
             
         worksheet.cell(row=row_num, column=1, value=obj.fecha_registro.strftime('%d/%m/%Y %H:%M'))
         worksheet.cell(row=row_num, column=2, value=obj.fecha_modificacion.strftime('%d/%m/%Y %H:%M'))
         worksheet.cell(row=row_num, column=3, value=tipo_ingreso)
         worksheet.cell(row=row_num, column=4, value=unidad_productiva_nombre)
-        worksheet.cell(row=row_num, column=5, value=obj.concepto)
-        worksheet.cell(row=row_num, column=6, value=obj.valor)
-        worksheet.cell(row=row_num, column=7, value=sub_centro_costo_nombre)
-        worksheet.cell(row=row_num, column=8, value=obj.numero_factura)
-        worksheet.cell(row=row_num, column=9, value=obj.tipo_documento)
-        worksheet.cell(row=row_num, column=10, value=obj.factura)
-        worksheet.cell(row=row_num, column=11, value=obj.estado)
-        worksheet.cell(row=row_num, column=12, value=obj.accion)
+        worksheet.cell(row=row_num, column=5, value=usuario_presupuesto)
+        worksheet.cell(row=row_num, column=6, value=obj.concepto)
+        worksheet.cell(row=row_num, column=7, value=obj.valor)
+        worksheet.cell(row=row_num, column=8, value=centro_costo)
+        worksheet.cell(row=row_num, column=9, value=sub_centro_costo_nombre)
+        worksheet.cell(row=row_num, column=10, value=obj.numero_factura)
+        worksheet.cell(row=row_num, column=11, value=obj.tipo_documento)
+        worksheet.cell(row=row_num, column=12, value=obj.numero_documento)
+        worksheet.cell(row=row_num, column=13, value=obj.factura)
+        worksheet.cell(row=row_num, column=14, value=obj.estado)
+        worksheet.cell(row=row_num, column=15, value=obj.accion)
     
     if to_pdf:
         workbook.save('archivo_excel.xlsx')

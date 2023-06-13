@@ -46,15 +46,18 @@
                                                 <th>Fecha de Registro</th>
                                                 <th>Fecha de Modificación</th>
                                                 <th>Tipo de Movimiento</th>
-                                                {% if user.is_authenticated and user|has_group:"Administrador" or user.is_authenticated and user|has_group:"Auditor"%}
-                                                <th>Unidad de Negocio</th>
+                                                
+
                                                 <th>Unidad Productiva</th>
-                                                {% endif %}
+                                                <th>Usuario Ingreso Caja</th>
+                                                
                                                 <th>Concepto</th>
                                                 <th>Valor</th>
                                                 <th>Estado</th>
+                                                <th>Centro de Costos</th>
                                                 <th>SubCentro de Costo</th>
                                                 <th>Tipo de Documento</th>
+                                                <th>Numero de Documento</th>
                                                 <th>Numero de Factura</th>
                                                 <th>Factura</th>
                                                 <th>Comprobante/Detalle</th>
@@ -87,16 +90,19 @@
                                                     {% else %}
                                                         <td>Desconocido</td>
                                                     {% endif %}
-                                                    {% if user.is_authenticated and user|has_group:"Administrador" or user.is_authenticated and user|has_group:"Auditor"%}
-                                                    <td>{{movimiento.unidad_negocio}}</td>    
+                                                       
                                                     <td>{{movimiento.unidad_productiva.nombre}}</td>
+                                                    <td>{{movimiento.usuario_presupuesto}}</td>
+
                                                         
-                                                    {% endif %}
+                                                    
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
                                                     <td>{{ movimiento.estado }}</td>
+                                                    <td>{{ movimiento.centro_costo }}</td>
                                                     <td>{{ movimiento.sub_centro_costo.nombre }}</td>
                                                     <td>{{ movimiento.tipo_documento }}</td>
+                                                    <td>{{ movimiento.numero_documento }}</td>
                                                     <td>{{ movimiento.numero_factura }}</td>
                                                     <td>{{ movimiento.factura }}</td>
                                                     <td>{{ movimiento.accion }}</td>

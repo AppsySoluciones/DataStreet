@@ -1029,40 +1029,68 @@ class Pdf_ingresos (View):
     def get(self, request, *args, **kwargs):
         try:
             usuario = get_object_or_404(Usuario, pk=request.user.id)
-            if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
-                disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba  = get_movimientos(usuario)
-            else:
-                unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-                disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
-            
+        
+
+        
             if usuario.groups.filter(name__in=['Auditor']).exists():
-                filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
-                movimientos = get_movimientos_usuario(usuario).filter(filters)
+                movimientos = get_movimientos_usuario(usuario)
 
             else:
-                movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+                movimientos = get_movimientos_usuario(usuario)
             
 
             context = {'server_url':URL_SERVER,
                 'data_movimientos':movimientos,
-                'ingresos':ingreso,
-                'egresos':egreso,
-                'disponible':disponible,
                 'request': request
                 }
-            if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
-                #diccionario[clave] = valor
-                elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
-                unique_elementos = set(elementos)
-                context['unidades_productivas'] = unique_elementos
 
-            if usuario.groups.filter(name='Auditor').exists():
-                
-                context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
-            excel_generado = render_to_pdf('pdf/pdf_tables_ingresos.html', context)
-            messages.success(request, f'¡El pdf se generó corretamente!')
-            return excel_generado
-            #return render(request,"pdf/pdf_tables_ingresos.html",context)
+            
+            disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
+            if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
+                disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
+                context['disponible_ba'] = disponible_ba
+                context['ingresos_ba'] = ingreso_ba
+                context['egresos_ba'] = egreso_ba
+                context['ingresos'] = ingreso
+                context['egresos'] = egreso
+                context['disponible'] = disponible
+                context['disponible_ba'] = disponible_ba
+                context['ingresos_ba'] = ingreso_ba
+                context['egresos_ba'] = egreso_ba
+                context['ingresos'] = ingreso
+                context['egresos'] = egreso
+                context['disponible'] = disponible
+
+                if usuario.groups.filter(name__in=['Administrador','Auditor','Comun']).exists():
+                    #diccionario[clave] = valor
+                    elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+                    unique_elementos = set(elementos)
+                    context['unidades_productivas'] = unique_elementos
+
+                # if usuario.groups.filter(name='Auditor').exists():
+                    
+                #context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+                for movimiento in movimientos:
+                    unidad_productiva = movimiento.unidad_productiva
+                    if movimiento.unidad_productiva == None:
+                        movimiento.unidad_productiva_admin = movimiento.usuario_presupuesto.nombre + " " +movimiento.usuario_presupuesto.apellido
+                    
+                    if UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).exists():
+                        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
+                        movimiento.unidad_negocio = unidad_negocio.nombre
+                context['data_movimientos'] = movimientos
+
+                for movimiento in movimientos:
+                    if not movimiento.sub_centro_costo:
+                        centro_costo = 'N/A'
+                    else:
+                        centro_costo = CentroCosto.objects.filter(subcentro=movimiento.sub_centro_costo).first().nombre
+                    movimiento.centro_costo = centro_costo
+                context['data_movimientos'] = movimientos
+                excel_generado = render_to_pdf('pdf/pdf_tables_ingresos.html', context)
+                messages.success(request, f'¡El pdf se generó corretamente!')
+                return excel_generado
+                #return render(request,"pdf/pdf_tables_ingresos.html",context)
         except Exception as e:
             messages.error(request, f'¡Error al generar el pdf!')
 
