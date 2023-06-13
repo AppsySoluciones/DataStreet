@@ -345,7 +345,7 @@ def registrarIngreso(request):
             unidad_productiva_id = request.POST['unidad_productiva']
             unidad_productiva = get_object_or_404(UnidadProductiva, pk=unidad_productiva_id)  
         fecha_registro = request.POST['fecha_registro']
-        fecha_datetime = datetime.strptime(fecha_registro, "%Y-%m-%d")
+        fecha_datetime = datetime.strptime(fecha_registro, "%Y-%m-%dT%H:%M")
         ingreso = Movimiento.objects.create(
             fecha_registro = fecha_datetime,
             unidad_productiva=unidad_productiva,
