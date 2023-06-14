@@ -108,6 +108,16 @@
                     <i class="fas fa-piggy-bank"></i>
                     <span>Ingreso Bancario</span></a>
             </li>
+
+            {% endif %}
+
+            {% if user.is_authenticated and user|has_group:"Bancario" %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{server_url}}ingreso_ba">
+                    <i class="fas fa-piggy-bank"></i>
+                    <span>Ingreso Bancario</span></a>
+            </li>
+
             {% endif %}
             {% if user.is_authenticated and user|has_group:"Comun" %}
             <li class="nav-item">
@@ -117,6 +127,14 @@
             </li>
             {% endif %}
             {% if user.is_authenticated and user|has_group:"Administrador" %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{server_url}}egreso_ba">
+                    <i class="fas fa-piggy-bank" style="color: #e6ebf4;"></i>
+                    <span>Egreso Bancario</span></a>
+            </li>
+            {% endif %}
+
+            {% if user.is_authenticated and user|has_group:"Bancario" %}
             <li class="nav-item">
                 <a class="nav-link" href="{{server_url}}egreso_ba">
                     <i class="fas fa-piggy-bank" style="color: #e6ebf4;"></i>

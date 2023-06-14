@@ -66,6 +66,25 @@
 
                         {% endif %}
 
+
+                        {% if user.is_authenticated and user|has_group:"Bancario" %}
+                        <label >Selecciona la unidad de negocio</label>
+                        <select hidden id="centro_costo" name="centro_costo"  onchange="mostrarSelect()" class="col-auto mb-3 " style="width:100%;"
+                            aria-label="Default select example" autocomplete="off">
+                            {% for centro in centros %}
+                            <option value="{{centro}}">{{centro}}</option>
+                            {% endfor %}
+                        </select>
+                        <label>Selecciona la unidad productiva</label>
+                        <select id="unidad_productiva" onchange="mostrarSelect()" name="unidad_productiva" class="col-auto mb-3" style="width:100%;"
+                            aria-label="Default select example" required autocomplete="off">
+                            {% for opcion in unidades_productivas %}
+                            <option value="{{ opcion.pk }}">{{ opcion.nombre }}</option>
+                            {% endfor %}
+                        </select>
+
+                        {% endif %}
+
                         <label class="mb-3">Seleccione la fecha del registro:</label>
                         <input type="datetime-local" id="fecha_registro" name="fecha_registro"
                             style="width:100%; box-sizing: border-box;" class="input-group mb-3" required autocomplete="off">

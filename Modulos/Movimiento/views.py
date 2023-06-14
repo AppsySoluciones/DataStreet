@@ -148,6 +148,7 @@ def egresos(request):
         data_centros_id[centro.pk] = list(centro.subcentro.all().order_by('nombre').values_list('id',flat=True))
     
     unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
+    
     context = {
         'server_url':URL_SERVER,
         'centros':data_centros,
@@ -285,7 +286,8 @@ def egresos_ba(request):
             else:
                 query_acumulativo = query_acumulativo.union(unidad_negocio.unidades_productivas.all())
         context['unidades_productivas']=query_acumulativo
-        
+    if usuario.groups.filter(name='Bancario').exists():
+        context['unidades_productivas'] = UnidadProductiva.objects.filter(usuarioBancario=usuario).all()
     context['disponible_ba'] = disponible_ba
     context['ingresos_ba'] = ingreso_ba
     context['egresos_ba'] = egreso_ba
