@@ -9,6 +9,8 @@ class UnidadProductiva(models.Model):
     email = models.EmailField(max_length=254,null=True,blank=True)
     usuarioRegistro = models.ForeignKey(Usuario,on_delete=models.CASCADE,null=True,blank=True) 
     usuarioAuditor = models.ManyToManyField(Usuario,related_name='user_auditor',blank=True)
+    usuarioConsulta = models.ManyToManyField(Usuario,related_name='user_consulta',blank=True)
+    usuarioBancario = models.ManyToManyField(Usuario,related_name='user_bancario',blank=True)
 
     def __str__(self):
         return f"{self.nombre} - {self.descripcion}"

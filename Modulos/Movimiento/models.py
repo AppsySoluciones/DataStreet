@@ -175,6 +175,11 @@ def get_estado_caja(user):
     filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)
     filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
     filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
+    if user.groups.filter(name__in=['Observador']).exists():
+        filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&(Q(unidad_productiva__usuarioConsulta=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)
+        filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioConsulta=user)&Q(ingreso_bancario=False)
+        filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioConsulta=user)&Q(ingreso_bancario=True)
+        filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioConsulta=user)&Q(ingreso_bancario=True)
 
 
     ingresos =  Movimiento.objects.filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
@@ -286,7 +291,10 @@ def get_movimientos_usuario(usuario):
         return  Movimiento.objects.filter(union_query).all()
 
     else:
-        filters = Q (unidad_productiva__usuarioRegistro=usuario) | Q(usuario_presupuesto=usuario)
+        if usuario.groups.filter(name__in=['Comun','Bancario']).exists():
+            filters = Q (unidad_productiva__usuarioRegistro=usuario) | Q(usuario_presupuesto=usuario)|Q(usuarioBancario=usuario)
+        elif usuario.groups.filter(name__in=['Observador']).exists():
+            filters = Q (unidad_productiva__usuarioConsulta=usuario)
         return Movimiento.objects.filter(filters).all()
 
 def get_movimientos(usuario,unidad_productiva=None):

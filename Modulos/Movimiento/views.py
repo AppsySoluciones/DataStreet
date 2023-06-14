@@ -69,8 +69,9 @@ def home(request):
     context['ingresos_ba'] = ingreso_ba
     context['egresos_ba'] = egreso_ba
 
-    if usuario.groups.filter(name__in=['Comun']).exists():
-        unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
+    if usuario.groups.filter(name__in=['Comun','Observador']).exists():
+        filters = Q(usuarioRegistro=usuario)|Q(usuarioConsulta=usuario)
+        unidades_productivas = UnidadProductiva.objects.filter(filters).all()
         unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).all()
         unidad_negocio_nombres = {}
         unidad_negocio_id = {}
@@ -201,8 +202,9 @@ def ingresos_ba(request):
     if usuario.groups.filter(name='Administrador').exists():
         disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
     
-    if usuario.groups.filter(name__in=['Comun']).exists():
-        unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
+    if usuario.groups.filter(name__in=['Comun','Bancario']).exists():
+        filtros = Q(usuarioRegistro=usuario)|Q(usuarioBancario=usuario)
+        unidades_productivas = UnidadProductiva.objects.filter(filtros).all()
         unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).first()
         unidad_negocio_nombres = []
         unidad_negocio_id = []
@@ -484,8 +486,6 @@ def tablas_ingresos(request,pdf=None):
         
         usuario = get_object_or_404(Usuario, pk=request.user.id)
         
-
-        
         if usuario.groups.filter(name__in=['Auditor']).exists():
             movimientos = get_movimientos_usuario(usuario)
 
@@ -498,7 +498,10 @@ def tablas_ingresos(request,pdf=None):
             'request': request
             }
 
-        
+        if usuario.groups.filter(name__in=['Observador']).exists():
+            movimientos = movimientos.filter(estado='Aprobado')
+
+
         disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
         if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
             disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
