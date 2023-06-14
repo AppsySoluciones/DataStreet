@@ -167,7 +167,11 @@
                                                     {% else %}
                                                         <td>Desconocido</td>
                                                     {% endif %}
+                                                    {% if movimiento.tipo_ingreso == 'OUT' and movimiento.ingreso_bancario == True %}
+                                                    <td>{{ movimiento.unidad_productiva.nombre }}</td>
+                                                    {% else %}
                                                     <td>{{ movimiento.unidad_productiva.usuarioRegistro }}</td>
+                                                    {% endif %}
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
                                                     <td>{{ movimiento.estado }}</td>
