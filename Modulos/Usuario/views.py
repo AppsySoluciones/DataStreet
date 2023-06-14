@@ -10,7 +10,16 @@ URL_SERVER = settings.URL_SERVER
 class LoginView(FormView):
     form_class = AuthenticationForm
     template_name = 'login.html'
-    success_url = '/'
+    #success_url = '/'
+
+    def get_success_url(self):
+        user = self.request.user
+        if user.is_authenticated and user.groups.filter(name__in=['Administrador','Auditor']).exists():
+            return '/'
+        elif user.is_authenticated and user.groups.filter(name__in=['Comun']).exists():
+            return '/egreso/'
+        else:
+            return '/'
 
     def form_valid(self, form):
         # Si el formulario es válido, inicia sesión al usuario y redirige a la página de éxito.

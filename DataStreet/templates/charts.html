@@ -4,13 +4,7 @@
 
 <head>
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>SB Admin 2 - Charts</title>
+    <title>Dashboard</title>
 
     <!-- Custom fonts for this template-->
     <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
@@ -24,7 +18,7 @@
     <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
     <!-- <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script> -->
     <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" /> -->
     
     <!-- Include Date Range Picker -->
     <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
@@ -144,6 +138,27 @@
     
         }
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var dropdown = document.querySelector('.dropdown');
+            var toggleButton = dropdown.querySelector('.toggle-button');
+            var menu = dropdown.querySelector('.menu');
+
+            toggleButton.addEventListener('click', function () {
+                dropdown.classList.toggle('open');
+            });
+
+            menu.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+
+            document.addEventListener('click', function () {
+                dropdown.classList.remove('open');
+            });
+        });
+
+    </script>
+
 
 </head>
 
@@ -158,43 +173,57 @@
         <div id="content-wrapper" class="d-flex flex-column">
 
             <!-- Main Content -->
-            <div id="content">
+            <!-- <div id="content"> -->
 
                 
 
                 <!-- Begin Page Content -->
-                <div class="container-fluid">
+                <!-- <div class="container-fluid"> -->
 
                     <!-- Page Heading -->
-                    <h1 class="h3 mb-2 text-gray-800">Dashboard</h1>
-                    <div class="row align-content-center">
-                        <div class="col-3" style="align-content: center;">
-                            <label class="mb-3">Ingrese un rango de fechas:</label>
-                            <input type="text" name="daterange" id="daterange" style="width:100%; box-sizing: border-box;" class="input-group mb-3" value=""/>
-                        </div>
-                        <div class="col-3">
-                            <label>Selecciona la unidad de negocio</label>
-                            <select id="centro_costo" name="centro_costo" class="col-auto mb-3 " style="width:100%; box-sizing: border-box;"
-                                aria-label="Default select example" required autocomplete="off">
-                                {% for centro in centros %}
-                                <option value="{{centro}}">{{centro}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-3">
-                            <label>Selecciona la unidad productiva</label>
-                            <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3" style="width:100%; box-sizing: border-box;"
-                                aria-label="Default select example" required autocomplete="off">
-                                {% for opcion in subcentros %}
-                                <option value="{{ opcion }}">{{ opcion }}</option>
-                                {% endfor %}
-                            </select>
-
-                        </div class="col-3">
-                            <button type="button" class="btn btn-primary" id="filtrar" onclick="filter()">Filtrar</button>
-                        </div>
-                        
+                    <div class="dropdown"> 
+                        <ui class="menu2">
+                            <div class="row ">
+                                <div class="col-xl-12">
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <label class="mb-3">Ingrese un rango de fechas:</label>
+                                            <input type="text" name="daterange" id="daterange" style="width:100%; box-sizing: border-box;"
+                                                class="input-group mb-3" value="" />
                     
+                                        </div>
+                    
+                                        <div class="col-sm-3">
+                                            <label>Selecciona la unidad de negocio</label>
+                                            <select id="centro_costo" name="centro_costo" class="col-auto mb-3 "
+                                                style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
+                                                autocomplete="off">
+                                                {% for centro in centros %}
+                                                <option value="{{centro}}">{{centro}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                    
+                                        <div class="col-sm-3">
+                                            <label>Selecciona la unidad productiva</label>
+                                            <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3"
+                                                style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
+                                                autocomplete="off">
+                                                {% for opcion in subcentros %}
+                                                <option value="{{ opcion }}">{{ opcion }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <div class="col-sm-3">
+                                    <button type="button" class="btn btn-primary" id="filtrar" style="vertical-align: middle;" onclick="filter()">Filtrar</button>
+                                </div>
+                    
+                                    </div>
+                                    <!-- end row -->
+                                </div>
+                            </div>
+                        </ui>
                     </div>
 
                     <!-- Content Row -->
@@ -422,10 +451,10 @@
                         </div>
                     </div>
 
-                </div>
+                <!-- </div> -->
                 <!-- /.container-fluid -->
 
-            </div>
+            <!-- </div> -->
             <!-- End of Main Content -->
 
             
@@ -725,7 +754,9 @@ var myPieChart = new Chart(ctx, {
 <script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
 <!-- <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script> -->
 <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
-<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />
+<!-- Custom scripts for all pages-->
+<script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
  
 <!-- Include Date Range Picker -->
 <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>

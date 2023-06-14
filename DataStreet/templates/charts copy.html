@@ -1,0 +1,148 @@
+{% extends "./index.html" %}
+{% block body %}
+{% load static %}
+
+<head>
+<!-- Custom fonts for this template-->
+<link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+<link
+    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    rel="stylesheet">
+
+<!-- Custom styles for this template-->
+<link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
+<!-- Include Required Prerequisites -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/jquery/1/jquery.min.js"></script>
+<!-- <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script> -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />
+
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
+
+<script>
+    function filter() {
+        var data_line;
+        var daterange = document.getElementById('daterange').value;
+        var unidad_productiva = document.getElementById('sub_centro_costo').value;
+        console.log(unidad_productiva)
+
+        
+
+        $.ajax({
+            url: "{{ server_url }}get_filtred_data/",
+            type: "GET",
+            data: {
+                'daterange': daterange,
+                'unidad_productiva': unidad_productiva,
+            },
+            success: function (data) {
+                data_line = data;
+                myLineChart.data.labels = data_line.fechas ;
+                myLineChart.data.datasets[0].data = data_line.ingresos_chart;
+                myLineChart.data.datasets[1].data = data_line.egresos_chart;
+                myLineChart.update();
+                myPieChart.data.datasets[0].data = [data_line.pie_ingresos, data_line.pie_egresos];
+                myPieChart.update();
+
+                var valuetopegresos = document.getElementById('valuetopegresos');
+                valuetopegresos.innerHTML = data_line.top_3_egresos_centrocostos[0].suma_valor;
+                var labeltopegresos = document.getElementById('labeltopegresos');
+                labeltopegresos.innerHTML = data_line.top_3_egresos_centrocostos[0].sub_centro_costo;
+                var lista = data_line.top_3_egresos_centrocostos;
+                var seccionHtml = '';
+
+                for (var i = 0; i < lista.length; i++) {
+                    var dato = lista[i];
+                    
+                    seccionHtml += '<tr>' +
+                        '<td style="width: 30%">' +
+                            '<p class="mb-0">' + dato.sub_centro_costo + '</p>' +
+                        '</td>' +
+                        '<td style="width: 25%">' +
+                            '<h5 class="mb-0">' + dato.suma_valor + '</h5>' +
+                        '</td>' +
+                        '<td>' +
+                            '<div class="progress bg-transparent progress-sm">' +
+                                '<div class="progress-bar bg-success rounded" role="progressbar" style="width: ' + dato.with + '%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">' +
+                                '</div>' +
+                            '</div>' +
+                        '</td>' +
+                    '</tr>';
+                }
+                var contenedor = document.getElementById('topegresos_centrocostos_contendor');
+                contenedor.innerHTML = seccionHtml;
+
+                var value_top_ingresos = document.getElementById('value_top_ingresos');
+                value_top_ingresos.innerHTML = data_line.top_3_ingresos[0].suma;
+                var label_top_ingresos = document.getElementById('label_top_ingresos');
+                label_top_ingresos.innerHTML = data_line.top_3_ingresos[0].unidad_productiva;
+                var lista_egresos = data_line.top_3_ingresos;
+                var seccionHtml = '';
+                for (var i = 0; i < lista.length; i++) {
+                    var dato2 = lista_egresos[i];
+                    var unidad_prod_e = dato2.unidad_productiva;
+                    var unidad_prod_e_value = dato2.suma;
+                    
+                    seccionHtml += '<tr>' +
+                        '<td style="width: 30%">' +
+                            '<p class="mb-0">' + unidad_prod_e + '</p>' +
+                        '</td>' +
+                        '<td style="width: 25%">' +
+                            '<h5 class="mb-0">' + unidad_prod_e_value + '</h5>' +
+                        '</td>' +
+                        '<td>' +
+                            '<div class="progress bg-transparent progress-sm">' +
+                                '<div class="progress-bar bg-primary rounded" role="progressbar" style="width: ' + dato.with + '%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">' +
+                                '</div>' +
+                            '</div>' +
+                        '</td>' +
+                    '</tr>';
+                }
+
+
+                var value_top_egresos = document.getElementById('value_top_egresos');
+                value_top_egresos.innerHTML = data_line.top_3_egresos[0].suma;
+                var label_top_egresos = document.getElementById('label_top_egresos');
+                label_top_egresos.innerHTML = data_line.top_3_egresos[0].unidad_productiva;
+                var lista_egresos = data_line.top_3_egresos;
+                var seccionHtml = '';
+                for (var i = 0; i < lista.length; i++) {
+                    var dato = lista_egresos[i];
+                    
+                    seccionHtml += '<tr>' +
+                        '<td style="width: 30%">' +
+                            '<p class="mb-0">' + dato.unidad_productiva + '</p>' +
+                        '</td>' +
+                        '<td style="width: 25%">' +
+                            '<h5 class="mb-0">' + dato.suma + '</h5>' +
+                        '</td>' +
+                        '<td>' +
+                            '<div class="progress bg-transparent progress-sm">' +
+                                '<div class="progress-bar bg-primary rounded" role="progressbar" style="width: ' + dato.with + '%" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">' +
+                                '</div>' +
+                            '</div>' +
+                        '</td>' +
+                    '</tr>';
+                }
+
+                
+
+            }})
+        
+
+    }
+</script>
+
+</head>
+
+<body>
+
+
+
+
+    
+</body>
+{% endblock %}
