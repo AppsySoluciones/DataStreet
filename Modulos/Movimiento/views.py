@@ -500,8 +500,6 @@ def tablas_ingresos(request,pdf=None):
             'request': request
             }
 
-        if usuario.groups.filter(name__in=['Observador']).exists():
-            movimientos = movimientos.filter(estado='Aprobado')
 
 
         disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
