@@ -146,10 +146,10 @@
                                                     {% if movimiento.tipo_ingreso == 'OUT' %}
                                                         {% if movimiento.ingreso_bancario == True %}
                                                         <td>Egreso Bancario</td>
-                                                        <td>{{movimiento.unidad_productiva.usuarioRegistro}}</td>
+                                                        <td>{{movimiento.unidad_productiva.nombre}}</td>
                                                         {% else %}
                                                         <td>Egreso de Caja</td>
-                                                        <td>{{movimiento.unidad_productiva.nombre}}</td>
+                                                        <td>{{movimiento.unidad_productiva.usuarioRegistro}}</td>
                                                         {% endif %}
                                                     {% elif movimiento.tipo_ingreso == 'IN' %}
                                                         {% if movimiento.accion == 'Reducción de Caja' %}
@@ -167,11 +167,7 @@
                                                     {% else %}
                                                         <td>Desconocido</td>
                                                     {% endif %}
-                                                    {% if movimiento.ingreso_bancario == True %}
-                                                    <td>{{ movimiento.unidad_productiva.nombre }}</td>
-                                                    {% else %}
                                                     <td>{{ movimiento.unidad_productiva.usuarioRegistro }}</td>
-                                                    {% endif %}
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
                                                     <td>{{ movimiento.estado }}</td>
