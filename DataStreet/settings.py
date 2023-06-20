@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'Modulos.Usuario.apps.UsuarioConfig',
     'Modulos.CentroCostos.apps.CentrocostosConfig',
     'Modulos.UnidadNegocio.apps.UnidadnegocioConfig',
