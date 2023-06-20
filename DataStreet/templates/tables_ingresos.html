@@ -1,6 +1,7 @@
 {% extends "./index.html" %}
 {% load static %}
 {% load auth_extras %}
+{% load humanize %}
 
 
     <head>
@@ -172,7 +173,7 @@
                                                         <td>{{ movimiento.unidad_productiva.usuarioRegistro }}</td>
                                                     {% endif %}
                                                     <td>{{ movimiento.concepto }}</td>
-                                                    <td>{{ movimiento.valor }}</td>
+                                                    <td>$ {{ movimiento.valor|floatformat:2|intcomma }}</td>
                                                     <td>{{ movimiento.estado }}</td>
                                                     <td>
                                                         <b>

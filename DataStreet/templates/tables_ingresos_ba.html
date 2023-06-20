@@ -1,6 +1,7 @@
 {% extends "./index.html" %}
 {% load static %}
 {% load auth_extras %}
+{% load humanize %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -162,7 +163,7 @@
                                                     {% endif %}
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>{{ movimiento.valor }}</td>
-                                                    <td>{{ movimiento.estado }}</td>
+                                                    <td>$ {{ movimiento.valor|floatformat:2|intcomma }}</td>
                                                     <td>
                                                         <b>
                                                             {% if movimiento.comprobante_factura %}

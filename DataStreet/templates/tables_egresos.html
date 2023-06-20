@@ -1,6 +1,7 @@
 {% extends "./index.html" %}
 {% load static %}
 {% load auth_extras %}
+{% load humanize %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -114,7 +115,7 @@
                                                     <td>{{movimiento.unidad_productiva.nombre}}</td>
                                                     {% endif %}                                                    
                                                     <td>{{ movimiento.concepto }}</td>
-                                                    <td>{{ movimiento.valor }}</td>
+                                                    <td>$ {{ movimiento.valor|floatformat:2|intcomma }}</td>
                                                     <td>{{ movimiento.nombre_proveedor }}</td>
                                                     <td>{{ movimiento.estado }}</td>
                                                     <td>
