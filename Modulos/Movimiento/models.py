@@ -18,6 +18,7 @@ import pyexcel as pe
 from fpdf import FPDF
 from django.http import FileResponse
 from fpdf import FPDF
+import boto3
 
 
 
@@ -62,6 +63,29 @@ class Movimiento(models.Model):
     def gen_uid(self):
         self.uid = uuid.uuid4()
         self.save()
+    
+    def save(self, *args, **kwargs):
+        if self.pk and self.comprobante_factura:
+            prev_instance = Movimiento.objects.get(pk=self.pk)
+            
+            # Verificar si se ha actualizado el archivo
+            if prev_instance.comprobante_factura != self.comprobante_factura:
+                # Eliminar el archivo anterior de AWS S3
+                if prev_instance.comprobante_factura:
+                    self.eliminar_archivo_s3(prev_instance.comprobante_factura.name)
+
+                # Cargar el nuevo archivo en AWS S3
+                self.subir_archivo_s3(self.comprobante_factura.name, self.comprobante_factura)
+
+        super().save(*args, **kwargs)
+
+    def eliminar_archivo_s3(self, nombre_archivo):
+        s3 = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
+        s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=nombre_archivo)
+
+    def subir_archivo_s3(self, nombre_archivo, archivo):
+        s3 = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
+        s3.upload_fileobj(archivo, settings.AWS_STORAGE_BUCKET_NAME, nombre_archivo)
 
 
 def export_to_excel(queryset,to_pdf=False):
@@ -296,8 +320,8 @@ def get_movimientos_usuario(usuario):
         return  Movimiento.objects.filter(union_query).all()
 
     else:
-        if usuario.groups.filter(name__in=['Comun','Bancario']).exists():
-            filters = Q (unidad_productiva__usuarioRegistro=usuario) | Q(usuario_presupuesto=usuario)|Q(unidad_productiva__usuarioBancario=usuario)
+        if usuario.groups.filter(name__in=['Comun','Bancario','Observador']).exists():
+            filters = Q (unidad_productiva__usuarioRegistro=usuario) | Q(usuario_presupuesto=usuario)|Q(unidad_productiva__usuarioBancario=usuario)|Q(unidad_productiva__usuarioConsulta=usuario)
         elif usuario.groups.filter(name__in=['Observador']).exists():
             filters = Q (unidad_productiva__usuarioConsulta=usuario)
         return Movimiento.objects.filter(filters).all()

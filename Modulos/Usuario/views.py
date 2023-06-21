@@ -18,6 +18,8 @@ class LoginView(FormView):
             return '/'
         elif user.is_authenticated and user.groups.filter(name__in=['Comun']).exists():
             return '/egreso/'
+        elif user.is_authenticated and user.groups.filter(name__in=['Observador,Bancario']).exists():
+            return '/tablaing/'
         else:
             return '/'
 

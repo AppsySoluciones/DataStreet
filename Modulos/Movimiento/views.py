@@ -535,7 +535,9 @@ def tablas_ingresos(request,pdf=None):
             if UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).exists():
                 unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
                 movimiento.unidad_negocio = unidad_negocio.nombre
-        context['data_movimientos'] = movimientos
+
+        
+        context['data_movimientos'] = movimientos.distinct()
 
         return render(request,"tables_ingresos.html",context)
 
@@ -829,9 +831,11 @@ def edicion_form_egreso(request,pk):
             estado='En proceso',
             tipo_ingreso='OUT',
             valor=costo_valor,
-            unidad_productiva=unidad_productiva,
-            comprobante_factura=comprobante_factura
+            unidad_productiva=unidad_productiva
             )
+            egreso = Movimiento.objects.filter(pk=pk).first()
+            egreso.comprobante_factura = comprobante_factura
+            egreso.save()
             
         else:
             comprobante_factura = None
@@ -1095,29 +1099,26 @@ class Pdf_ingresos (View):
                     unique_elementos = set(elementos)
                     context['unidades_productivas'] = unique_elementos
 
-                # if usuario.groups.filter(name='Auditor').exists():
-                    
-                #context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
-                for movimiento in movimientos:
-                    unidad_productiva = movimiento.unidad_productiva
-                    if movimiento.unidad_productiva == None:
-                        movimiento.unidad_productiva_admin = movimiento.usuario_presupuesto.nombre + " " +movimiento.usuario_presupuesto.apellido
-                    
-                    if UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).exists():
-                        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
-                        movimiento.unidad_negocio = unidad_negocio.nombre
-                context['data_movimientos'] = movimientos
+            for movimiento in movimientos:
+                unidad_productiva = movimiento.unidad_productiva
+                if movimiento.unidad_productiva == None:
+                    movimiento.unidad_productiva_admin = movimiento.usuario_presupuesto.nombre + " " +movimiento.usuario_presupuesto.apellido
+                
+                if UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).exists():
+                    unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
+                    movimiento.unidad_negocio = unidad_negocio.nombre
+            context['data_movimientos'] = movimientos
 
-                for movimiento in movimientos:
-                    if not movimiento.sub_centro_costo:
-                        centro_costo = 'N/A'
-                    else:
-                        centro_costo = CentroCosto.objects.filter(subcentro=movimiento.sub_centro_costo).first().nombre
-                    movimiento.centro_costo = centro_costo
-                context['data_movimientos'] = movimientos
-                excel_generado = render_to_pdf('pdf/pdf_tables_ingresos.html', context)
-                messages.success(request, f'¡El pdf se generó corretamente!')
-                return excel_generado
+            for movimiento in movimientos:
+                if not movimiento.sub_centro_costo:
+                    centro_costo = 'N/A'
+                else:
+                    centro_costo = CentroCosto.objects.filter(subcentro=movimiento.sub_centro_costo).first().nombre
+                movimiento.centro_costo = centro_costo
+            context['data_movimientos'] = movimientos
+            excel_generado = render_to_pdf('pdf/pdf_tables_ingresos.html', context)
+            messages.success(request, f'¡El pdf se generó corretamente!')
+            return excel_generado
                 #return render(request,"pdf/pdf_tables_ingresos.html",context)
         except Exception as e:
             messages.error(request, f'¡Error al generar el pdf!')
@@ -1290,18 +1291,24 @@ def filter_graphs(request):
     context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
 
 def get_centro_costos(request):
-    unidad_prod = get_object_or_404(UnidadProductiva, pk=request.GET['unidad_productiva_id'])
-    unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_prod).all()
-    centros_costo = CentroCosto.objects.filter(unegocio__in=unidad_negocio).all().order_by('nombre')
-    data = [{'id': cc.id, 'nombre': cc.nombre} for cc in centros_costo]
-    return JsonResponse(data, safe=False)
+    if request.GET['unidad_productiva_id'] != '':
+        unidad_prod = get_object_or_404(UnidadProductiva, pk=request.GET['unidad_productiva_id'])
+        unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_prod).all()
+        centros_costo = CentroCosto.objects.filter(unegocio__in=unidad_negocio).all().order_by('nombre')
+        data = [{'id': cc.id, 'nombre': cc.nombre} for cc in centros_costo]
+        return JsonResponse(data, safe=False)
+    else:
+        return JsonResponse([], safe=False)
 
 def get_subcentros(request):
-    centro_costo = get_object_or_404(CentroCosto, pk=request.GET['centro_costo_id'])
-    subcentros = centro_costo.subcentro.order_by('nombre') 
+    if request.GET['centro_costo_id'] != '':
+        centro_costo = get_object_or_404(CentroCosto, pk=request.GET['centro_costo_id'])
+        subcentros = centro_costo.subcentro.order_by('nombre') 
 
-    data = [{'id': cc.id, 'nombre': cc.nombre} for cc in subcentros]
-    return JsonResponse(data, safe=False)
+        data = [{'id': cc.id, 'nombre': cc.nombre} for cc in subcentros]
+        return JsonResponse(data, safe=False)
+    else:
+        return JsonResponse([], safe=False)
 
 def get_unegocio(request):
     pk = request.GET['unidad_productiva_id']

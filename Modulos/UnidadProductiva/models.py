@@ -7,7 +7,7 @@ class UnidadProductiva(models.Model):
     ubcacion = models.CharField(max_length=300,null=True,blank=True)
     telefono = models.CharField(max_length=50,null=True,blank=True)
     email = models.EmailField(max_length=254,null=True,blank=True)
-    usuarioRegistro = models.ForeignKey(Usuario,on_delete=models.CASCADE,null=True,blank=True) 
+    usuarioRegistro = models.ManyToManyField(Usuario,related_name='user_register',blank=True) 
     usuarioAuditor = models.ManyToManyField(Usuario,related_name='user_auditor',blank=True)
     usuarioConsulta = models.ManyToManyField(Usuario,related_name='user_consulta',blank=True)
     usuarioBancario = models.ManyToManyField(Usuario,related_name='user_bancario',blank=True)
