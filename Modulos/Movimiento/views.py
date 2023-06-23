@@ -23,7 +23,7 @@ from django.http import HttpResponse
 from dateutil.parser import parse
 from dateutil.rrule import rrule, DAILY
 from datetime import timedelta
-
+from itertools import chain
 
 URL_SERVER = settings.URL_SERVER
 AWS_STORAGE_BUCKET_NAME = settings.AWS_STORAGE_BUCKET_NAME
@@ -174,15 +174,17 @@ def ingresos(request):
     if usuario.groups.filter(name='Administrador').exists():
         disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
     unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
-    usuarios_comun =[]
+    usuarios_comun = []
     usuarios_comun_id =[]
     for unidad in unidad_negocio:
         for unidad_productiva in unidad.unidades_productivas.all():
             if unidad_productiva.usuarioRegistro != None:
-                if unidad_productiva.usuarioRegistro.pk not in usuarios_comun_id:
-                    usuarios_comun_id.append(unidad_productiva.usuarioRegistro.pk)
-                    usuarios_comun.append(unidad_productiva.usuarioRegistro)
-
+                list_users_produn = list(unidad_productiva.usuarioRegistro.all().values_list('pk',flat=True))
+                if list_users_produn not in usuarios_comun_id:
+                    usuarios_comun_id = usuarios_comun_id + list_users_produn
+                    usuarios_comun.append(unidad_productiva.usuarioRegistro.all())
+                    
+    usuarios_comun = list(set(chain(*usuarios_comun)))
     context = {
         'server_url':URL_SERVER,
         'usuarios_comun':usuarios_comun,
@@ -905,13 +907,14 @@ def aprobar_mov(request,pk):
     
     unidad_prod = movimiento.unidad_productiva
     if unidad_prod.usuarioRegistro is not None:
-        usuario = unidad_prod.usuarioRegistro
-        if movimiento.tipo_ingreso == 'IN':
-            usuario.send_email('Ingreso Aprobado ',f'¡El Ingreso {movimiento.concepto} fué marcado como APROBADO!')
-            messages.success(request, f'¡El Ingreso {movimiento.concepto} fué marcado como APROBADO!')
-        elif movimiento.tipo_ingreso == 'OUT':
-            usuario.send_email('Egreso Rechazado',f'¡El Egreso {movimiento.concepto} fué marcado como APROBADO!')
-            messages.success(request, f'¡El Egreso {movimiento.concepto} fué marcado como APROBADO!')
+        #usuario = unidad_prod.usuarioRegistro
+        for usuario in unidad_prod.usuarioRegistro.all():
+            if movimiento.tipo_ingreso == 'IN':
+                usuario.send_email('Ingreso Aprobado ',f'¡El Ingreso {movimiento.concepto} fué marcado como APROBADO!')
+                messages.success(request, f'¡El Ingreso {movimiento.concepto} fué marcado como APROBADO!')
+            elif movimiento.tipo_ingreso == 'OUT':
+                usuario.send_email('Egreso Rechazado',f'¡El Egreso {movimiento.concepto} fué marcado como APROBADO!')
+                messages.success(request, f'¡El Egreso {movimiento.concepto} fué marcado como APROBADO!')
     
     return redirect(f'{URL_SERVER}tablaing/')
 def rechazar_mov(request,pk):
@@ -921,13 +924,14 @@ def rechazar_mov(request,pk):
     messages.success(request, f'¡El Movimiento {movimiento.concepto} fué marcado como RECHAZADO!')
     unidad_prod = movimiento.unidad_productiva
     if unidad_prod.usuarioRegistro is not None:
-        usuario = unidad_prod.usuarioRegistro
-        if movimiento.tipo_ingreso == 'IN':
-            usuario.send_email('Ingreso Rechazado ',f'¡El Ingreso {movimiento.concepto} fué marcado como RECHAZADO!')
-            messages.success(request, f'¡El Ingreso {movimiento.concepto} fué marcado como RECHAZADO!')
-        elif movimiento.tipo_ingreso == 'OUT':
-            usuario.send_email('Egreso Rechazado',f'¡El Egreso {movimiento.concepto} fué marcado como RECHAZADO!')
-            messages.success(request, f'¡El Egreso {movimiento.concepto} fué marcado como RECHAZADO!')
+        #usuario = unidad_prod.usuarioRegistro
+        for usuario in unidad_prod.usuarioRegistro.all():
+            if movimiento.tipo_ingreso == 'IN':
+                usuario.send_email('Ingreso Rechazado ',f'¡El Ingreso {movimiento.concepto} fué marcado como RECHAZADO!')
+                messages.success(request, f'¡El Ingreso {movimiento.concepto} fué marcado como RECHAZADO!')
+            elif movimiento.tipo_ingreso == 'OUT':
+                usuario.send_email('Egreso Rechazado',f'¡El Egreso {movimiento.concepto} fué marcado como RECHAZADO!')
+                messages.success(request, f'¡El Egreso {movimiento.concepto} fué marcado como RECHAZADO!')
     return redirect(f'{URL_SERVER}tablaing/')
 
 def generar_excel_ingresos(request):
