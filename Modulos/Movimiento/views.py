@@ -352,6 +352,7 @@ def registrarIngreso(request):
             unidad_productiva = get_object_or_404(UnidadProductiva, pk=unidad_productiva_id)  
         fecha_registro = request.POST['fecha_registro']
         fecha_datetime = datetime.strptime(fecha_registro, "%Y-%m-%dT%H:%M")
+        comprobante_factura = request.FILES['soporte']
         ingreso = Movimiento.objects.create(
             fecha_registro = fecha_datetime,
             unidad_productiva=unidad_productiva,
@@ -363,7 +364,8 @@ def registrarIngreso(request):
             tipo_ingreso='IN',
             tipo_documento=tipo_documento,
             numero_documento=numero_documento,
-            negociacion=detalle
+            negociacion=detalle,
+            comprobante_factura=comprobante_factura,
 
         )
         ingreso.save()
