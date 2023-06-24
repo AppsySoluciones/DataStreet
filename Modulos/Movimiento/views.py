@@ -1194,18 +1194,18 @@ class Pdf_egresos_ba (View):
 
 def dispo_caja_egresos(request):
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    filtros_egresos_caja = Q(ingreso_bancario=False) & Q(tipo_ingreso='OUT')
-    filtros_egresos_bancarios = Q(ingreso_bancario=True) & Q(tipo_ingreso='OUT')
-    filtros_ingresos_bancarios = Q(ingreso_bancario=True) & Q(tipo_ingreso='IN')
-    filtros_ingresos_caja = Q(ingreso_bancario=False) & Q(tipo_ingreso='IN')
+    filtros_egresos_caja = Q(ingreso_bancario=False) & Q(tipo_ingreso='OUT')&Q(estado='Aprobado')
+    filtros_egresos_bancarios = Q(ingreso_bancario=True) & Q(tipo_ingreso='OUT')&Q(estado='Aprobado')
+    filtros_ingresos_bancarios = Q(ingreso_bancario=True) & Q(tipo_ingreso='IN')&Q(estado='Aprobado')
+    filtros_ingresos_caja = Q(ingreso_bancario=False) & Q(tipo_ingreso='IN')&Q(estado='Aprobado')
     
     if not request.GET['opcion'] == '':
         id = int(request.GET['opcion'])
         unidad_prod = get_object_or_404(UnidadProductiva, pk=id)
-        filtros_egresos_caja &= Q(unidad_productiva=unidad_prod)
-        filtros_egresos_bancarios &= Q(unidad_productiva=unidad_prod)
-        filtros_ingresos_bancarios &= Q(unidad_productiva=unidad_prod)
-        filtros_ingresos_caja &= Q(unidad_productiva=unidad_prod)
+        filtros_egresos_caja &= Q(unidad_productiva=unidad_prod)&Q(estado='Aprobado')
+        filtros_egresos_bancarios &= Q(unidad_productiva=unidad_prod)&Q(estado='Aprobado')
+        filtros_ingresos_bancarios &= Q(unidad_productiva=unidad_prod)&Q(estado='Aprobado')
+        filtros_ingresos_caja &= Q(unidad_productiva=unidad_prod)&Q(estado='Aprobado')
         
     egresos_caja = Movimiento.objects.filter(filtros_egresos_caja).all().aggregate(Sum('valor'))    
     egresos_bancarios = Movimiento.objects.filter(filtros_egresos_bancarios).all().aggregate(Sum('valor'))
