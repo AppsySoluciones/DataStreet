@@ -1259,6 +1259,11 @@ def ventas(request):
             {'value': 'Terneros', 'label': 'Terneros'},
             {'value': 'Aspiraciones', 'label': 'Aspiraciones'},
         ]
+    elif unidad_prod == 'Motel':
+        opciones_ventas = [
+            {'value': 'Ventas Habitacion', 'label': 'Ventas Habitación'},
+            {'value': 'Otros Conceptos', 'label': 'Otros Conceptos'},
+        ]
     else:
         opciones_ventas = [
             {'value': '', 'label': ''}]
