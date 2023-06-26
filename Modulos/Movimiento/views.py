@@ -196,6 +196,9 @@ def ingresos(request):
     context['disponible_ba'] = disponible_ba
     context['ingresos_ba'] = ingreso_ba
     context['egresos_ba'] = egreso_ba
+    if usuario.groups.filter(name='AutoregistroIngresos').exists():
+        context['usuarios_comun'] = [usuario]
+
     return render(request,"ingreso.html",context)
 
 

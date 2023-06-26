@@ -93,6 +93,15 @@
                     <span>Ingreso de Caja</span></a>
             </li>
             {% endif %}
+
+            {% if user.is_authenticated and user|has_group:"AutoregistroIngresos" %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{server_url}}ingreso">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>Ingreso de Caja</span></a>
+            </li>
+            {% endif %}
+
             {% if user.is_authenticated and user|has_group:"Comun" %}
             <li class="nav-item">
                 <a class="nav-link" href="{{server_url}}egreso">
