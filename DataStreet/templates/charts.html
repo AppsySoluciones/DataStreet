@@ -221,6 +221,7 @@
                                             <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3"
                                                 style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
                                                 autocomplete="off">
+                                                <option default value=""> </option>
                                                 {% for usuario in usuarios_comun %}
                                                 <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
                                                 {% endfor %}
