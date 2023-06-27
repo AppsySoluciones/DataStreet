@@ -232,6 +232,8 @@ def ingresos_ba(request):
         unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).first()
         unidad_negocio_nombres = []
         unidad_negocio_id = []
+        unidades_productivas = unidades_productivas.distinct()
+
     else:
         unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all() 
         unidad_negocio_nombres = {
@@ -251,7 +253,7 @@ def ingresos_ba(request):
         'ingresos':ingreso,
         'egresos':egreso,
         'request': request,
-        'unidades_productivas':unidades_productivas.distinct(),
+        'unidades_productivas':unidades_productivas,
         
         }
     context['disponible_ba'] = disponible_ba
