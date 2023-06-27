@@ -43,6 +43,8 @@ def grupo_requerido(grupo_nombres):
 def home(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
 
+    
+
 
     if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
         disponible,ingreso,egreso,disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
@@ -82,6 +84,7 @@ def home(request):
 
 
     elif usuario.groups.filter(name__in=['Administrador']).exists():
+
         unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all() 
         unidad_negocio_nombres = {
         }
@@ -91,6 +94,21 @@ def home(request):
             unidad_negocio_nombres[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('nombre',flat=True))
             unidad_negocio_id[unidad.nombre] = list(unidad.unidades_productivas.all().values_list('id',flat=True))
         unidades_productivas = []
+        #
+        #
+        unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
+        usuarios_comun = []
+        usuarios_comun_id =[]
+        for unidad in unidad_negocio:
+            for unidad_productiva in unidad.unidades_productivas.all():
+                if unidad_productiva.usuarioRegistro != None:
+                    list_users_produn = list(unidad_productiva.usuarioRegistro.all().values_list('pk',flat=True))
+                    if list_users_produn not in usuarios_comun_id:
+                        usuarios_comun_id = usuarios_comun_id + list_users_produn
+                        usuarios_comun.append(unidad_productiva.usuarioRegistro.all())
+                        
+        usuarios_comun = list(set(chain(*usuarios_comun)))
+        context['usuarios_comun'] = usuarios_comun
     else:
         unidad_negocio = UnidadNegocio.objects.all()
         unidad_negocio_nombres = {
@@ -233,7 +251,7 @@ def ingresos_ba(request):
         'ingresos':ingreso,
         'egresos':egreso,
         'request': request,
-        'unidades_productivas':unidades_productivas,
+        'unidades_productivas':unidades_productivas.distinct(),
         
         }
     context['disponible_ba'] = disponible_ba

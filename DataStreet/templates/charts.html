@@ -1,5 +1,6 @@
 {% extends "./index.html" %}
 {% block body %}
+{% load auth_extras %}
 {% load static %}
 
 <head>
@@ -214,6 +215,18 @@
                                                 {% endfor %}
                                             </select>
                                         </div>
+                                        {% if user.is_authenticated and user|has_group:"Administrador" %}
+                                        <div class="col-sm-3">
+                                            <label>Selecciona Usuario Común</label>
+                                            <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3"
+                                                style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
+                                                autocomplete="off">
+                                                {% for usuario in usuarios_comun %}
+                                                <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        {% endif %}
 
                                         <div class="col-sm-3">
                                     <button type="button" class="btn btn-primary" id="filtrar" style="vertical-align: middle;" onclick="filter()">Filtrar</button>
