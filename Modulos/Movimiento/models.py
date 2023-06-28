@@ -196,7 +196,7 @@ def convert_xlsx_to_pdf(xlsx_file, pdf_file):
 def get_estado_caja(user):
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&(Q(unidad_productiva__usuarioRegistro=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)
-    filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)
+    filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)&Q(usuario_presupuesto=user)
     filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
     filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
     if user.groups.filter(name__in=['Observador']).exists():
