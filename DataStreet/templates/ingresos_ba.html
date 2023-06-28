@@ -49,13 +49,13 @@
                         {% endif %}
 
                         {% if user.is_authenticated and user|has_group:"Comun" %}
-                        <label >Selecciona la unidad de negocio</label>
+                        <!--<label >Selecciona la unidad de negocio</label>
                         <select hidden id="centro_costo" name="centro_costo"  onchange="mostrarSelect()" class="col-auto mb-3 " style="width:100%;"
                             aria-label="Default select example" autocomplete="off">
                             {% for centro in centros %}
                             <option value="{{centro}}">{{centro}}</option>
                             {% endfor %}
-                        </select>
+                        </select> -->
                         <label>Selecciona la unidad productiva</label>
                         <select id="unidad_productiva" onchange="mostrarSelect()" name="unidad_productiva" class="col-auto mb-3" style="width:100%;"
                             aria-label="Default select example" required autocomplete="off">
@@ -383,6 +383,10 @@
                         cargarOpcionesTipoVentas();
                     }
                     if (uprod === "Motel" &&  opcionesTipo.value==="ventas" ) {
+                        selectVentas.style.display = "block";
+                        cargarOpcionesTipoVentas();
+                    }
+                    if (uprod === "Hasstech" &&  opcionesTipo.value==="ventas" ) {
                         selectVentas.style.display = "block";
                         cargarOpcionesTipoVentas();
                     }
