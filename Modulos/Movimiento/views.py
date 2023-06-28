@@ -833,7 +833,7 @@ def edicion_form(request,pk):
             usuario_presupuesto=usuario,
 
         )
-        ingreso.save()
+    
         ingreso = Movimiento.objects.get(id=ingreso.id)
         ingreso.fecha_registro = fecha_datetime
         ingreso.save()
