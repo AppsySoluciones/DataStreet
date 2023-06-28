@@ -28,7 +28,11 @@
                                 border-bottom-left-radius: 30px;
                                 border-bottom-right-radius: 30px;
                                 box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.075);">
+                    {% if movimiento %}
+                    <form action="{{server_url}}movimiento/editar/{{movimiento.id}}/edit" method="POST" enctype="multipart/form-data" onsubmit="convertToNumber()"> {% csrf_token %}
+                    {% else %}
                     <form action="{{server_url}}registraringreso/" method="POST" enctype="multipart/form-data" onsubmit="convertToNumber()"> {% csrf_token %}
+                    {% endif %}
                         <h1 class="text-center text-sm-center lead mb-3"><b>Formulario de Movimiento de Ingresos Bancarios</b>
                         </h1>
                         {% if user.is_authenticated and user|has_group:"Administrador" %}
