@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.db import models
 from django.conf import settings
 from openpyxl import load_workbook
+import os
 import locale
 import uuid
 import openpyxl
@@ -64,28 +65,23 @@ class Movimiento(models.Model):
         self.uid = uuid.uuid4()
         self.save()
     
-    def save(self, *args, **kwargs):
-        if self.pk and self.comprobante_factura:
-            prev_instance = Movimiento.objects.get(pk=self.pk)
-            
-            # Verificar si se ha actualizado el archivo
-            if prev_instance.comprobante_factura != self.comprobante_factura:
-                # Eliminar el archivo anterior de AWS S3
-                if prev_instance.comprobante_factura:
-                    self.eliminar_archivo_s3(prev_instance.comprobante_factura.name)
+    import os
+from django.conf import settings
+import boto3
 
-                # Cargar el nuevo archivo en AWS S3
-                self.subir_archivo_s3(self.comprobante_factura.name, self.comprobante_factura)
+def subir_archivo_s3(self, nombre_archivo, archivo):
+    # Guardar el archivo temporalmente en el sistema de archivos
+    ruta_temporal = os.path.join(settings.MEDIA_ROOT, 'temp', nombre_archivo)
+    with open(ruta_temporal, 'wb+') as destination:
+        for chunk in archivo.chunks():
+            destination.write(chunk)
 
-        super().save(*args, **kwargs)
+    # Cargar el archivo desde el sistema de archivos a AWS S3
+    s3 = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
+    s3.upload_file(ruta_temporal, settings.AWS_STORAGE_BUCKET_NAME, nombre_archivo)
 
-    def eliminar_archivo_s3(self, nombre_archivo):
-        s3 = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
-        s3.delete_object(Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=nombre_archivo)
-
-    def subir_archivo_s3(self, nombre_archivo, archivo):
-        s3 = boto3.client('s3', aws_access_key_id=settings.AWS_ACCESS_KEY_ID, aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
-        s3.upload_fileobj(archivo, settings.AWS_STORAGE_BUCKET_NAME, nombre_archivo)
+    # Eliminar el archivo temporal
+    os.remove(ruta_temporal)
 
 
 def export_to_excel(queryset,to_pdf=False):
