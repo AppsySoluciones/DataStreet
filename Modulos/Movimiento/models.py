@@ -321,12 +321,11 @@ def get_movimientos_usuario(usuario):
         union_query |= Q(unidad_productiva__usuarioAuditor=usuario)
         union_query |= Q(unidad_productiva__usuarioAuditor=usuario)
         union_query |= Q(usuario_admin_ingreso=usuario)
-        union_query &= Q(usuario_presupuesto=usuario)
         return  Movimiento.objects.filter(union_query).all()
 
     else:
         if usuario.groups.filter(name__in=['Comun','Bancario','Observador']).exists():
-            filters = Q (unidad_productiva__usuarioRegistro=usuario) | Q(usuario_presupuesto=usuario)|Q(unidad_productiva__usuarioBancario=usuario)|Q(unidad_productiva__usuarioConsulta=usuario)
+            filters = Q (unidad_productiva__usuarioRegistro=usuario) | Q(usuario_presupuesto=usuario)|Q(unidad_productiva__usuarioBancario=usuario)|Q(unidad_productiva__usuarioConsulta=usuario) &Q(usuario_presupuesto=usuario)
         elif usuario.groups.filter(name__in=['Observador']).exists():
             filters = Q (unidad_productiva__usuarioConsulta=usuario)
         return Movimiento.objects.filter(filters).all()
