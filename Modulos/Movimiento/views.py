@@ -762,7 +762,6 @@ def agregar_comentario(request,pk):
 def edicion_form(request,pk):
     movimiento = get_object_or_404(Movimiento,pk=pk)
     usuario = Usuario.objects.filter(pk=request.user.id).first()
-    usuario = Usuario.objects.filter(pk=request.user.id).first() 
         
     
     costo_valor = request.POST['costo_valor']
@@ -833,10 +832,7 @@ def edicion_form(request,pk):
             usuario_presupuesto=usuario,
 
         )
-    
-        ingreso = Movimiento.objects.get(id=ingreso.id)
-        ingreso.fecha_registro = fecha_datetime
-        ingreso.save()
+
         messages.success(request, f'¡El Ingreso Bancario {concepto} se registró correctamente!')
         return redirect(f'{URL_SERVER}ingreso_ba/')
     else:
