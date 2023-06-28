@@ -170,7 +170,7 @@
                                                     {% if movimiento.tipo_ingreso == 'IN' %}
                                                         <td>{{ movimiento.usuario_presupuesto }}</td>
                                                     {% else %}
-                                                        <td>{{ movimiento.unidad_productiva.usuarioRegistro }}</td>
+                                                        <td>{{movimiento.unidad_productiva.nombre}}</td>
                                                     {% endif %}
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>$ {{ movimiento.valor|floatformat:2|intcomma }}</td>
