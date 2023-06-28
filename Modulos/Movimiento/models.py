@@ -317,6 +317,7 @@ def get_movimientos_usuario(usuario):
         unidad_productivas = UnidadProductiva.objects.filter(usuarioAuditor=usuario).all()
         usuarios_registro = unidad_productivas.values('usuarioRegistro')     
         union_query |= Q(usuario_presupuesto__in=usuarios_registro)
+        union_query |= Q(usuario_presupuesto=usuario)
         union_query |= Q(unidad_productiva__usuarioAuditor=usuario)
         union_query |= Q(unidad_productiva__usuarioAuditor=usuario)
         union_query |= Q(usuario_admin_ingreso=usuario)
