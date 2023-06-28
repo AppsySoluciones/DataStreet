@@ -477,7 +477,8 @@ def registrarEgreso(request):
         comprobante_factura=comprobante_factura,
         ingreso_bancario=ingreso_bancario,
         usuario_admin_ingreso = usuario_admin_ingreso,
-        factura=True
+        factura=True,
+        usuario_presupuesto=usuario,
         )
         egreso.save()
     
@@ -499,7 +500,8 @@ def registrarEgreso(request):
             unidad_productiva=unidad_productiva,
             ingreso_bancario=ingreso_bancario,
             usuario_admin_ingreso = usuario_admin_ingreso,
-            factura=False
+            factura=False,
+            usuario_presupuesto=usuario
         )
         egreso.save()
 
