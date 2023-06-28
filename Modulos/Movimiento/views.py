@@ -762,69 +762,111 @@ def agregar_comentario(request,pk):
 def edicion_form(request,pk):
     movimiento = get_object_or_404(Movimiento,pk=pk)
     usuario = Usuario.objects.filter(pk=request.user.id).first()
-    #sub_centro_costo_id=request.POST['sub_centro_costo']
-    nom_provedor = request.POST['nom_provedor']
-    tipo_doc = request.POST['tipo_doc']
-    num_doc = request.POST['num_doc']
-    factura_check = request.POST['factura_check']
+    usuario = Usuario.objects.filter(pk=request.user.id).first() 
+        
+    
+    costo_valor = request.POST['costo_valor']
     concepto = request.POST['concepto']
     
-    costo_valor =request.POST['costo_valor']
-    costo_valor = float(costo_valor.replace(",", "." ))
-    
-#    sub_centro_costo= SubCentroCosto.objects.filter(pk=sub_centro_costo_id).first()
-    unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
-    fecha_registro = datetime.now()
 
-    if factura_check == 'true':
-        num_factura = request.POST['num_factura']
-        if 'soporte'in request.FILES:
-            comprobante_factura = request.FILES['soporteb']
-            egreso = Movimiento.objects.filter(pk=pk).update(
-            #sub_centro_costo=sub_centro_costo,
-            fecha_registro=fecha_registro,
-            nombre_proveedor=nom_provedor,
-            tipo_documento=tipo_doc,
-            numero_documento=num_doc,
-            numero_factura=num_factura,
-            concepto = concepto,
-            estado='En proceso',
-            tipo_ingreso='OUT',
-            valor=costo_valor,
-            unidad_productiva=unidad_productiva,
-            comprobante_factura=comprobante_factura
-            )
-            
-        else:
-            comprobante_factura = None
-            egreso = Movimiento.objects.filter(pk=pk).update(
-            sub_centro_costo=sub_centro_costo,
-            fecha_registro=fecha_registro,
-            nombre_proveedor=nom_provedor,
-            tipo_documento=tipo_doc,
-            numero_documento=num_doc,
-            numero_factura=num_factura,
-            concepto = concepto,
-            estado='En proceso',
-            tipo_ingreso='OUT',
-            valor=costo_valor,
-            unidad_productiva=unidad_productiva
-            )
-            
     
+    
+        
+    if request.POST['ingreso_bancario'] == 'False':
+        ingreso_bancario = False
+        accion = request.POST['accion']
+
+        if request.POST['accion'] == 'Reducción de Caja':
+            _,ingreso,_,_,_,_ = get_movimientos(usuario)
+            ingreso = ingreso.strip("$")
+            ingreso = ingreso.replace(",", "" )
+            ingreso = float(ingreso.replace(",", "." ))
+            if float(costo_valor) > ingreso:
+                messages.error(request, f'¡La reducción de caja {concepto} no se registró correctamente! El valor supera el disponible en caja.')
+                return redirect(f'{URL_SERVER}ingreso/')
+            costo_valor = -1*float(costo_valor)
     else:
-        egreso = Movimiento.objects.filter(pk=pk).update(
-            fecha_registro=fecha_registro,
-            nombre_proveedor=nom_provedor,
-            tipo_documento=tipo_doc,
-            numero_documento=num_doc,
-            concepto = concepto,
-            estado='En proceso',
-            tipo_ingreso='OUT',
-            valor=costo_valor,
+        ingreso_bancario = True
+
+    
+    
+
+    if request.POST['ingreso_bancario'] == 'False':
+        ingreso_bancario = False
+    else:
+        ingreso_bancario = True
+
+    if ingreso_bancario == True:
+        accion = request.POST['opciones']
+        numero_documento = request.POST['num_doc']
+        tipo_documento = request.POST['tipo_doc']
+        detalle = request.POST['negociacion']
+        
+        if accion == 'ventas':
+            tipo_ventas = request.POST['tipoVentas']
+            accion = request.POST['opciones']+" "+tipo_ventas
+        else:
+            accion = request.POST['opciones']
+        
+        if usuario.groups.filter(name='Administrador').exists():
+            unidad_productiva_id = request.POST['sub_centro_costo']
+            unidad_productiva = UnidadProductiva.objects.filter(nombre=unidad_productiva_id).first()
+        else:
+            unidad_productiva_id = request.POST['unidad_productiva']
+            unidad_productiva = get_object_or_404(UnidadProductiva, pk=unidad_productiva_id)  
+        fecha_registro = request.POST['fecha_registro']
+        fecha_datetime = datetime.strptime(fecha_registro, "%Y-%m-%dT%H:%M")
+        comprobante_factura = request.FILES['soporte']
+        ingreso = Movimiento.objects.filter(pk=movimiento.pk).update(
+            fecha_registro = fecha_datetime,
             unidad_productiva=unidad_productiva,
+            accion=accion,
+            valor=costo_valor,
+            concepto=concepto,
+            estado='En proceso',
+            ingreso_bancario=ingreso_bancario,
+            tipo_ingreso='IN',
+            tipo_documento=tipo_documento,
+            numero_documento=numero_documento,
+            negociacion=detalle,
+            comprobante_factura=comprobante_factura,
+            usuario_presupuesto=usuario,
+
         )
-    return redirect(f'{URL_SERVER}movimiento/editar/{movimiento.pk}/')
+        ingreso.save()
+        ingreso = Movimiento.objects.get(id=ingreso.id)
+        ingreso.fecha_registro = fecha_datetime
+        ingreso.save()
+        messages.success(request, f'¡El Ingreso Bancario {concepto} se registró correctamente!')
+        return redirect(f'{URL_SERVER}ingreso_ba/')
+    else:
+        usuario_presupuesto = request.POST['usuario_comun']
+        usuario_presupuesto = get_object_or_404(Usuario, pk=usuario_presupuesto)
+        if request.POST['accion'] == 'Reducción de Caja':
+            usuario_presupuesto.presupuesto = usuario_presupuesto.presupuesto - float(costo_valor)
+        else:
+            usuario_presupuesto.presupuesto = usuario_presupuesto.presupuesto + float(costo_valor)
+        
+        ingreso = Movimiento.objects.create(
+            fecha_registro = datetime.now(),
+            accion=accion,
+            valor=costo_valor,
+            concepto=concepto,
+            estado='Aprobado',
+            ingreso_bancario=ingreso_bancario,
+            tipo_ingreso='IN',
+            usuario_presupuesto=usuario_presupuesto,
+            usuario_admin_ingreso = usuario
+
+        )
+        ingreso.save()
+        usuario_comun = get_object_or_404(Usuario, pk=request.POST['usuario_comun'])
+        if usuario_comun.groups.filter(name__in=['Comun']).exists():
+            if accion == 'Reducción de Caja':
+                usuario_comun.presupuesto = usuario_comun.presupuesto - float(costo_valor)
+            else:
+                usuario_comun.presupuesto = usuario_comun.presupuesto + float(costo_valor)
+            usuario_comun.save()
 
 
 def edicion_form_egreso(request,pk):
