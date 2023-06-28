@@ -762,7 +762,7 @@ def agregar_comentario(request,pk):
 def edicion_form(request,pk):
     movimiento = get_object_or_404(Movimiento,pk=pk)
     usuario = Usuario.objects.filter(pk=request.user.id).first()
-    sub_centro_costo_id=request.POST['sub_centro_costo']
+    #sub_centro_costo_id=request.POST['sub_centro_costo']
     nom_provedor = request.POST['nom_provedor']
     tipo_doc = request.POST['tipo_doc']
     num_doc = request.POST['num_doc']
