@@ -149,7 +149,7 @@
                                                         <td>{{movimiento.unidad_productiva.nombre}}</td>
                                                         {% else %}
                                                         <td>Egreso de Caja</td>
-                                                        <td> </td>
+                                                        <td>{{movimiento.unidad_productiva.nombre}} </td>
                                                         {% endif %}
                                                     {% elif movimiento.tipo_ingreso == 'IN' %}
                                                         {% if movimiento.accion == 'Reducción de Caja' %}
@@ -170,7 +170,7 @@
                                                     {% if movimiento.tipo_ingreso == 'IN' %}
                                                         <td>{{ movimiento.usuario_presupuesto }}</td>
                                                     {% else %}
-                                                        <td>{{movimiento.unidad_productiva.nombre}}</td>
+                                                        <td> </td>
                                                     {% endif %}
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>$ {{ movimiento.valor|floatformat:2|intcomma }}</td>
