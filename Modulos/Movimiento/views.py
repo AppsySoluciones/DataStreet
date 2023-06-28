@@ -389,6 +389,7 @@ def registrarIngreso(request):
             numero_documento=numero_documento,
             negociacion=detalle,
             comprobante_factura=comprobante_factura,
+            usuario_presupuesto=usuario,
 
         )
         ingreso.save()
