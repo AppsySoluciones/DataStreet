@@ -305,7 +305,6 @@ def get_movimientos_usuario(usuario):
             union_query |= condicion
         
         union_query |= Q(usuario_admin_ingreso=usuario)
-        union_query &= Q(usuario_presupuesto=usuario)
         return  Movimiento.objects.filter(union_query).all()
     elif usuario.groups.filter(name__in=['Auditor']).exists():
         unidades_negocio = UnidadNegocio.objects.all()
@@ -322,6 +321,7 @@ def get_movimientos_usuario(usuario):
         union_query |= Q(unidad_productiva__usuarioAuditor=usuario)
         union_query |= Q(unidad_productiva__usuarioAuditor=usuario)
         union_query |= Q(usuario_admin_ingreso=usuario)
+        union_query &= Q(usuario_presupuesto=usuario)
         return  Movimiento.objects.filter(union_query).all()
 
     else:
