@@ -772,7 +772,7 @@ def edicion_form(request,pk):
     costo_valor =request.POST['costo_valor']
     costo_valor = float(costo_valor.replace(",", "." ))
     
-    sub_centro_costo= SubCentroCosto.objects.filter(pk=sub_centro_costo_id).first()
+#    sub_centro_costo= SubCentroCosto.objects.filter(pk=sub_centro_costo_id).first()
     unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
     fecha_registro = datetime.now()
 
@@ -781,7 +781,7 @@ def edicion_form(request,pk):
         if 'soporte'in request.FILES:
             comprobante_factura = request.FILES['soporteb']
             egreso = Movimiento.objects.filter(pk=pk).update(
-            sub_centro_costo=sub_centro_costo,
+            #sub_centro_costo=sub_centro_costo,
             fecha_registro=fecha_registro,
             nombre_proveedor=nom_provedor,
             tipo_documento=tipo_doc,
