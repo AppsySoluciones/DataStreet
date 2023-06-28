@@ -1289,6 +1289,10 @@ def ventas(request):
             {'value': 'Ventas Habitacion', 'label': 'Ventas Habitación'},
             {'value': 'Otros Conceptos', 'label': 'Otros Conceptos'},
         ]
+    elif unidad_prod == 'Hasstech':
+        opciones_ventas = [
+            {'value': 'Aguacate', 'label': 'Aguacate'},
+        ]
     else:
         opciones_ventas = [
             {'value': '', 'label': ''}]
