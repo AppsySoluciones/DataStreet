@@ -223,9 +223,10 @@
                         
                                     // Limpiar el filtro si no se selecciona ninguna opción
                                     if (valor === '') {
-                                        tabla.column(2).search('').draw();
+                                        tabla.column(1).search('').draw();
                                     } else {
-                                        tabla.column(2).search(valor).draw();
+                                        console.log(valor);
+                                        tabla.column(1).search(valor).draw();
                                     }
                                 });
                             });
@@ -241,9 +242,9 @@
                         
                                     // Limpiar el filtro si no se selecciona ninguna opción
                                     if (valor === '') {
-                                        tabla2.column(3).search('').draw();
+                                        tabla2.column(2).search('').draw();
                                     } else {
-                                        tabla2.column(3).search(valor).draw();
+                                        tabla2.column(2).search(valor).draw();
                                     }
                                 });
                             });
@@ -253,7 +254,7 @@
             </div>
             <!-- End of Content Wrapper -->
 
-            <script>
+            <!-- <script>
                 $(document).ready(function () {
                     // Inicializar la tabla
                     var dataTable = $('#dataTable').DataTable();
@@ -273,7 +274,7 @@
                 });
 
 
-            </script>
+            </script> -->
 
 
             <!-- Bootstrap core JavaScript-->

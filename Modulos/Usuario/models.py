@@ -8,7 +8,7 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, Permis
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-import telegram
+#import telegram
 from django.conf import settings
 
 #token=settings.TELEGRAM_BOT_TOKEN
