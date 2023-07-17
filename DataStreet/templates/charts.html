@@ -27,11 +27,30 @@
     <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
 
     <script>
-        function filter() {
-            var data_line;
-            var daterange = document.getElementById('daterange').value;
-            var unidad_productiva = document.getElementById('sub_centro_costo').value;
-            console.log(unidad_productiva)
+        function filter(tipo) {
+            if (tipo == 'limpiar') {
+                var data_line;
+                var daterange = document.getElementById('daterange').value = '';
+                var unidad_productiva = document.getElementById('sub_centro_costo').value = '';
+                var unidad_negocio = document.getElementById('centro_costo').value = '';
+                {% if user.is_authenticated and user|has_group:"Administrador" %}
+                
+                var usuario_comun = document.getElementById('usuario_comun').value = '';
+
+                {% endif %}
+            }
+            else{
+                var data_line;
+                var daterange = document.getElementById('daterange').value;
+                var unidad_productiva = document.getElementById('sub_centro_costo').value;
+                var unidad_negocio = document.getElementById('centro_costo').value;
+                {% if user.is_authenticated and user|has_group:"Administrador" %}
+                
+                var usuario_comun = document.getElementById('usuario_comun').value;
+
+                {% endif %}
+            }
+            
 
             
 
@@ -41,6 +60,11 @@
                 data: {
                     'daterange': daterange,
                     'unidad_productiva': unidad_productiva,
+                    'unidad_negocio': unidad_negocio,
+                    {% if user.is_authenticated and user|has_group:"Administrador" %}
+
+                    'usuario_comun': usuario_comun,
+                    {% endif %}
                 },
                 success: function (data) {
                     data_line = data;
@@ -188,17 +212,18 @@
                                 <div class="col-xl-12">
                                     <div class="row">
                                         <div class="col-sm-3">
-                                            <label class="mb-3">Ingrese un rango de fechas:</label>
+                                            <label >Ingrese un rango de fechas:</label>
                                             <input type="text" name="daterange" id="daterange" style="width:100%; box-sizing: border-box;"
-                                                class="input-group mb-3" value="" />
+                                            class="input-group col-auto mb-3 " value="" />
                     
                                         </div>
                     
                                         <div class="col-sm-3">
                                             <label>Selecciona la unidad de negocio</label>
-                                            <select id="centro_costo" name="centro_costo" class="col-auto mb-3 "
-                                                style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
+                                            <select id="centro_costo" name="centro_costo" class="input-group col-auto mb-3 "
+                                                style="width:100%; box-sizing: border-box;"  required
                                                 autocomplete="off">
+                                                <option value=""> - </option>
                                                 {% for centro in centros %}
                                                 <option value="{{centro}}">{{centro}}</option>
                                                 {% endfor %}
@@ -207,9 +232,9 @@
                     
                                         <div class="col-sm-3">
                                             <label>Selecciona la unidad productiva</label>
-                                            <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3"
+                                            <select id="sub_centro_costo" name="sub_centro_costo" class="input-group col-auto mb-3"
                                                 style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
-                                                autocomplete="off">
+                                                autocomplete="off">                                           
                                                 {% for opcion in subcentros %}
                                                 <option value="{{ opcion }}">{{ opcion }}</option>
                                                 {% endfor %}
@@ -218,10 +243,10 @@
                                         {% if user.is_authenticated and user|has_group:"Administrador" %}
                                         <div class="col-sm-3">
                                             <label>Selecciona Usuario Común</label>
-                                            <select id="sub_centro_costo" name="sub_centro_costo" class="col-auto mb-3"
+                                            <select id="usuario_comun" name="usuario_comun class="col-auto mb-3"
                                                 style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
                                                 autocomplete="off">
-                                                <option default value=""> </option>
+                                                <option value=""> - </option>
                                                 {% for usuario in usuarios_comun %}
                                                 <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
                                                 {% endfor %}
@@ -229,11 +254,16 @@
                                         </div>
                                         {% endif %}
 
-                                        <div class="col-sm-3">
-                                    <button type="button" class="btn btn-primary" id="filtrar" style="vertical-align: middle;" onclick="filter()">Filtrar</button>
-                                </div>
+                                        
                     
                                     </div>
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <button type="button" class="btn btn-primary" id="filtrar" style="vertical-align:top;" onclick="filter()">Filtrar</button>
+                                            <button type="button" class="btn btn-primary" id="filtrar" style="vertical-align: bottom;" onclick="filter('limpiar')">Limpiar</button>
+                                        </div>
+                                    </div>
+                                    <br>
                                     <!-- end row -->
                                 </div>
                             </div>
@@ -512,10 +542,13 @@
         centro_costo.addEventListener('change', function () {
             var seleccion = centro_costo.value;
             sub_centro_costo.innerHTML = '';
+            var opcion_html_default = '<option value="">' + " - " + '</option>';
+            sub_centro_costo.innerHTML += opcion_html_default;
             subcentros[seleccion].forEach(function (centros_id, opcion) {
                 var opcion_html = '<option value="' + centros_id + '">' + centros_id + '</option>';
                 sub_centro_costo.innerHTML += opcion_html;
             });
+            
         });
 
         // Cargar el primer centro de costo y sus subcentros correspondientes
@@ -525,10 +558,13 @@
         // Función para cargar los subcentros de costo correspondientes a un centro de costo seleccionado
         function cargarSubcentros(centroSeleccionado) {
             sub_centro_costo.innerHTML = ''; // Limpiar las opciones anteriores
+            var opcion_html_default = '<option value="">' + " - " + '</option>';
+            sub_centro_costo.innerHTML += opcion_html_default;
             subcentros[centroSeleccionado].forEach(function (data_centros_id, opcion) {
                 var opcion_html = '<option value="' + opcion + '">' + data_centros_id + '</option>';
                 sub_centro_costo.innerHTML += opcion_html;
             });
+            
         }
         centro_costo.dispatchEvent(new Event('change'));
     </script>

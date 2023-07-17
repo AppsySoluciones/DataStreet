@@ -43,9 +43,6 @@ def grupo_requerido(grupo_nombres):
 def home(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
 
-    
-
-
     if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
         disponible,ingreso,egreso,disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
     else:
@@ -54,11 +51,10 @@ def home(request):
     
     if usuario.groups.filter(name__in=['Auditor']).exists():
         filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
-        movimientos = get_movimientos_usuario(usuario).filter(filters)
+        movimientos = get_movimientos_usuario(usuario).filter(filters).distinct()
 
     else:
-        movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
-
+        movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False).distinct()
 
     context = {'server_url':URL_SERVER,
         'disponible':disponible,
@@ -1404,29 +1400,36 @@ def filtrar_data_dashboard(request):
         movimientos = get_movimientos_usuario(usuario).filter(filters)
 
     else:
-        movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False)
+        movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False).distinct()
     
 
     if usuario.groups.filter(name='Auditor').exists():
         movimientos = movimientos.filter(tipo_ingreso='OUT')
+    
+    filtros = Q()
 
     if 'daterange' in request.GET:
         fecha_str = request.GET['daterange']
+        if fecha_str!='':
+            # Obtén las fechas de inicio y fin del rango 
+            fecha_inicio, fecha_fin = map(parse, fecha_str.split(' - '))
+            filtros &= Q(fecha_registro__gte=fecha_inicio.replace(hour=0,minute=0), fecha_registro__lte=fecha_fin.replace(hour=23,minute=59))
         
 
-        # Obtén las fechas de inicio y fin del rango 
-        fecha_inicio, fecha_fin = map(parse, fecha_str.split(' - '))
-
-        # Genera una lista de fechas dentro del rango utilizando rrule y DAILY
-        
-
-        # Filtra el objeto utilizando el rango de fechas 
-        movimientos = movimientos.filter(Q(fecha_registro__gte=fecha_inicio.replace(hour=0,minute=0), fecha_registro__lte=fecha_fin.replace(hour=23,minute=59)))
-    
     if 'unidad_productiva' in request.GET:
         unidad_prod = request.GET['unidad_productiva']
         if unidad_prod != '':
-            movimientos = movimientos.filter(unidad_productiva__nombre=unidad_prod)
+            filtros &= Q(unidad_productiva__nombre=unidad_prod)
+        else:
+            if 'unidad_negocio' in request.GET and request.GET['unidad_negocio'] != '':
+                unidad_negocio = UnidadNegocio.objects.filter(nombre=request.GET['unidad_negocio']).first()
+                filtros &= Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all())
+    
+    if 'usuario_comun' in request.GET and request.GET['usuario_comun'] != '':
+        usuario_comun = Usuario.objects.filter(pk=int(request.GET['usuario_comun'])).first()
+        filtros &= Q(unidad_productiva__usuarioRegistro=usuario_comun)
+
+    movimientos = movimientos.filter(filtros)
 
     context = {}
     context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
