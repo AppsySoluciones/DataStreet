@@ -1428,8 +1428,9 @@ def filtrar_data_dashboard(request):
     if 'usuario_comun' in request.GET and request.GET['usuario_comun'] != '':
         usuario_comun = Usuario.objects.filter(pk=int(request.GET['usuario_comun'])).first()
         filtros &= Q(unidad_productiva__usuarioRegistro=usuario_comun)
-
-    movimientos = movimientos.filter(filtros)
+    
+    if filtros != Q():
+        movimientos = movimientos.filter(filtros)
 
     context = {}
     context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
