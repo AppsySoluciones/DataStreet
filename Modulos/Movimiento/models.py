@@ -324,7 +324,9 @@ def get_movimientos_usuario(usuario):
             filters = Q (unidad_productiva__usuarioRegistro=usuario) | Q(usuario_presupuesto=usuario)|Q(unidad_productiva__usuarioBancario=usuario)|Q(unidad_productiva__usuarioConsulta=usuario) &Q(usuario_presupuesto=usuario)
         elif usuario.groups.filter(name__in=['Observador']).exists():
             filters = Q (unidad_productiva__usuarioConsulta=usuario)
-        movimientos = Movimiento.objects.filter(filters).all()
+        if filters != Q():
+            movimientos = Movimiento.objects.filter(filters).all()
+        movimientos = Movimiento.objects.all()
         return movimientos.filter(Q(usuario_presupuesto=usuario)).all()
 
 def get_movimientos(usuario,unidad_productiva=None):
