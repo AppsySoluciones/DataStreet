@@ -29,10 +29,12 @@
         <!-- Custom styles for this page -->
         <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
 
+        
     </head>
     {% block body %}
 
         <body>
+            <code>{% csrf_token %}</code>
 
 
             <!-- Content Wrapper -->
@@ -82,10 +84,10 @@
                             
                             <div class="row">
                                 {% if user.is_authenticated and user|has_group:"Administrador" or user.is_authenticated and user|has_group:"Auditor" or user.is_authenticated and user|has_group:"Comun" %}
-                                <div class="col-lg-6">
-                                    <div class="card-header py-3">
+                                <div class="col-lg-4">
+                                    <div class="card-header py-3" style="background-color: #fff;border-bottom:1px solid #fff;">
                                         <p>Selecciona Tipo de movimiento</p>
-                                        <select id="filtro">
+                                        <select id="filtro1">
                                             <option value="">Todos</option>
                                             <option value="Ingreso de Caja">Ingreso de Caja</option>
                                             <option value="Egreso de Caja">Egreso de Caja</option>
@@ -98,8 +100,8 @@
                                 </div>
                                 
 
-                                <div class="col-lg-6">
-                                    <div class="card-header py-3">
+                                <div class="col-lg-4">
+                                    <div class="card-header py-3" style="background-color: #fff;border-bottom:1px solid #fff;">
                                         <p>Selecciona Unidad Productiva</p>
                                         <select id="filtro2">
                                             <option value="">Todos</option>
@@ -109,6 +111,19 @@
                                         </select>
                                     </div>
                                 </div>
+                                {% if user.is_authenticated and user|has_group:"Administrador" %}
+                                        <div class="col-lg-4">
+                                            <div class="card-header py-3" style="background-color: #fff;border-bottom:1px solid #fff;">
+                                                <p>Selecciona Usuario Común</p>
+                                                <select id="usuario_comun" name="usuario_comun">
+                                                    <option value=""> Todos </option>
+                                                    {% for usuario in usuarios_comun %}
+                                                    <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% endif %}
 
                                 {% endif %}
                                 {% if user.is_authenticated and user|has_group:"Auditor"%}
@@ -218,7 +233,7 @@
                                 var tabla = $('#dataTable').DataTable({order: [[ 0, "desc" ]]});
 
                                                         // Aplicar el filtro cuando cambie el valor del select
-                                $('#filtro').on('change', function() {
+                                $('#filtro1').on('change', function() {
                                     var valor = $(this).val();
                         
                                     // Limpiar el filtro si no se selecciona ninguna opción
@@ -230,8 +245,7 @@
                                     }
                                 });
                             });
-                        </script>
-                        <script>
+                        
                             $(document).ready(function() {
                                 // Inicializar la tabla
                                 var tabla2 = $('#dataTable').DataTable();
@@ -248,34 +262,67 @@
                                     }
                                 });
                             });
+                        
+                            
+                            $(document).ready(function() {
+                                // Inicializar la tabla
+                                var tabla3 = $('#dataTable').DataTable();
+
+                                // Función para hacer la solicitud AJAX y actualizar el valor de ingresos_caja
+                                function actualizarIngresosCaja(id_user) {
+                                // Datos que deseas enviar con la solicitud
+                                var dataToSend = {
+                                    id_user: id_user,
+                                };
+                                console.log(id_user)
+                                var url = "{{ server_url }}get_filtred_cards/" + id_user.toString();
+ 
+                                fetch(url)
+                                .then(response => response.text())
+                                .then(data => {
+                                    console.log(data);
+                                    console.log("Los datos son:  ")
+                                    const data_object = JSON.parse(data);
+                                    console.log(data_object.ingresos);
+                                    // Actualizar el valor de ingresos_caja
+                                    $('#ingresos_caja').text(data_object.ingresos);
+                                    $('#egresos_caja').text(data_object.egresos);
+                                    $('#disponible_caja').text(data_object.disponible);
+                                    $('#ingresos_bancarios').text(data_object.ingresos_ba);
+                                    $('#egresos_bancarios').text(data_object.egresos_ba);
+                                    $('#disponible_bancarios').text(data_object.disponible_ba);
+                                    
+                                    
+                                })
+                                .catch(error => console.error('Error al obtener los ingresos:', error));
+                                }
+
+
+                                // Aplicar el filtro cuando cambie el valor del select
+                                $('#usuario_comun').on('change', function() {
+                                    var valor =  $('#usuario_comun').find(":selected").text();
+                                    console.log(valor);
+                                    var id_user = $(this).val();
+                                    console.log(id_user);
+
+                                    // Limpiar el filtro si no se selecciona ninguna opción
+                                    if (id_user === '') {
+                                        tabla3.column(3).search('').draw();
+                                    } else {
+                                        tabla3.column(3).search(valor).draw();
+                                        // Llamar a la función para actualizar los ingresos
+                                        actualizarIngresosCaja(id_user);
+                                    }
+                                });
+                            });
+
                         </script>
 
 
             </div>
             <!-- End of Content Wrapper -->
 
-            <!-- <script>
-                $(document).ready(function () {
-                    // Inicializar la tabla
-                    var dataTable = $('#dataTable').DataTable();
-                    dataTable.order( [ 0, 'desc' ] ).draw();
-
-                    // Aplicar el filtro cuando cambie el valor del select
-                    $('#filtro').on('change', function () {
-                        var valor = $(this).val();
-
-                        // Limpiar el filtro si no se selecciona ninguna opción
-                        if (valor === '') {
-                            dataTable.column(2).search('').draw();
-                        } else {
-                            dataTable.column(2).search(valor).draw();
-                        }
-                    });
-                });
-
-
-            </script> -->
-
+            
 
             <!-- Bootstrap core JavaScript-->
             <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>

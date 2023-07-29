@@ -78,62 +78,133 @@
 
                         <!-- DataTales Example -->
                         <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-dark">Movimientos</h6>
+                            
+                            <div class="row">
+                                {% if user.is_authenticated and user|has_group:"Administrador" or user.is_authenticated and user|has_group:"Auditor" or user.is_authenticated and user|has_group:"Comun" %}
+                                <div class="col-lg-4">
+                                    <div class="card-header py-3" style="background-color: #fff;border-bottom:1px solid #fff;">
+                                        <p>Selecciona Tipo de movimiento</p>
+                                        <select id="filtro1">
+                                            <option value="">Todos</option>
+                                            <option value="Ingreso Bancario">Ingreso Bancario</option>
+                                            <option value="Egreso Bancario">Egreso Bancario</option>
+                                            
+                                        </select>
+                                    </div>
+                                </div>
+                                
+
+                                <div class="col-lg-4">
+                                    <div class="card-header py-3" style="background-color: #fff;border-bottom:1px solid #fff;">
+                                        <p>Selecciona Unidad Productiva</p>
+                                        <select id="filtro2">
+                                            <option value="">Todos</option>
+                                            {% for movimiento in unidades_productivas %}
+                                            <option value="{{movimiento}}">{{movimiento}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                {% if user.is_authenticated and user|has_group:"Administrador" %}
+                                        <div class="col-lg-4">
+                                            <div class="card-header py-3" style="background-color: #fff;border-bottom:1px solid #fff;">
+                                                <p>Selecciona Usuario Común</p>
+                                                <select id="usuario_comun" name="usuario_comun">
+                                                    <option value=""> Todos </option>
+                                                    {% for usuario in usuarios_comun %}
+                                                    <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                {% endif %}
+                                {% if user.is_authenticated and user|has_group:"Auditor"%}
+                                <input type="hidden" id="filtro" value="Egreso">
+                                {% endif %}
+                                
+                                
+                                
                             </div>
+                            
+                            
+
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                         <thead>
                                             <tr>
                                                 <!-- Tipo de Movimiento	Fecha de Movimiento	Concepto	Valor	Comprobante/Detalle -->
+                                                <th>Fecha de Registro</th>
                                                 <th>Tipo de Movimiento</th>
-                                                <th>Fecha de Movimiento</th>
-                                                {% if user.is_authenticated and user|has_group:"Administrador" %}
                                                 <th>Unidad Productiva</th>
-                                                {% endif %}
+                                                <th>Usuario Administrador</th>
                                                 <th>Concepto</th>
                                                 <th>Valor</th>
-                                                <th>Nombre Proveedor</th>
                                                 <th>Estado</th>
-                                                <th>Comprobante/Detalle</th>
+                                                <th>Comprobante/Detalle/Eliminar</th>
+                                                
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for movimiento in data_movimientos %}
                                                 <tr>
-                                                    <!-- Tipo de Ingreso -->
+                                                    <td>{{ movimiento.fecha_registro }}</td>
+                                                    
                                                     {% if movimiento.tipo_ingreso == 'OUT' %}
-                                                        <td>Egreso</td>
+                                                        {% if movimiento.ingreso_bancario == True %}
+                                                        <td>Egreso Bancario</td>
+                                                        <td>{{movimiento.unidad_productiva.nombre}}</td>
+                                                        {% else %}
+                                                        <td>Egreso de Caja</td>
+                                                        <td>{{movimiento.unidad_productiva}} </td>
+                                                        {% endif %}
                                                     {% elif movimiento.tipo_ingreso == 'IN' %}
-                                                        <td>Ingreso</td>
+                                                        {% if movimiento.accion == 'Reducción de Caja' %}
+                                                            <td>Reducción</td>
+                                                            <td> </td>
+                                                        {% else %}
+                                                            {% if movimiento.ingreso_bancario == True %}
+                                                            <td>Ingreso Bancario</td>
+                                                            <td>{{movimiento.unidad_productiva.nombre}}</td>
+                                                            {% else %}
+                                                            <td>Ingreso de Caja</td>
+                                                            <td> </td>
+                                                            {% endif %}
+                                                        {% endif %}
                                                     {% else %}
                                                         <td>Desconocido</td>
                                                     {% endif %}
-                                                    <td>{{ movimiento.fecha_registro }}</td>
-                                                    {% if user.is_authenticated and user|has_group:"Administrador" %}
-                                                    <td>{{movimiento.unidad_productiva.nombre}}</td>
-                                                    {% endif %}                                                    
+                                                    {% if movimiento.tipo_ingreso == 'IN' %}
+                                                        <td>{{ movimiento.usuario_presupuesto }}</td>
+                                                    {% else %}
+                                                        <td>{{ movimiento.usuario_presupuesto }} </td>
+                                                    {% endif %}
                                                     <td>{{ movimiento.concepto }}</td>
                                                     <td>$ {{ movimiento.valor|floatformat:2|intcomma }}</td>
-                                                    <td>{{ movimiento.nombre_proveedor }}</td>
                                                     <td>{{ movimiento.estado }}</td>
                                                     <td>
                                                         <b>
-                                                            <a href="/">
-                                                                <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante"></a>
-                                                            <a href="/"></a>
-                                                            {% if user.is_authenticated and user|has_group:"Auditor" %}
-                                                                <a href="{{server_url}}movimiento/detalle/{{movimiento.pk}}">
-                                                                    <input class="btn btn-block btn-warning" style="color: #fff;" value="Auditar"></a>
+                                                            {% if movimiento.comprobante_factura %}
+                                                                <a href="{{ server_url }}movimiento/comprobante/{{ movimiento.pk }}" target="_blank">
+                                                                    <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante">
+                                                                </a>
                                                             {% else %}
-                                                                <a href="{{server_url}}movimiento/detalle/{{movimiento.pk}}">
-                                                                    <input class="btn btn-block btn-success" style="color: #fff;" value="Detalle"></a>
+                                                                <input class="btn btn-block btn-primary mb-1" style="color: #fff;" value="Comprobante" disabled>
+                                                            {% endif %}
+                                                            {% if user.is_authenticated and user|has_group:"Auditor" and movimiento.estado == 'En proceso' %}
+                                                                <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
+                                                                    <input class="btn btn-block btn-warning mb-1" style="color: #fff;" value="Auditar">
+                                                                </a>
+                                                            {% else %}
+                                                            <a href="{{ server_url }}movimiento/detalle/{{ movimiento.pk }}">
+                                                                    <input class="btn btn-block btn-success mb-1" mb-1style="color: #fff;" value="Detalle">
+                                                                </a>
                                                             {% endif %}
                                                         </b>
                                                     </td>
                                                 </tr>
-
                                             {% endfor %}
                                         </tbody>
                                     </table>
@@ -168,6 +239,97 @@
             <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
             <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
             <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+            <script>
+                $(document).ready(function () {
+                    // Inicializar la tabla
+                    var tabla = $('#dataTable').DataTable({order: [[ 0, "desc" ]]});
+
+                                            // Aplicar el filtro cuando cambie el valor del select
+                    $('#filtro1').on('change', function() {
+                        var valor = $(this).val();
+            
+                        // Limpiar el filtro si no se selecciona ninguna opción
+                        if (valor === '') {
+                            tabla.column(1).search('').draw();
+                        } else {
+                            console.log(valor);
+                            tabla.column(1).search(valor).draw();
+                        }
+                    });
+                });
+            
+                $(document).ready(function() {
+                    // Inicializar la tabla
+                    var tabla2 = $('#dataTable').DataTable();
+            
+                    // Aplicar el filtro cuando cambie el valor del select
+                    $('#filtro2').on('change', function() {
+                        var valor = $(this).val();
+            
+                        // Limpiar el filtro si no se selecciona ninguna opción
+                        if (valor === '') {
+                            tabla2.column(2).search('').draw();
+                        } else {
+                            tabla2.column(2).search(valor).draw();
+                        }
+                    });
+                });
+            
+                
+                $(document).ready(function() {
+                    // Inicializar la tabla
+                    var tabla3 = $('#dataTable').DataTable();
+
+                    // Función para hacer la solicitud AJAX y actualizar el valor de ingresos_caja
+                    function actualizarIngresosCaja(id_user) {
+                    // Datos que deseas enviar con la solicitud
+                    var dataToSend = {
+                        id_user: id_user,
+                    };
+                    console.log(id_user)
+                    var url = "{{ server_url }}get_filtred_cards/" + id_user.toString();
+
+                    fetch(url)
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log(data);
+                        console.log("Los datos son:  ")
+                        const data_object = JSON.parse(data);
+                        console.log(data_object.ingresos);
+                        // Actualizar el valor de ingresos_caja
+                        $('#ingresos_caja').text(data_object.ingresos);
+                        $('#egresos_caja').text(data_object.egresos);
+                        $('#disponible_caja').text(data_object.disponible);
+                        $('#ingresos_bancarios').text(data_object.ingresos_ba);
+                        $('#egresos_bancarios').text(data_object.egresos_ba);
+                        $('#disponible_bancarios').text(data_object.disponible_ba);
+                        
+                        
+                    })
+                    .catch(error => console.error('Error al obtener los ingresos:', error));
+                    }
+
+
+                    // Aplicar el filtro cuando cambie el valor del select
+                    $('#usuario_comun').on('change', function() {
+                        var valor =  $('#usuario_comun').find(":selected").text();
+                        console.log(valor);
+                        var id_user = $(this).val();
+                        console.log(id_user);
+
+                        // Limpiar el filtro si no se selecciona ninguna opción
+                        if (id_user === '') {
+                            tabla3.column(3).search('').draw();
+                        } else {
+                            tabla3.column(3).search(valor).draw();
+                            // Llamar a la función para actualizar los ingresos
+                            actualizarIngresosCaja(id_user);
+                        }
+                    });
+                });
+
+            </script>
 
         </body>
     {% endblock %}

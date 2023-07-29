@@ -64,3 +64,4 @@ xhtml2pdf==0.2.11
 psycopg2==2.9.6
 psycopg2-binary==2.9.6
 pandas==2.0.2
+django-extensions==3.2.3

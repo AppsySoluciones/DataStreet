@@ -537,6 +537,19 @@ def tablas_ingresos(request,pdf=None):
             context['ingresos'] = ingreso
             context['egresos'] = egreso
             context['disponible'] = disponible
+            unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
+            usuarios_comun = []
+            usuarios_comun_id =[]
+            for unidad in unidad_negocio:
+                for unidad_productiva in unidad.unidades_productivas.all():
+                    if unidad_productiva.usuarioRegistro != None:
+                        list_users_produn = list(unidad_productiva.usuarioRegistro.all().values_list('pk',flat=True))
+                        if list_users_produn not in usuarios_comun_id:
+                            usuarios_comun_id = usuarios_comun_id + list_users_produn
+                            usuarios_comun.append(unidad_productiva.usuarioRegistro.all())
+                            
+            usuarios_comun = list(set(chain(*usuarios_comun)))
+            context['usuarios_comun'] = usuarios_comun
         context['disponible_ba'] = disponible_ba
         context['ingresos_ba'] = ingreso_ba
         context['egresos_ba'] = egreso_ba
@@ -590,7 +603,6 @@ def tablas_egresos(request):
     context['egresos_ba'] = egreso_ba
     return render(request,"tables_egresos.html",context)
 
-
 def tablas_ingresos_ba(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
@@ -599,6 +611,7 @@ def tablas_ingresos_ba(request):
         unidad_productiva = UnidadProductiva.objects.filter(usuarioRegistro=usuario).first()
         disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
     filtros = Q(ingreso_bancario=True)
+    
     movimientos = get_movimientos_usuario(usuario).filter(filtros)
     
 
@@ -609,19 +622,43 @@ def tablas_ingresos_ba(request):
         'disponible':disponible,
         'request': request
         }
+
+    unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
+    usuarios_comun = []
+    usuarios_comun_id =[]
+    for unidad in unidad_negocio:
+        for unidad_productiva in unidad.unidades_productivas.all():
+            if unidad_productiva.usuarioRegistro != None:
+                list_users_produn = list(unidad_productiva.usuarioRegistro.all().values_list('pk',flat=True))
+                if list_users_produn not in usuarios_comun_id:
+                    usuarios_comun_id = usuarios_comun_id + list_users_produn
+                    usuarios_comun.append(unidad_productiva.usuarioRegistro.all())
+                    
+    usuarios_comun = list(set(chain(*usuarios_comun)))
+    context['usuarios_comun'] = usuarios_comun
     
     context['disponible_ba'] = disponible_ba
     context['ingresos_ba'] = ingreso_ba
     context['egresos_ba'] = egreso_ba
-    if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
-        #diccionario[clave] = valor
-        elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
-        unique_elementos = set(elementos)
-        context['unidades_productivas'] = unique_elementos
+    if usuario.groups.filter(name__in=['Administrador','Auditor','Comun']).exists():
+            #diccionario[clave] = valor
+            elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
+            unique_elementos = set(elementos)
+            context['unidades_productivas'] = unique_elementos
 
     if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
         context['data_movimientos'] = movimientos.filter(tipo_ingreso='IN')
+    
+    for movimiento in movimientos:
+        unidad_productiva = movimiento.unidad_productiva
+        if movimiento.unidad_productiva == None:
+            movimiento.unidad_productiva_admin = movimiento.usuario_presupuesto.nombre + " " +movimiento.usuario_presupuesto.apellido
+        
+        if UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).exists():
+            unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
+            movimiento.unidad_negocio = unidad_negocio.nombre
 
+    context['data_movimientos'] = movimientos.distinct()
     return render(request,"tables_ingresos_ba.html",context)
 
 def tablas_egresos_ba(request):
@@ -741,7 +778,6 @@ def edicion_mov(request,pk):
     else:
         return render(request,"404.html",context)
 
-
 def agregar_comentario(request,pk):
     comentario = request.POST['comentario']
     movimiento = get_object_or_404(Movimiento,pk=pk)
@@ -860,7 +896,6 @@ def edicion_form(request,pk):
                 usuario_comun.presupuesto = usuario_comun.presupuesto + float(costo_valor)
             usuario_comun.save()
 
-
 def edicion_form_egreso(request,pk):
     movimiento = get_object_or_404(Movimiento,pk=pk)
     usuario = Usuario.objects.filter(pk=request.user.id).first()
@@ -930,6 +965,7 @@ def edicion_form_egreso(request,pk):
             unidad_productiva=unidad_productiva,
         )
     return redirect(f'{URL_SERVER}movimiento/detalle/{movimiento.pk}/')
+
 def select_unidad_prod(request):
     usuario = get_object_or_404(Usuario,pk=request.user.id)
     if request.POST['unidad_productiva'] == 'None':
@@ -978,6 +1014,7 @@ def aprobar_mov(request,pk):
                 messages.success(request, f'¡El Egreso {movimiento.concepto} fué marcado como APROBADO!')
     
     return redirect(f'{URL_SERVER}tablaing/')
+
 def rechazar_mov(request,pk):
     movimiento = get_object_or_404(Movimiento,pk=pk)
     movimiento.estado = 'Rechazado'
@@ -1039,8 +1076,6 @@ def generar_excel_ingresos(request):
 
     return excel_generado 
 
-
-
 def generar_excel_egresos(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
@@ -1072,7 +1107,6 @@ def generar_excel_egresos(request):
     messages.success(request, f'¡El excel se generó corretamente!')
 
     return excel_generado 
-
 
 def generar_excel_ingresos_ba(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
@@ -1120,7 +1154,6 @@ def select_u_productiva(request):
     except:
         messages.success(request, f'¡Upss hubo un error!')
         return redirect('/')
-
 
 class Pdf_ingresos (View):
     def get(self, request, *args, **kwargs):
@@ -1440,3 +1473,26 @@ def filtrar_data_dashboard(request):
     context['top_3_egresos_centrocostos'] = centro_costos_uprod(movimientos)
 
     return JsonResponse(context, safe=False)
+
+def filtrar_cards_dashboard(request,pk):
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    id_user = pk
+    user = get_object_or_404(Usuario, pk=id_user) 
+    disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(user)
+    context = {}
+    context["disponible"] = disponible
+    context["ingresos"] = ingreso
+    context["egresos"] = egreso
+    context["disponible_ba"] = disponible_ba
+    context["ingresos_ba"] = ingreso_ba
+    context["egresos_ba"] = egreso_ba
+    return JsonResponse(context, safe=False)
+    """ else:
+        context = {}
+        context["disponible"] = "0.0"
+        context["ingresos"] = "0.0"
+        context["egresos"] = "0.0"
+        context["disponible_ba"] = "0.0"
+        context["ingresos_ba"] = "0.0"
+        context["egresos_ba"] = "0.0"
+        return JsonResponse(context, safe=False) """
