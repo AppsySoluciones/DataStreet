@@ -1,6 +1,8 @@
 from django.db import models
 from django.core.mail import send_mail
 from django.shortcuts import render
+from django.contrib.auth.hashers import make_password
+
 
 import uuid
 from django.db import models
@@ -26,7 +28,9 @@ class UserManager(BaseUserManager):
             is_superuser=is_superuser,
             **extra_fields
         )
-        user.set_password(password)
+        if password:
+            user.password = make_password(password)
+        #user.set_password(password)
         user.save(using=self.db)
         return user
 
@@ -87,5 +91,9 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
             bot = telegram.Bot(token=token)
             chat_id = self.telegram_chat_id
             bot.send_message(chat_id=chat_id, text=message)
-
-
+    
+    def save(self, *args, **kwargs):
+        # Ensure the password is properly encrypted when saving the user object
+        if self.password and not self.password.startswith('pbkdf2_'):
+            self.password = make_password(self.password)
+        super().save(*args, **kwargs)
