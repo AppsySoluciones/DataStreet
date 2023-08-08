@@ -191,10 +191,7 @@ def convert_xlsx_to_pdf(xlsx_file, pdf_file):
 
 def get_estado_caja(user,usuario_admin=None):
     union_query = Q()
-    print(usuario_admin)
 
-    
-        
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(usuario_presupuesto=user)&Q(ingreso_bancario=False)&union_query
     filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)&Q(usuario_presupuesto=user)&union_query
@@ -217,7 +214,7 @@ def get_estado_caja(user,usuario_admin=None):
         for unidad_negocio in unidades_negocio:
             condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all())
             union_query |= condicion
-        filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=False)&Q(usuario_admin_ingreso=usuario_admin)
+        filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=False)
 
     ingresos =  Movimiento.objects.distinct().filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
     egresos = Movimiento.objects.distinct().filter(filtros_out).aggregate(Sum('valor'))['valor__sum']
