@@ -200,9 +200,9 @@ def get_estado_caja(user,usuario_admin=None):
             condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all()) 
             union_query |= condicion
         
-        union_query |= Q(unidad_productiva__usuarioRegistro=user)
-        union_query |= Q(usuario_presupuesto=user)
-        union_query |= Q(usuario_admin_ingreso=user)
+        #union_query |= Q(unidad_productiva__usuarioRegistro=user)
+        #union_query |= Q(usuario_presupuesto=user)
+        #union_query |= Q(usuario_admin_ingreso=user)
 
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&(Q(unidad_productiva__usuarioRegistro=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)&union_query
@@ -223,7 +223,7 @@ def get_estado_caja(user,usuario_admin=None):
     
 
     print(union_query)
-    
+
     ingresos =  Movimiento.objects.distinct().filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
     egresos = Movimiento.objects.distinct().filter(filtros_out).aggregate(Sum('valor'))['valor__sum']
     ingresos_ba = Movimiento.objects.distinct().filter(filtros_in_ba).aggregate(Sum('valor'))['valor__sum']
