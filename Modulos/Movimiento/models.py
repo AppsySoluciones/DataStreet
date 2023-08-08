@@ -210,10 +210,10 @@ def get_estado_caja(user,usuario_admin=None):
     
     if usuario_admin:
         unidades_negocio = UnidadNegocio.objects.filter(admin=usuario_admin).all()
-        
         for unidad_negocio in unidades_negocio:
             condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all())
             union_query |= condicion
+        union_query |= Q(usuario_admin_ingreso=usuario_admin)
         filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=False)
 
     ingresos =  Movimiento.objects.distinct().filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
