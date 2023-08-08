@@ -193,12 +193,7 @@ def get_estado_caja(user,usuario_admin=None):
     union_query = Q()
     print(usuario_admin)
 
-    if usuario_admin:
-        unidades_negocio = UnidadNegocio.objects.filter(admin=usuario_admin).all()
-        
-        for unidad_negocio in unidades_negocio:
-            condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all())
-            union_query |= condicion
+    
         
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(usuario_presupuesto=user)&Q(ingreso_bancario=False)&union_query
@@ -216,9 +211,13 @@ def get_estado_caja(user,usuario_admin=None):
         filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioBancario=user)&Q(ingreso_bancario=True)&union_query
         filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioBancario=user)&Q(ingreso_bancario=True)&union_query
     
-    
-
-    print(union_query)
+    if usuario_admin:
+        unidades_negocio = UnidadNegocio.objects.filter(admin=usuario_admin).all()
+        
+        for unidad_negocio in unidades_negocio:
+            condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all())
+            union_query |= condicion
+        filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=False)&Q(usuario_presupuesto=user)
 
     ingresos =  Movimiento.objects.distinct().filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
     egresos = Movimiento.objects.distinct().filter(filtros_out).aggregate(Sum('valor'))['valor__sum']
