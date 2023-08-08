@@ -1478,7 +1478,10 @@ def filtrar_cards_dashboard(request,pk):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     id_user = pk
     user = get_object_or_404(Usuario, pk=id_user) 
-    disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(user)
+    if usuario.groups.filter(name__in=['Administrador']).exists():
+        disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(user,usuario)    
+    else:
+        disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(user)
     context = {}
     context["disponible"] = disponible
     context["ingresos"] = ingreso

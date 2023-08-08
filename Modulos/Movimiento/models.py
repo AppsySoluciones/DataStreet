@@ -189,22 +189,37 @@ def convert_xlsx_to_pdf(xlsx_file, pdf_file):
 
     
 
-def get_estado_caja(user):
+def get_estado_caja(user,usuario_admin=None):
+    union_query = Q()
+
+    if usuario_admin:
+        unidades_negocio = UnidadNegocio.objects.filter(admin=usuario_admin).all()
+        
+        for unidad_negocio in unidades_negocio:
+            condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all()) 
+            union_query |= condicion
+        
+        union_query |= Q(unidad_productiva__usuarioRegistro=user)
+        union_query |= Q(usuario_presupuesto=user)
+        union_query |= Q(usuario_admin_ingreso=user)
+
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-    filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(ingreso_bancario=False)&Q(usuario_presupuesto=user)
-    filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)&Q(usuario_presupuesto=user)
-    filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
-    filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)
+    filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&(Q(unidad_productiva__usuarioRegistro=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)&union_query
+    filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=False)&Q(usuario_presupuesto=user)&union_query
+    filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)&union_query
+    filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioRegistro=user)&Q(ingreso_bancario=True)&union_query
     if user.groups.filter(name__in=['Observador']).exists():
-        filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&(Q(unidad_productiva__usuarioConsulta=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)
-        filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioConsulta=user)&Q(ingreso_bancario=False)
-        filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioConsulta=user)&Q(ingreso_bancario=True)
-        filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioConsulta=user)&Q(ingreso_bancario=True)
+        filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&(Q(unidad_productiva__usuarioConsulta=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)&union_query
+        filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioConsulta=user)&Q(ingreso_bancario=False)&union_query
+        filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioConsulta=user)&Q(ingreso_bancario=True)&union_query
+        filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioConsulta=user)&Q(ingreso_bancario=True)&union_query
     if user.groups.filter(name__in=['Bancario']).exists():
-        filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&(Q(unidad_productiva__usuarioBancario=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)
-        filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioBancario=user)&Q(ingreso_bancario=False)
-        filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioBancario=user)&Q(ingreso_bancario=True)
-        filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioBancario=user)&Q(ingreso_bancario=True)
+        filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&(Q(unidad_productiva__usuarioBancario=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)&union_query
+        filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioBancario=user)&Q(ingreso_bancario=False)&union_query
+        filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioBancario=user)&Q(ingreso_bancario=True)&union_query
+        filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioBancario=user)&Q(ingreso_bancario=True)&union_query
+    
+    
 
 
     ingresos =  Movimiento.objects.distinct().filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
@@ -257,7 +272,7 @@ def get_estado_caja_admin(user,unidad_productiva=None):
         union_query |= Q(usuario_presupuesto__in=usuarios_registro)
         union_query |= Q(unidad_productiva__usuarioAuditor=user)
     
-    filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(ingreso_bancario=False)
+    filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=False)
     filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=False)
     filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=True)
     filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=True)
