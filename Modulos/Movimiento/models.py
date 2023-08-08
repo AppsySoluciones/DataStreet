@@ -203,7 +203,6 @@ def get_estado_caja(user,usuario_admin=None):
         union_query |= Q(unidad_productiva__usuarioRegistro=user)
         union_query |= Q(usuario_presupuesto=user)
         union_query |= Q(usuario_admin_ingreso=user)
-        print(union_query)
 
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
     filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&(Q(unidad_productiva__usuarioRegistro=user)| Q(usuario_presupuesto=user))&Q(ingreso_bancario=False)&union_query
