@@ -207,10 +207,10 @@ def get_estado_caja(user):
         filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&Q(unidad_productiva__usuarioBancario=user)&Q(ingreso_bancario=True)
 
 
-    ingresos =  Movimiento.objects.filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
-    egresos = Movimiento.objects.filter(filtros_out).aggregate(Sum('valor'))['valor__sum']
-    ingresos_ba = Movimiento.objects.filter(filtros_in_ba).aggregate(Sum('valor'))['valor__sum']
-    egresos_ba = Movimiento.objects.filter(filtros_out_ba).aggregate(Sum('valor'))['valor__sum']
+    ingresos =  Movimiento.objects.distinct().filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
+    egresos = Movimiento.objects.distinct().filter(filtros_out).aggregate(Sum('valor'))['valor__sum']
+    ingresos_ba = Movimiento.objects.distinct().filter(filtros_in_ba).aggregate(Sum('valor'))['valor__sum']
+    egresos_ba = Movimiento.objects.distinct().filter(filtros_out_ba).aggregate(Sum('valor'))['valor__sum']
 
     if ingresos == None:
         ingresos = 0
