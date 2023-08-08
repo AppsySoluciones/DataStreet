@@ -197,7 +197,7 @@ def get_estado_caja(user,usuario_admin=None):
         unidades_negocio = UnidadNegocio.objects.filter(admin=usuario_admin).all()
         
         for unidad_negocio in unidades_negocio:
-            condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all()) & Q
+            condicion = Q(unidad_productiva__in=unidad_negocio.unidades_productivas.all())
             union_query |= condicion
         
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
