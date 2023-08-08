@@ -201,7 +201,7 @@ def get_estado_caja(user,usuario_admin=None):
             union_query |= condicion
         
         #union_query |= Q(unidad_productiva__usuarioRegistro=user)
-        #union_query |= Q(usuario_presupuesto=user)
+        union_query |= Q(usuario_presupuesto=user)
         #union_query |= Q(usuario_admin_ingreso=user)
 
     locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
