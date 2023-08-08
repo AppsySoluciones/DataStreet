@@ -222,7 +222,7 @@ def get_estado_caja(user,usuario_admin=None):
     
     
 
-    print(Movimiento.objects.distinct().filter(filtros_in))
+    print(Movimiento.objects.distinct().filter(filtros_in&Q(usuario_admin_ingreso=user)))
     ingresos =  Movimiento.objects.distinct().filter(filtros_in).aggregate(Sum('valor'))['valor__sum']
     egresos = Movimiento.objects.distinct().filter(filtros_out).aggregate(Sum('valor'))['valor__sum']
     ingresos_ba = Movimiento.objects.distinct().filter(filtros_in_ba).aggregate(Sum('valor'))['valor__sum']
