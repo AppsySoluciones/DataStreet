@@ -266,7 +266,7 @@ def get_estado_caja_admin(user,unidad_productiva=None):
         union_query |= Q(usuario_presupuesto__in=usuarios_registro)
         union_query |= Q(unidad_productiva__usuarioAuditor=user)
     
-    filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=False)
+    filtros_in = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(ingreso_bancario=False)
     filtros_out = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=False)
     filtros_in_ba = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=True)
     filtros_out_ba = Q(tipo_ingreso='OUT')&Q(estado='Aprobado')&union_query&Q(ingreso_bancario=True)
