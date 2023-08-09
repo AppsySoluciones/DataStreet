@@ -538,6 +538,8 @@ def tablas_ingresos(request,pdf=None):
             context['egresos'] = egreso
             context['disponible'] = disponible
             unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
+            if usuario.groups.filter(name='Auditor').exists():
+                unidad_negocio = UnidadNegocio.objects.all()
             usuarios_comun = []
             usuarios_comun_id =[]
             for unidad in unidad_negocio:
