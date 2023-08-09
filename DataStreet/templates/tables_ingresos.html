@@ -124,6 +124,19 @@
                                             </div>
                                         </div>
                                         {% endif %}
+                                    {% if user.is_authenticated and user|has_group:"Auditor" %}
+                                    <div class="col-lg-4">
+                                        <div class="card-header py-3" style="background-color: #fff;border-bottom:1px solid #fff;">
+                                            <p>Selecciona Usuario Común</p>
+                                            <select id="usuario_comun" name="usuario_comun">
+                                                <option value=""> Todos </option>
+                                                {% for usuario in usuarios_comun %}
+                                                <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {% endif %}
 
                                 {% endif %}
                                 {% if user.is_authenticated and user|has_group:"Auditor"%}
