@@ -311,7 +311,7 @@ def get_movimientos_usuario(usuario):
 
         
         union_query |= Q(usuario_admin_ingreso=usuario)
-        return  Movimiento.objects.filter.all()
+        return  Movimiento.objects.all()
     elif usuario.groups.filter(name__in=['Auditor']).exists():
         unidades_negocio = UnidadNegocio.objects.all()
         # Inicializa un objeto Q vacío
