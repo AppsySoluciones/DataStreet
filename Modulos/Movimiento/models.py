@@ -150,12 +150,12 @@ def export_to_excel(queryset,to_pdf=False):
         worksheet.cell(row=row_num, column=8, value=centro_costo)
         worksheet.cell(row=row_num, column=9, value=sub_centro_costo_nombre)
         worksheet.cell(row=row_num, column=10, value=obj.numero_factura)
-        worksheet.cell(row=row_num, column=10, value=proveedor_nombre)
-        worksheet.cell(row=row_num, column=11, value=tipo_documento)
-        worksheet.cell(row=row_num, column=12, value=nro_documento)
-        worksheet.cell(row=row_num, column=13, value=obj.factura)
-        worksheet.cell(row=row_num, column=14, value=obj.estado)
-        worksheet.cell(row=row_num, column=15, value=obj.accion)
+        worksheet.cell(row=row_num, column=11, value=proveedor_nombre)
+        worksheet.cell(row=row_num, column=12, value=tipo_documento)
+        worksheet.cell(row=row_num, column=13, value=nro_documento)
+        worksheet.cell(row=row_num, column=14, value=obj.factura)
+        worksheet.cell(row=row_num, column=15, value=obj.estado)
+        worksheet.cell(row=row_num, column=16, value=obj.accion)
     
     if to_pdf:
         workbook.save('archivo_excel.xlsx')
