@@ -56,8 +56,9 @@
                                                 <th>Estado</th>
                                                 <th>Centro de Costos</th>
                                                 <th>SubCentro de Costo</th>
-                                                <th>Tipo de Documento</th>
-                                                <th>Numero de Documento</th>
+                                                <th>Proveedor</th>
+                                                <th>Tipo de Documento Proveedor</th>
+                                                <th>Numero de Documento Proveedor</th>
                                                 <th>Numero de Factura</th>
                                                 <th>Factura</th>
                                                 <th>Comprobante/Detalle</th>
@@ -101,6 +102,7 @@
                                                     <td>{{ movimiento.estado }}</td>
                                                     <td>{{ movimiento.centro_costo }}</td>
                                                     <td>{{ movimiento.sub_centro_costo.nombre }}</td>
+                                                    <td>{{ movimiento.nombre_proveedor }}</td>
                                                     <td>{{ movimiento.tipo_documento }}</td>
                                                     <td>{{ movimiento.numero_documento }}</td>
                                                     <td>{{ movimiento.numero_factura }}</td>
