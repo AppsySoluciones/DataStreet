@@ -95,7 +95,7 @@ def export_to_excel(queryset,to_pdf=False):
     worksheet = workbook.active
 
     # Escribir los encabezados de las columnas
-    headers = ['Fecha de Registro', 'Fecha Aprobado', 'Tipo de Ingreso', 'Unidad Productiva','Usuario Ingreso Caja', 'Concepto', 'Valor','Centro Costo', 'SubCentro Costo', 'Numero de Factura','Nombre del Proveedor','Tipo de Documento Proveedor','Nro Documento Proveedor', 'Factura', 'Estado', 'Accion', 'Comprobante Factura']
+    headers = ['Fecha de Registro', 'Fecha Modificación', 'Tipo de Ingreso', 'Unidad Productiva','Usuario Ingreso Caja', 'Concepto', 'Valor','Centro Costo', 'SubCentro Costo', 'Numero de Factura','Nombre del Proveedor','Tipo de Documento Proveedor','Nro Documento Proveedor', 'Factura', 'Estado', 'Accion', 'Comprobante Factura']
     for col_num, header in enumerate(headers, 1):
         worksheet.cell(row=1, column=col_num, value=header)
 
