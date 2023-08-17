@@ -79,7 +79,7 @@
                         </label>
                     </div>
 
-                    <div id="seccion" style="display: none;">
+                    <div id="seccion" style="display: none;background-color: aliceblue;">
                         <div class="row g-3 align-items-center">
                             <div class="col-auto">
                                 <label for="inputPassword6" class="col-form-label">Digite el número de factura:</label>
@@ -89,6 +89,10 @@
                                     aria-labelledby="passwordHelpInline" autocomplete="off">
                             </div>
                         </div>
+                        <br>
+                        <label for="inputPassword6" class="col-form-label mb-3">Seleccione la fecha de la factura: </label>
+                        <input type="date" id="fecha_registro" name="fecha_registro" class="form-control"
+                        style="width:100%; box-sizing: border-box;" autocomplete="off">
                         <br>
                         {% if movimiento %}
                         

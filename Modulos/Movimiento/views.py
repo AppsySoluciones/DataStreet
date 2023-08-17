@@ -455,13 +455,15 @@ def registrarEgreso(request):
     if factura_check == 'true':
         num_factura = request.POST['num_factura']
         comprobante_factura = request.FILES['soporte']
+        fecha_registro = request.POST['fecha_registro']
+        fecha_datetime = datetime.strptime(fecha_registro, "%Y-%m-%d")
         if usuario.groups.filter(name='Administrador').exists():
             usuario_admin_ingreso = usuario
         else:
             usuario_admin_ingreso = None
         egreso = Movimiento.objects.create(
         sub_centro_costo=sub_centro_costo,
-        fecha_registro=fecha_registro,
+        fecha_registro=datetime.now(),
         nombre_proveedor=nom_provedor,
         tipo_documento=tipo_doc,
         numero_documento=num_doc,
@@ -476,6 +478,7 @@ def registrarEgreso(request):
         usuario_admin_ingreso = usuario_admin_ingreso,
         factura=True,
         usuario_presupuesto=usuario,
+        fecha_factura = fecha_datetime
         )
         egreso.save()
     
@@ -498,7 +501,8 @@ def registrarEgreso(request):
             ingreso_bancario=ingreso_bancario,
             usuario_admin_ingreso = usuario_admin_ingreso,
             factura=False,
-            usuario_presupuesto=usuario
+            usuario_presupuesto=usuario,
+            fecha_factura = fecha_registro
         )
         egreso.save()
 

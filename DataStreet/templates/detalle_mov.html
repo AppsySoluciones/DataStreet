@@ -42,9 +42,9 @@
                         <ul class="list-group list-group-flush">
 
                             <li class="list-group-item"><label id="doc_type" class="form-select form-select-lg mb-3"
-                                style="width:100%; box-sizing: border-box;"><b>Fecha de Registro:</b> {{ movimiento.fecha_registro }}</label></li>
+                                style="width:100%; box-sizing: border-box;"><b>Fecha de Registro:</b> {{ movimiento.fecha_modificacion }}</label></li>
                             <li class="list-group-item"><label id="doc_type" class="form-select form-select-lg mb-3"
-                                    style="width:100%; box-sizing: border-box;"><b>Fecha de Edición:</b> {{ movimiento.fecha_modificacion }}</label></li>
+                                    style="width:100%; box-sizing: border-box;"><b>Fecha de Edición:</b> {{ movimiento.fecha_registro }}</label></li>
                             <li class="list-group-item"><label id="doc_type" class="form-select form-select-lg mb-3"
                                 style="width:100%; box-sizing: border-box;"><b>Unidad de Negocio:</b> {{ unidad_negocio }}</label></li>
                             {% if movimiento.tipo_ingreso == 'OUT' %}
@@ -89,6 +89,11 @@
                             <li class="list-group-item">
                                 <label id="doc_type" class="form-select form-select-lg mb-3"
                                 style="width:100%; box-sizing: border-box;"><b>Comprobante de factura:</b>Comprobante de factura: <a href="{{server_url}}movimiento/comprobante/{{movimiento.pk}}" target="_blank"> {{movimiento.comprobante_factura }}</a></label>
+                            </li>
+                            
+                            <li class="list-group-item">
+                                <label id="doc_type" class="form-select form-select-lg mb-3"
+                                style="width:100%; box-sizing: border-box;"><b>Fecha de factura:</b> {{ movimiento.fecha_factura }}</label>
                             </li>
 
                             <li class="list-group-item">
@@ -210,7 +215,7 @@
 
                             {% for comentario in comentarios%}
                             <div class="card border-dark mb-3" style="width: 100%;">
-                                <div class="card-header">{{comentario.movimiento.fecha_registro}}</div>
+                                <div class="card-header">{{comentario.fecha_registro}}</div>
                                 <div class="card-body">
                                     <h5 class="card-title">{{comentario.usuario}}</h5>
                                     <p class="card-text">{{comentario.comentario}}</p>

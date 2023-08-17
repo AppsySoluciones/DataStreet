@@ -41,6 +41,7 @@ class Movimiento(models.Model):
     accion = models.CharField(max_length=200,null=True,blank=True)
     uuid = models.SlugField(blank=True)
     fecha_registro = models.DateTimeField(default=timezone.now, null=True, blank=True, editable=True)
+    fecha_factura = models.DateField(null=True, blank=True, editable=True)
     fecha_modificacion = models.DateTimeField(auto_now_add=True,null=True,blank=True)
     concepto = models.CharField(max_length=200,null=True,blank=True)
     valor = models.FloatField(default=0)
@@ -378,7 +379,7 @@ class Comentario(models.Model):
     movimiento = models.ForeignKey(Movimiento, on_delete=models.CASCADE,null=True,blank=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE,null=True,blank=True)
     comentario = models.CharField(max_length=200,null=True,blank=True)
-    fecha_registro = models.DateField(auto_created=True,null=True,blank=True)
+    fecha_registro = models.DateTimeField(auto_created=True,auto_now_add=True,null=True,blank=True)
     def __str__(self):
         return f"{self.usuario} - {self.comentario}"
     
