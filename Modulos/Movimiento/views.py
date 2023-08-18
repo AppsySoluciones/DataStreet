@@ -1435,12 +1435,19 @@ def filtrar_data_dashboard(request):
 
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     if usuario.groups.filter(name__in=['Auditor']).exists():
-        #filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=False) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
-        movimientos = get_movimientos_usuario(usuario)#.filter(filters)
+        union_query = Q()
+        if usuario.groups.filter(name__in=['Auditor']).exists():
+            unidad_productivas = UnidadProductiva.objects.filter(usuarioAuditor=usuario).all()
+            usuarios_registro = unidad_productivas.values('usuarioRegistro')    
+            union_query |= Q(usuario_presupuesto__in=usuarios_registro)
+            union_query |= Q(unidad_productiva__usuarioAuditor=usuario)
+
+        filters = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(usuario_presupuesto=usuario)&Q(ingreso_bancario=False)&union_query
+        movimientos = get_movimientos_usuario(usuario).filter(filters)
 
     else:
-        #filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
-        movimientos = get_movimientos_usuario(usuario)#.filter(filters).distinct()
+        filters = (Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(ingreso_bancario=False))|(Q(usuario_presupuesto=usuario))
+        movimientos = get_movimientos_usuario(usuario).filter(filters)
     
 
     if usuario.groups.filter(name='Auditor').exists():
