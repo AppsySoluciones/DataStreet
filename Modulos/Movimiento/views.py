@@ -1442,7 +1442,7 @@ def filtrar_data_dashboard(request):
             union_query |= Q(usuario_presupuesto__in=usuarios_registro)
             union_query |= Q(unidad_productiva__usuarioAuditor=usuario)
 
-        filters = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(usuario_presupuesto=usuario)&Q(ingreso_bancario=False)&union_query
+        filters = Q(tipo_ingreso='IN')&Q(estado='Aprobado')&union_query
         movimientos = get_movimientos_usuario(usuario).filter(filters)
 
     else:
