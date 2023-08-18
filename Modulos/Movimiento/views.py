@@ -1435,11 +1435,12 @@ def filtrar_data_dashboard(request):
 
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     if usuario.groups.filter(name__in=['Auditor']).exists():
-        filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
+        filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=False) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
         movimientos = get_movimientos_usuario(usuario).filter(filters)
 
     else:
-        movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False).distinct()
+        filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
+        movimientos = get_movimientos_usuario(usuario).filter(filters).distinct()
     
 
     if usuario.groups.filter(name='Auditor').exists():
