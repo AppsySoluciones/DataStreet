@@ -1449,9 +1449,9 @@ def filtrar_data_dashboard(request):
         filters = (Q(tipo_ingreso='IN')&Q(estado='Aprobado')&Q(ingreso_bancario=False))|(Q(usuario_presupuesto=usuario))
         movimientos = get_movimientos_usuario(usuario).filter(filters)
     
-
-    if usuario.groups.filter(name='Auditor').exists():
-        movimientos = movimientos.filter(tipo_ingreso='OUT')
+    """ 
+        if usuario.groups.filter(name='Auditor').exists():
+            movimientos = movimientos.filter(tipo_ingreso='OUT') """
     
     filtros = Q()
 
