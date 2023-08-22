@@ -69,11 +69,11 @@
                 success: function (data) {
                     data_line = data;
                     myLineChart.data.labels = data_line.fechas ;
-                    myLineChart.data.datasets[0].data = data_line.ingresos_chart;
-                    myLineChart.data.datasets[1].data = data_line.egresos_chart;
+                    //myLineChart.data.datasets[0].data = data_line.ingresos_chart;
+                    myLineChart.data.datasets.data = data_line.egresos_chart;
                     myLineChart.update();
-                    myPieChart.data.datasets[0].data = [data_line.pie_ingresos, data_line.pie_egresos];
-                    myPieChart.update();
+                    //myPieChart.data.datasets[0].data = [data_line.pie_ingresos, data_line.pie_egresos];
+                    //myPieChart.update();
 
                     var valuetopegresos = document.getElementById('valuetopegresos');
                     valuetopegresos.innerHTML = data_line.top_3_egresos_centrocostos[0].suma_valor;
@@ -746,7 +746,7 @@ return s.join(dec);
 
 // Area Chart Example
 var ctx = document.getElementById("myAreaChart2");
-const myLineChart = new Chart(ctx, {
+const myLineChart2 = new Chart(ctx, {
 type: 'line',
 data: {
 labels: [{%for data in fechas %}'{{data}}',{% endfor %}],
