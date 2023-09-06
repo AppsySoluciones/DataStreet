@@ -104,9 +104,9 @@ WSGI_APPLICATION = 'DataStreet.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'PASSWORD': 'estepin97',
-        'HOST': 'localhost',
-        'NAME': 'crecentotest',
+        'PASSWORD': 'crecento*2023',
+        'HOST': 'crecento-database.cxklqq1pgnsl.us-east-1.rds.amazonaws.com',
+        'NAME': 'crecentodb',
         'USER': 'postgres',
         'PORT': '5432',
         }
