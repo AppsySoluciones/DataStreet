@@ -27,13 +27,56 @@
     <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
 
     <script>
+        function filter_ingresos(tipo) {
+            if (tipo == 'limpiar'){
+                var daterange = document.getElementById('daterange').value = '';
+                {% if user.is_authenticated and user|has_group:"Administrador" %}
+                var usuario_comun = document.getElementById('usuario_comun').value = '';
+                {% endif %}
+                {% if user.is_authenticated and user|has_group:"Auditor" %}
+                var usuario_comun = document.getElementById('usuario_comun').value = '';
+                {% endif %}
+
+            }
+            else{
+                var daterange = document.getElementById('daterange').value;
+                {% if user.is_authenticated and user|has_group:"Administrador" %}
+                var usuario_comun = document.getElementById('usuario_comun').value;
+                {% endif %}
+                {% if user.is_authenticated and user|has_group:"Auditor" %}
+                var usuario_comun = document.getElementById('usuario_comun').value;
+                {% endif %}
+            }
+        
+        $.ajax({
+            url: "{{ server_url }}get_filtred_data/",
+            type: "GET",
+            data: {
+                'daterange': daterange,
+                'unidad_productiva': unidad_productiva,
+                'unidad_negocio': unidad_negocio,
+                {% if user.is_authenticated and user|has_group:"Administrador" %}
+
+                'usuario_comun': usuario_comun,
+                {% endif %}
+            }//,
+            //success: function (data) {}
+        
+        
+        
+        })
+        
+        
+        }
+    </script>
+    <script>
         function filter(tipo) {
             if (tipo == 'limpiar') {
                 var data_line;
                 var daterange = document.getElementById('daterange').value = '';
                 var unidad_productiva = document.getElementById('sub_centro_costo').value = '';
                 var unidad_negocio = document.getElementById('centro_costo').value = '';
-                {% if user.is_authenticated and user|has_group:"Administrador" %}
+                {% if user.is_authenticated and user|has_group:"Comun" %}
                 
                 var usuario_comun = document.getElementById('usuario_comun').value = '';
 
@@ -44,12 +87,17 @@
                 var daterange = document.getElementById('daterange').value;
                 var unidad_productiva = document.getElementById('sub_centro_costo').value;
                 var unidad_negocio = document.getElementById('centro_costo').value;
-                {% if user.is_authenticated and user|has_group:"Administrador" %}
+                {% if user.is_authenticated and user|has_group:"Comun" %}
                 
                 var usuario_comun = document.getElementById('usuario_comun').value;
 
                 {% endif %}
             }
+
+            console.log(daterange)
+            console.log(unidad_productiva)
+            console.log(unidad_negocio)
+            console.log(usuario_comun)
             
 
             
@@ -61,7 +109,7 @@
                     'daterange': daterange,
                     'unidad_productiva': unidad_productiva,
                     'unidad_negocio': unidad_negocio,
-                    {% if user.is_authenticated and user|has_group:"Administrador" %}
+                    {% if user.is_authenticated and user|has_group:"Comun" %}
 
                     'usuario_comun': usuario_comun,
                     {% endif %}
@@ -72,8 +120,19 @@
                     //myLineChart.data.datasets[0].data = data_line.ingresos_chart;
                     myLineChart.data.datasets.data = data_line.egresos_chart;
                     myLineChart.update();
+
+                    myLineChart.data.labels = data_line.fechas ;
+                    //myLineChart.data.datasets[0].data = data_line.ingresos_chart;
+                    myLineChart.data.datasets.data = data_line.egresos_chart;
+                    myLineChart.update();
                     //myPieChart.data.datasets[0].data = [data_line.pie_ingresos, data_line.pie_egresos];
                     //myPieChart.update();
+
+
+                    myLineChart2.data.labels = data_line.fechas_ingreso ;
+                    //myLineChart.data.datasets[0].data = data_line.ingresos_chart;
+                    myLineChart2.data.datasets.data = data_line.ingresos_chart;
+                    myLineChart2.update();
 
                     var valuetopegresos = document.getElementById('valuetopegresos');
                     valuetopegresos.innerHTML = data_line.top_3_egresos_centrocostos[0].suma_valor;
@@ -240,33 +299,7 @@
                                                 {% endfor %}
                                             </select>
                                         </div>
-                                        {% if user.is_authenticated and user|has_group:"Administrador" %}
-                                        <div class="col-sm-3">
-                                            <label>Selecciona Usuario Común</label>
-                                            <select id="usuario_comun" name="usuario_comun" class="col-auto mb-3"
-                                                style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
-                                                autocomplete="off">
-                                                <option value=""> - </option>
-                                                {% for usuario in usuarios_comun %}
-                                                <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        {% endif %}
-
-                                        {% if user.is_authenticated and user|has_group:"Auditor" %}
-                                        <div class="col-sm-3">
-                                            <label>Selecciona Usuario Común</label>
-                                            <select id="usuario_comun" name="usuario_comun" class="col-auto mb-3">
-                                                style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
-                                                autocomplete="off">
-                                                <option value=""> - </option>
-                                                {% for usuario in usuarios_comun %}
-                                                <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
-                                                {% endfor %}
-                                            </select>
-                                        </div>
-                                        {% endif %}
+                                        
 
                                         
                     
@@ -308,8 +341,40 @@
                                 <!-- Card Header - Dropdown -->
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                     <h6 class="m-0 font-weight-bold text-primary">Ingresos Acumulados</h6>
+                                    <input id="usuario_comun" name="usuario_comun" type="hidden" value = "{{usuario_comun.pk}}" />
                                     
                                 </div>
+                                {% if user.is_authenticated and user|has_group:"Auditor" %}
+
+                                <div class="col-sm-12">
+                                    <label>Selecciona Usuario Común</label>
+                                    <select id="usuario_comun" name="usuario_comun" class="col-auto mb-3"
+                                        style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
+                                        autocomplete="off">
+                                        <option value=""> - </option>
+                                        {% for usuario in usuarios_comun %}
+                                        <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                {% endif %}
+
+                                {% if user.is_authenticated and user|has_group:"Administrador" %}
+
+                                <div class="col-sm-12">
+                                    <label>Selecciona Usuario Común</label>
+                                    <select id="usuario_comun" name="usuario_comun" class="col-auto mb-3"
+                                        style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
+                                        autocomplete="off">
+                                        <option value=""> - </option>
+                                        {% for usuario in usuarios_comun %}
+                                        <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                {% endif %}
                                 <!-- Card Body -->
                                 <div class="card-body">
                                     <div class="chart-area"><div class="chartjs-size-monitor"><div class="chartjs-size-monitor-expand"><div class=""></div></div><div class="chartjs-size-monitor-shrink"><div class=""></div></div></div>
@@ -727,9 +792,9 @@ options: {
 
 </script>
 
-<script>
 
-        // Set new default font family and font color to mimic Bootstrap's default styling
+<script>
+    // Set new default font family and font color to mimic Bootstrap's default styling
 Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
 Chart.defaults.global.defaultFontColor = '#858796';
 
@@ -759,27 +824,28 @@ return s.join(dec);
 }
 
 // Area Chart Example
-var ctx = document.getElementById("myAreaChart2");
-const myLineChart2 = new Chart(ctx, {
+var ctx2 = document.getElementById("myAreaChart2");
+const myLineChart2 = new Chart(ctx2, {
 type: 'line',
 data: {
-labels: [{%for data in fechas %}'{{data}}',{% endfor %}],
+labels: [{%for data in fechas_ingreso %}'{{data}}',{% endfor %}],
 datasets: [
 {
     label: "Ingresos acumulados",
     lineTension: 0.3,
     backgroundColor: "rgba(78, 115, 223, 0.05)",
-    borderColor: "rgba(78, 115, 223, 1)",
+    borderColor: "rgb(217, 3, 104)",
     pointRadius: 3,
-    pointBackgroundColor: "rgba(78, 115, 223, 1)",
-    pointBorderColor: "rgba(78, 115, 223, 1)",
+    pointBackgroundColor: "rgb(217, 3, 104)",
+    pointBorderColor: "rgb(217, 3, 104)",
     pointHoverRadius: 3,
     pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
-    pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+    pointHoverBorderColor: "rgb(217, 3, 104)",
     pointHitRadius: 10,
     pointBorderWidth: 2,
-    data: [{%for data in ingresos_chart %}{{ data }}, {% endfor %}],
-},]
+    data: [{%for data in ingresos_chart %}{{ data }}, {% endfor %}]
+}],
+},
 options: {
     maintainAspectRatio: false,
         layout: {
@@ -849,9 +915,40 @@ options: {
 });
 
 
-
-
 </script>
+
+<script>
+
+        // Set new default font family and font color to mimic Bootstrap's default styling
+Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
+Chart.defaults.global.defaultFontColor = '#858796';
+
+function number_format(number, decimals, dec_point, thousands_sep) {
+// *     example: number_format(1234.56, 2, ',', ' ');
+// *     return: '1 234,56'
+number = (number + '').replace(',', '').replace(' ', '');
+var n = !isFinite(+number) ? 0 : +number,
+prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
+sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
+dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
+s = '',
+toFixedFix = function(n, prec) {
+var k = Math.pow(10, prec);
+return '' + Math.round(n * k) / k;
+};
+// Fix for IE parseFloat(0.55).toFixed(0) = 0;
+s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
+if (s[0].length > 3) {
+s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+}
+if ((s[1] || '').length < prec) {
+s[1] = s[1] || '';
+s[1] += new Array(prec - s[1].length + 1).join('0');
+}
+return s.join(dec);
+}
+</script>
+
 
 <script>
 // Set new default font family and font color to mimic Bootstrap's default styling

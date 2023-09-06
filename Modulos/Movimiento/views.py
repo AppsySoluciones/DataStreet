@@ -13,7 +13,7 @@ from django.db.models import Sum
 from django.conf import settings
 from django.db.models import Q
 from datetime import datetime
-from Modulos.Movimiento.utils import render_to_pdf,area_chart_data,pie_chart_data,mayor_ingreso_uproductiva,mayor_egreso_uproductiva, centro_costos_uprod
+from Modulos.Movimiento.utils import render_to_pdf,area_chart_data,pie_chart_data,mayor_ingreso_uproductiva,mayor_egreso_uproductiva, centro_costos_uprod,area_chart_data_user
 import locale
 import boto3
 import json
@@ -51,6 +51,7 @@ def home(request):
     
     if usuario.groups.filter(name__in=['Auditor']).exists():
         filters = Q(tipo_ingreso='OUT')|(Q(ingreso_bancario=True) & (Q(tipo_ingreso='IN') | Q(tipo_ingreso='OUT')))
+        movimientos_ingreso = get_movimientos_usuario(usuario)
         movimientos = get_movimientos_usuario(usuario).filter(filters).distinct()
 
     else:
@@ -68,6 +69,8 @@ def home(request):
     context['egresos_ba'] = egreso_ba
 
     if usuario.groups.filter(name__in=['Comun','Observador']).exists():
+        usuario = get_object_or_404(Usuario, pk=request.user.id)
+        context['usuario_comun'] = usuario
         filters = Q(usuarioRegistro=usuario)|Q(usuarioConsulta=usuario)
         unidades_productivas = UnidadProductiva.objects.filter(filters).all()
         unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).all()
@@ -79,7 +82,7 @@ def home(request):
             unidad_negocio_id[unidad.nombre] = list(unidad.unidades_productivas.filter(id__in=unidades_productivas).values_list('id', flat=True))
 
 
-    elif usuario.groups.filter(name__in=['Administrador']).exists():
+    elif usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
 
         unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all() 
         unidad_negocio_nombres = {
@@ -93,18 +96,20 @@ def home(request):
         #
         #
         unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
-        usuarios_comun = []
-        usuarios_comun_id =[]
-        for unidad in unidad_negocio:
-            for unidad_productiva in unidad.unidades_productivas.all():
-                if unidad_productiva.usuarioRegistro != None:
-                    list_users_produn = list(unidad_productiva.usuarioRegistro.all().values_list('pk',flat=True))
-                    if list_users_produn not in usuarios_comun_id:
-                        usuarios_comun_id = usuarios_comun_id + list_users_produn
-                        usuarios_comun.append(unidad_productiva.usuarioRegistro.all())
-                        
-        usuarios_comun = list(set(chain(*usuarios_comun)))
-        context['usuarios_comun'] = usuarios_comun
+        if usuario.groups.filter(name__in=['Auditor']).exists():
+            unidad_negocio = UnidadNegocio.objects.all()
+            usuarios_comun = []
+            usuarios_comun_id =[]
+            for unidad in unidad_negocio:
+                for unidad_productiva in unidad.unidades_productivas.all():
+                    if unidad_productiva.usuarioRegistro != None:
+                        list_users_produn = list(unidad_productiva.usuarioRegistro.all().values_list('pk',flat=True))
+                        if list_users_produn not in usuarios_comun_id:
+                            usuarios_comun_id = usuarios_comun_id + list_users_produn
+                            usuarios_comun.append(unidad_productiva.usuarioRegistro.all())
+                            
+            usuarios_comun = list(set(chain(*usuarios_comun)))
+            context['usuarios_comun'] = usuarios_comun
     else:
         unidad_negocio = UnidadNegocio.objects.all()
         unidad_negocio_nombres = {
@@ -118,6 +123,7 @@ def home(request):
 
     if usuario.groups.filter(name='Auditor').exists():
         movimientos = movimientos.filter(unidad_productiva__usuarioAuditor=usuario)
+        
 
         unidades_productivas = UnidadProductiva.objects.filter(usuarioAuditor=usuario).all()
         unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas__in=unidades_productivas).all()
@@ -130,7 +136,8 @@ def home(request):
 
     unidades_productivas = UnidadProductiva.objects.filter(usuarioRegistro=usuario).all()
 
-    context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
+    context['fechas'],_,context['egresos_chart'] = area_chart_data(movimientos)
+    context['fechas_ingreso'],context['ingresos_chart'] = area_chart_data_user(movimientos_ingreso)
     context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
     context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
     context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
@@ -1477,10 +1484,11 @@ def filtrar_data_dashboard(request):
         filtros &= Q(unidad_productiva__usuarioRegistro=usuario_comun)
     
     if filtros != Q():
-        movimientos = movimientos.filter(filtros)
+        movimientos = movimientos.filter(filtros).order_by('fecha_registro')
 
     context = {}
-    context['fechas'],context['ingresos_chart'],context['egresos_chart'] = area_chart_data(movimientos)
+    context['fechas'],context['egresos_chart'],context['ingresos_chart'] = area_chart_data(movimientos)
+    context['fechas_ingreso'],context['ingresos_chart'] = area_chart_data_user(movimientos)
     context['pie_ingresos'],context['pie_egresos'] = pie_chart_data(movimientos)
     context['top_3_ingresos'] = mayor_ingreso_uproductiva(movimientos)
     context['top_3_egresos'] = mayor_egreso_uproductiva(movimientos)
@@ -1504,12 +1512,26 @@ def filtrar_cards_dashboard(request,pk):
     context["ingresos_ba"] = ingreso_ba
     context["egresos_ba"] = egreso_ba
     return JsonResponse(context, safe=False)
-    """ else:
-        context = {}
-        context["disponible"] = "0.0"
-        context["ingresos"] = "0.0"
-        context["egresos"] = "0.0"
-        context["disponible_ba"] = "0.0"
-        context["ingresos_ba"] = "0.0"
-        context["egresos_ba"] = "0.0"
-        return JsonResponse(context, safe=False) """
+
+def filtrar_ingresos_usuario(request):
+    usuario = get_object_or_404(Usuario, pk=request.user.id)
+    filtros = Q()
+
+    if 'daterange' in request.GET:
+        fecha_str = request.GET['daterange']
+        if fecha_str!='':
+            # Obtén las fechas de inicio y fin del rango 
+            fecha_inicio, fecha_fin = map(parse, fecha_str.split(' - '))
+            filtros &= Q(fecha_registro__gte=fecha_inicio.replace(hour=0,minute=0), fecha_registro__lte=fecha_fin.replace(hour=23,minute=59))
+        
+    if 'usuario_comun' in request.GET and request.GET['usuario_comun'] != '':
+        usuario_comun = Usuario.objects.filter(pk=int(request.GET['usuario_comun'])).first()
+        filtros = (Q(tipo_ingreso='IN'))&Q(estado='Aprobado')&Q(usuario_presupuesto=usuario_comun)
+        movimientos = Movimiento.objects.filter(filtros)
+        ingresos_u = area_chart_data_user(movimientos)
+        context = {
+            "ingresos_usuario":ingresos_u
+            }
+        return JsonResponse(context, safe=False)
+    else:
+        return JsonResponse({}, safe=False)

@@ -38,4 +38,5 @@ urlpatterns = [
     path('get_unegocio/', views.get_unegocio, name='get_unegocio'),
     path('get_filtred_data/', views.filtrar_data_dashboard, name='get_filtred_data'),
     path('get_filtred_cards/<int:pk>/', views.filtrar_cards_dashboard, name='get_filtred_cards'),
+    path('get_filtred_user_in/', views.filtrar_ingresos_usuario,name='get_filtred_in_users')
     ]

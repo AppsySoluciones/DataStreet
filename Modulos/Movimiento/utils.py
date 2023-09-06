@@ -198,3 +198,21 @@ def mayor_egreso_uproductivas(movimientos):
             return [],[]
         
 
+def area_chart_data_user(movimientos):
+    fechas = []
+    ingresos = []
+    egresos = []
+    acumulado_ingresos = 0
+    acumulado_egresos = 0
+    for movimiento in movimientos:
+        if not movimiento.fecha_registro:
+            fechas.append("Sin fecha")
+        else:
+            fechas.append(movimiento.fecha_registro.strftime("%d/%m/%Y"))
+        
+        if movimiento.tipo_ingreso == "IN":
+            acumulado_egresos = acumulado_egresos+0
+            acumulado_ingresos = acumulado_ingresos+int(movimiento.valor)
+        ingresos.append(acumulado_ingresos)
+    
+    return fechas, ingresos
