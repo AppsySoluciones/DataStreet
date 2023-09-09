@@ -123,6 +123,7 @@ def home(request):
 
     if usuario.groups.filter(name='Auditor').exists():
         movimientos = movimientos.filter(unidad_productiva__usuarioAuditor=usuario)
+        movimientos_ingreso = movimientos
         
 
         unidades_productivas = UnidadProductiva.objects.filter(usuarioAuditor=usuario).all()
