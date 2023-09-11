@@ -54,8 +54,10 @@ def home(request):
         movimientos_ingreso = get_movimientos_usuario(usuario)
         movimientos = get_movimientos_usuario(usuario).filter(filters).distinct()
 
+
     else:
         movimientos = get_movimientos_usuario(usuario).filter(ingreso_bancario=False).distinct()
+        movimientos_ingreso = movimientos
 
     context = {'server_url':URL_SERVER,
         'disponible':disponible,
