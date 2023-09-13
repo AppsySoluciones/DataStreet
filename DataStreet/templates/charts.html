@@ -118,12 +118,14 @@
                     data_line = data;
                     myLineChart.data.labels = data_line.fechas ;
                     //myLineChart.data.datasets[0].data = data_line.ingresos_chart;
-                    myLineChart.data.datasets.data = data_line.egresos_chart;
+                    myLineChart.data.datasets[0].data = data_line.egresos_chart;
                     myLineChart.update();
+
+                    
 
                     myLineChart.data.labels = data_line.fechas ;
                     //myLineChart.data.datasets[0].data = data_line.ingresos_chart;
-                    myLineChart.data.datasets.data = data_line.egresos_chart;
+                    myLineChart.data.datasets[0].data = data_line.egresos_chart;
                     myLineChart.update();
                     //myPieChart.data.datasets[0].data = [data_line.pie_ingresos, data_line.pie_egresos];
                     //myPieChart.update();
@@ -131,8 +133,14 @@
 
                     myLineChart2.data.labels = data_line.fechas_ingreso ;
                     //myLineChart.data.datasets[0].data = data_line.ingresos_chart;
-                    myLineChart2.data.datasets.data = data_line.ingresos_chart;
+                    myLineChart2.data.datasets[0].data = data_line.ingresos_chart;
                     myLineChart2.update();
+
+                    console.log(myLineChart2.data.labels);
+                    console.log(myLineChart2.data.datasets.data);
+
+                    console.log(myLineChart.data.labels);
+                    console.log(myLineChart.data.datasets.data);
 
                     var valuetopegresos = document.getElementById('valuetopegresos');
                     valuetopegresos.innerHTML = data_line.top_3_egresos_centrocostos[0].suma_valor;
@@ -222,23 +230,24 @@
     
         }
     </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var dropdown = document.querySelector('.dropdown');
             var toggleButton = dropdown.querySelector('.toggle-button');
             var menu = dropdown.querySelector('.menu');
 
-            toggleButton.addEventListener('click', function () {
+            /* toggleButton.addEventListener('click', function () {
                 dropdown.classList.toggle('open');
-            });
+            }); */
 
-            menu.addEventListener('click', function (e) {
+           /*  menu.addEventListener('click', function (e) {
                 e.stopPropagation();
             });
 
             document.addEventListener('click', function () {
                 dropdown.classList.remove('open');
-            });
+            }); */
         });
 
     </script>
@@ -348,15 +357,17 @@
 
                                 <div class="col-sm-12">
                                     <label>Selecciona Usuario Común</label>
-                                    <select id="usuario_comun" name="usuario_comun" class="col-auto mb-3"
+                                    <select id="usuario_comun_in" name="usuario_comun_in" class="col-auto mb-3"
                                         style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
-                                        autocomplete="off">
+                                        autocomplete="off" onchange="user_ing()">
                                         <option value=""> - </option>
                                         {% for usuario in usuarios_comun %}
                                         <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
                                         {% endfor %}
                                     </select>
+                                    
                                 </div>
+                               
 
                                 {% endif %}
 
@@ -364,9 +375,9 @@
 
                                 <div class="col-sm-12">
                                     <label>Selecciona Usuario Común</label>
-                                    <select id="usuario_comun" name="usuario_comun" class="col-auto mb-3"
+                                    <select id="usuario_comun_in" name="usuario_comun_in" class="col-auto mb-3"
                                         style="width:100%; box-sizing: border-box;" aria-label="Default select example" required
-                                        autocomplete="off">
+                                        autocomplete="off" onchange="user_ing()">
                                         <option value=""> - </option>
                                         {% for usuario in usuarios_comun %}
                                         <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
@@ -703,7 +714,7 @@ var ctx = document.getElementById("myAreaChart");
 const myLineChart = new Chart(ctx, {
 type: 'line',
 data: {
-labels: [{%for data in fechas %}'{{data}}',{% endfor %}],
+labels: [{% for data in fechas %}'{{data}}',{% endfor %}],
 datasets: [
 {
     label: "Egresos acumulados",
@@ -824,14 +835,17 @@ return s.join(dec);
 }
 
 // Area Chart Example
+
+</script>
+<script>
 var ctx2 = document.getElementById("myAreaChart2");
 const myLineChart2 = new Chart(ctx2, {
 type: 'line',
 data: {
-labels: [{%for data in fechas_ingreso %}'{{data}}',{% endfor %}],
+labels: ["24/08/2023","25/08/2023"],
 datasets: [
 {
-    label: "Ingresos acumulados",
+    labels: [{%for data in fechas_ingreso %}'{{data}}',{% endfor %}],
     lineTension: 0.3,
     backgroundColor: "rgba(78, 115, 223, 0.05)",
     borderColor: "rgb(217, 3, 104)",
@@ -1033,6 +1047,56 @@ var myPieChart = new Chart(ctx, {
     });
     
     </script>
+
+
+    <script>
+        function user_ing(tipo) {
+        console.log("Función activa")
+
+        var daterange = document.getElementById('daterange').value;
+        var usuario_comun = document.getElementById('usuario_comun_in').value;
+
+        console.log(daterange)
+        console.log(usuario_comun)
+
+        if (tipo !== null) {
+
+            $.ajax({
+            url: "{{ server_url }}get_filtred_user_in/",
+            type: "GET",
+            data: {
+                'daterange': daterange,
+                'usuario_comun':usuario_comun
+            },
+            success: function (data) {
+                console.log(data)
+                data_line = data;
+                myLineChart2.data.labels =  data_line.fechas_ingreso //["24/08/2023","26/08/2023"];
+                myLineChart2.data.datasets[0].data = data_line.ingresos_chart;
+                //myLineChart2.data.datasets[0].data = [10000,50000];
+                myLineChart2.update();
+                console.log(myLineChart2.data.labels)
+                console.log(myLineChart2.data.datasets.data)
+            }})
+
+
+            
+        }
+
+
+        /*
+        $.ajax({
+            url: "{{ server_url }}get_filtred_data/",
+            type: "GET",
+            data: {
+                'daterange': daterange,
+                'unidad_productiva': unidad_productiva,
+                'unidad_negocio': unidad_negocio,
+            },
+            success: function (data) {}})*/
+        }
+
+</script>
 
     
 

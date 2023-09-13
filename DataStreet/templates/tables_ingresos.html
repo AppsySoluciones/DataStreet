@@ -241,14 +241,20 @@
                         <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
 
                         <script>
+                            
                             $(document).ready(function () {
                                 // Inicializar la tabla
-                                var tabla = $('#dataTable').DataTable({order: [[ 0, "asc" ]]});
+                                var tabla = $('#dataTable').DataTable({
+                                    order: [[0, "asc"]]
+                                });
 
-                                                        // Aplicar el filtro cuando cambie el valor del select
+                                // Configurar el tipo de datos de la columna de fecha
+                                $.fn.dataTable.moment('DD/MM/YYYY');
+
+                                // Aplicar el filtro cuando cambie el valor del select
                                 $('#filtro1').on('change', function() {
                                     var valor = $(this).val();
-                        
+
                                     // Limpiar el filtro si no se selecciona ninguna opción
                                     if (valor === '') {
                                         tabla.column(1).search('').draw();
@@ -258,10 +264,14 @@
                                     }
                                 });
                             });
+
+
+
                         
                             $(document).ready(function() {
                                 // Inicializar la tabla
                                 var tabla2 = $('#dataTable').DataTable();
+                                console.log("Filtrado2")
                         
                                 // Aplicar el filtro cuando cambie el valor del select
                                 $('#filtro2').on('change', function() {

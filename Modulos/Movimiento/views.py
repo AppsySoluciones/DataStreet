@@ -112,6 +112,21 @@ def home(request):
                             
             usuarios_comun = list(set(chain(*usuarios_comun)))
             context['usuarios_comun'] = usuarios_comun
+
+        if usuario.groups.filter(name__in=['Administrador']).exists():
+            unidad_negocio = UnidadNegocio.objects.filter(admin=usuario)
+            usuarios_comun = []
+            usuarios_comun_id =[]
+            for unidad in unidad_negocio:
+                for unidad_productiva in unidad.unidades_productivas.all():
+                    if unidad_productiva.usuarioRegistro != None:
+                        list_users_produn = list(unidad_productiva.usuarioRegistro.all().values_list('pk',flat=True))
+                        if list_users_produn not in usuarios_comun_id:
+                            usuarios_comun_id = usuarios_comun_id + list_users_produn
+                            usuarios_comun.append(unidad_productiva.usuarioRegistro.all())
+                            
+            usuarios_comun = list(set(chain(*usuarios_comun)))
+            context['usuarios_comun'] = usuarios_comun
     else:
         unidad_negocio = UnidadNegocio.objects.all()
         unidad_negocio_nombres = {
@@ -1529,11 +1544,17 @@ def filtrar_ingresos_usuario(request):
         
     if 'usuario_comun' in request.GET and request.GET['usuario_comun'] != '':
         usuario_comun = Usuario.objects.filter(pk=int(request.GET['usuario_comun'])).first()
-        filtros = (Q(tipo_ingreso='IN'))&Q(estado='Aprobado')&Q(usuario_presupuesto=usuario_comun)
+        filtros &= (Q(tipo_ingreso='IN'))&Q(estado='Aprobado')&Q(usuario_presupuesto=usuario_comun)
         movimientos = Movimiento.objects.filter(filtros)
         ingresos_u = area_chart_data_user(movimientos)
+        '''context = {
+            "fechas_ingreso":ingresos_u[0],
+            "ingresos_chart":ingresos_u[1]
+            }'''
+        
         context = {
-            "ingresos_usuario":ingresos_u
+            "fechas_ingreso":["24/08/2023","24/08/2023"],
+            "ingresos_chart":[100000,100000]
             }
         return JsonResponse(context, safe=False)
     else:
