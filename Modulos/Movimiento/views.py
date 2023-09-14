@@ -1547,15 +1547,11 @@ def filtrar_ingresos_usuario(request):
         filtros &= (Q(tipo_ingreso='IN'))&Q(estado='Aprobado')&Q(usuario_presupuesto=usuario_comun)
         movimientos = Movimiento.objects.filter(filtros)
         ingresos_u = area_chart_data_user(movimientos)
-        '''context = {
+        context = {
             "fechas_ingreso":ingresos_u[0],
             "ingresos_chart":ingresos_u[1]
-            }'''
-        
-        context = {
-            "fechas_ingreso":["24/08/2023","24/08/2023"],
-            "ingresos_chart":[100000,100000]
             }
+        
         return JsonResponse(context, safe=False)
     else:
         return JsonResponse({}, safe=False)
