@@ -252,9 +252,7 @@
                                 $.fn.dataTable.moment('D [de] MMMM [de] YYYY [a las] HH:mm');
 
                                 // Inicializar la tabla
-                                var tabla = $('#dataTable').DataTable({
-                                    order: [[0, "asc"]]
-                                });
+                                var tabla = $('#dataTable').DataTable();
 
                                 // Aplicar el filtro cuando cambie el valor del select
                                 $('#filtro1').on('change', function() {
