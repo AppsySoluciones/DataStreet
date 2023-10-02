@@ -244,103 +244,60 @@
                         <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
 
                         <script>
-                            
-                            $(document).ready(function () {
-                                
 
+                            $(document).ready(function () {
                                 // Configurar el tipo de datos de la columna de fecha
                                 $.fn.dataTable.moment('D [de] MMMM [de] YYYY [a las] HH:mm');
 
-                                // Inicializar la tabla
+                                // Inicializar la tabla una sola vez
                                 var tabla = $('#dataTable').DataTable();
 
-                                // Aplicar el filtro cuando cambie el valor del select
-                                $('#filtro1').on('change', function() {
+                                // Filtro para #filtro1
+                                $('#filtro1').on('change', function () {
                                     var valor = $(this).val();
-
-                                    // Limpiar el filtro si no se selecciona ninguna opción
-                                    if (valor === '') {
-                                        tabla.column(1).search('').draw();
-                                    } else {
-                                        console.log(valor);
-                                        tabla.column(1).search(valor).draw();
-                                    }
+                                    tabla.column(1).search(valor ? valor : '').draw();
                                 });
-                            });
 
-
-
-                        
-                            $(document).ready(function() {
-                                // Inicializar la tabla
-                                var tabla2 = $('#dataTable').DataTable();
-                                console.log("Filtrado2")
-                        
-                                // Aplicar el filtro cuando cambie el valor del select
-                                $('#filtro2').on('change', function() {
+                                // Filtro para #filtro2
+                                $('#filtro2').on('change', function () {
                                     var valor = $(this).val();
-                        
-                                    // Limpiar el filtro si no se selecciona ninguna opción
-                                    if (valor === '') {
-                                        tabla2.column(2).search('').draw();
-                                    } else {
-                                        tabla2.column(2).search(valor).draw();
-                                    }
+                                    tabla.column(2).search(valor ? valor : '').draw();
                                 });
-                            });
-                        
-                            
-                            $(document).ready(function() {
-                                // Inicializar la tabla
-                                var tabla3 = $('#dataTable').DataTable();
 
-                                // Función para hacer la solicitud AJAX y actualizar el valor de ingresos_caja
-                                function actualizarIngresosCaja(id_user) {
-                                // Datos que deseas enviar con la solicitud
-                                var dataToSend = {
-                                    id_user: id_user,
-                                };
-                                console.log(id_user)
-                                var url = "{{ server_url }}get_filtred_cards/" + id_user.toString();
- 
-                                fetch(url)
-                                .then(response => response.text())
-                                .then(data => {
-                                    console.log(data);
-                                    console.log("Los datos son:  ")
-                                    const data_object = JSON.parse(data);
-                                    console.log(data_object.ingresos);
-                                    // Actualizar el valor de ingresos_caja
-                                    $('#ingresos_caja').text(data_object.ingresos);
-                                    $('#egresos_caja').text(data_object.egresos);
-                                    $('#disponible_caja').text(data_object.disponible);
-                                    $('#ingresos_bancarios').text(data_object.ingresos_ba);
-                                    $('#egresos_bancarios').text(data_object.egresos_ba);
-                                    $('#disponible_bancarios').text(data_object.disponible_ba);
-                                    
-                                    
-                                })
-                                .catch(error => console.error('Error al obtener los ingresos:', error));
-                                }
-
-
-                                // Aplicar el filtro cuando cambie el valor del select
-                                $('#usuario_comun').on('change', function() {
-                                    var valor =  $('#usuario_comun').find(":selected").text();
-                                    console.log(valor);
+                                // Filtro y actualización para #usuario_comun
+                                $('#usuario_comun').on('change', function () {
+                                    var valor = $('#usuario_comun').find(":selected").text();
                                     var id_user = $(this).val();
-                                    console.log(id_user);
 
-                                    // Limpiar el filtro si no se selecciona ninguna opción
-                                    if (id_user === '') {
-                                        tabla3.column(3).search('').draw();
-                                    } else {
-                                        tabla3.column(3).search(valor).draw();
-                                        // Llamar a la función para actualizar los ingresos
+                                    tabla.column(3).search(id_user ? valor : '').draw();
+
+                                    if (id_user) {
                                         actualizarIngresosCaja(id_user);
                                     }
                                 });
+
+                                // Función para hacer la solicitud AJAX y actualizar el valor de ingresos_caja
+                                function actualizarIngresosCaja(id_user) {
+                                    var dataToSend = {
+                                        id_user: id_user,
+                                    };
+
+                                    var url = "{{ server_url }}get_filtred_cards/" + id_user.toString();
+
+                                    fetch(url)
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            $('#ingresos_caja').text(data.ingresos);
+                                            $('#egresos_caja').text(data.egresos);
+                                            $('#disponible_caja').text(data.disponible);
+                                            $('#ingresos_bancarios').text(data.ingresos_ba);
+                                            $('#egresos_bancarios').text(data.egresos_ba);
+                                            $('#disponible_bancarios').text(data.disponible_ba);
+                                        })
+                                        .catch(error => console.error('Error al obtener los ingresos:', error));
+                                }
                             });
+
 
                         </script>
 
