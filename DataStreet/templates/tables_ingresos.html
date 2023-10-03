@@ -29,11 +29,26 @@
         <!-- Custom styles for this page -->
         <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
 
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+        <!-- Moment.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+        <!-- DataTables -->
+        <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+
+        <!-- Plugin datetime-moment para DataTables -->
+        <script src="https://cdn.datatables.net/plug-ins/1.10.25/sorting/datetime-moment.js"></script>
+
+        <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
         
     </head>
     {% block body %}
 
         <body>
+            <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
             <code>{% csrf_token %}</code>
 
 
@@ -231,102 +246,92 @@
                             </div>
                         </div>
 
-                        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-                        <script src="https://cdn.datatables.net/plug-ins/1.10.25/sorting/datetime-moment.js"></script>
-
-                        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-                        <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-                        <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-                        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-                        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-                        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-                        <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
-                        <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
-
-                        <script>
-
-                            $(document).ready(function () {
-                                // Configurar el tipo de datos de la columna de fecha
-                                /*$.fn.dataTable.moment('D [de] MMMM [de] YYYY [a las] HH:mm');
-
-                                // Inicializar la tabla una sola vez
-                                var tabla = $('#dataTable').DataTable();
-
-                                // Filtro para #filtro1
-                                $('#filtro1').on('change', function () {
-                                    var valor = $(this).val();
-                                    tabla.column(1).search(valor ? valor : '').draw();
-                                });
-
-                                // Filtro para #filtro2
-                                $('#filtro2').on('change', function () {
-                                    var valor = $(this).val();
-                                    tabla.column(2).search(valor ? valor : '').draw();
-                                });
-
-                                // Filtro y actualización para #usuario_comun
-                                $('#usuario_comun').on('change', function () {
-                                    var valor = $('#usuario_comun').find(":selected").text();
-                                    var id_user = $(this).val();
-
-                                    tabla.column(3).search(id_user ? valor : '').draw();
-
-                                    if (id_user) {
-                                        actualizarIngresosCaja(id_user);
-                                    }
-                                });*/
-
-                                // Función para hacer la solicitud AJAX y actualizar el valor de ingresos_caja
-                                function actualizarIngresosCaja(id_user) {
-                                    var dataToSend = {
-                                        id_user: id_user,
-                                    };
-
-                                    var url = "{{ server_url }}get_filtred_cards/" + id_user.toString();
-
-                                    fetch(url)
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            $('#ingresos_caja').text(data.ingresos);
-                                            $('#egresos_caja').text(data.egresos);
-                                            $('#disponible_caja').text(data.disponible);
-                                            $('#ingresos_bancarios').text(data.ingresos_ba);
-                                            $('#egresos_bancarios').text(data.egresos_ba);
-                                            $('#disponible_bancarios').text(data.disponible_ba);
-                                        })
-                                        .catch(error => console.error('Error al obtener los ingresos:', error));
-                                }
-                            });
-
-
-                        </script>
-
-
             </div>
-            <!-- End of Content Wrapper -->
-
-            
-
-            <!-- Bootstrap core JavaScript-->
-            <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
-            <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-
-            <!-- Core plugin JavaScript-->
-            <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
-
-            <!-- Custom scripts for all pages-->
-            <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
-
-            <!-- Page level plugins -->
-            <!-- Page level custom scripts -->
-            <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
-            <script src="{% static 'vendor/datatables/jquery.dataTables.js' %}"></script>
-            <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
-
-            <script src="{% static 'js/sb-admin-2.min.js' %}"></script>
-            
 
         </body>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+        <script src="https://cdn.datatables.net/plug-ins/1.10.25/sorting/datetime-moment.js"></script>
+
+        <script>
+            $(document).ready(function () {
+                                // Configurar el tipo de datos de la columna de fecha
+                                $.fn.dataTable.moment('D [de] MMMM [de] YYYY [a las] HH:mm');
+
+                                // Inicializar la tabla
+                                var tabla = $('#dataTable').DataTable({
+                                    order: [[0, "asc"]]
+                                });
+
+                                // Aplicar el filtro cuando cambie el valor del select
+                                $('#filtro1').on('change', function() {
+                                    var valor = $(this).val();
+
+                                    // Limpiar el filtro si no se selecciona ninguna opción
+                                    if (valor === '') {
+                                        tabla.column(1).search('').draw();
+                                    } else {
+                                        console.log(valor);
+                                        tabla.column(1).search(valor).draw();
+                                    }
+                                });
+                            });
+        </script>
+        <script>
+            $(document).ready(function() {
+                // Inicializar la tabla
+                $.fn.dataTable.moment('D [de] MMMM [de] YYYY [a las] HH:mm');
+                var tabla3 = $('#dataTable').DataTable();
+
+                // Función para hacer la solicitud AJAX y actualizar el valor de ingresos_caja
+                function actualizarIngresosCaja(id_user) {
+                // Datos que deseas enviar con la solicitud
+                var dataToSend = {
+                    id_user: id_user,
+                };
+                console.log(id_user)
+                var url = "{{ server_url }}get_filtred_cards/" + id_user.toString();
+
+                fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                    console.log("Los datos son:  ")
+                    const data_object = JSON.parse(data);
+                    console.log(data_object.ingresos);
+                    // Actualizar el valor de ingresos_caja
+                    $('#ingresos_caja').text(data_object.ingresos);
+                    $('#egresos_caja').text(data_object.egresos);
+                    $('#disponible_caja').text(data_object.disponible);
+                    $('#ingresos_bancarios').text(data_object.ingresos_ba);
+                    $('#egresos_bancarios').text(data_object.egresos_ba);
+                    $('#disponible_bancarios').text(data_object.disponible_ba);
+                    
+                    
+                })
+                .catch(error => console.error('Error al obtener los ingresos:', error));
+                }
+
+
+                // Aplicar el filtro cuando cambie el valor del select
+                $('#usuario_comun').on('change', function() {
+                    var valor =  $('#usuario_comun').find(":selected").text();
+                    console.log(valor);
+                    var id_user = $(this).val();
+                    console.log(id_user);
+
+                    // Limpiar el filtro si no se selecciona ninguna opción
+                    if (id_user === '') {
+                        tabla3.column(3).search('').draw();
+                    } else {
+                        tabla3.column(3).search(valor).draw();
+                        // Llamar a la función para actualizar los ingresos
+                        actualizarIngresosCaja(id_user);
+                    }
+                });
+            });
+
+        </script>
     {% endblock %}
 
 
