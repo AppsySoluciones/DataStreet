@@ -105,7 +105,7 @@
                                 <div class="col-lg-4">
                                     <div class="card-header py-3" style="background-color: #fff;border-bottom:1px solid #fff;">
                                         <p>Selecciona Tipo de movimiento</p>
-                                        <select id="filtro1">
+                                        <select id="filtro1" name="filtro1">
                                             <option value="">Todos</option>
                                             <option value="Ingreso de Caja">Ingreso de Caja</option>
                                             <option value="Egreso de Caja">Egreso de Caja</option>
@@ -124,7 +124,7 @@
                                         <select id="filtro2">
                                             <option value="">Todos</option>
                                             {% for movimiento in unidades_productivas %}
-                                            <option value="{{movimiento}}">{{movimiento}}</option>
+                                            <option value="{{movimiento}} - {{movimiento}}">{{movimiento}}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -136,7 +136,7 @@
                                                 <select id="usuario_comun" name="usuario_comun">
                                                     <option value=""> Todos </option>
                                                     {% for usuario in usuarios_comun %}
-                                                    <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
+                                                    <option value="{{usuario}}">{{usuario.nombre}} {{usuario.apellido}}</option>
                                                     {% endfor %}
                                                 </select>
                                             </div>
@@ -149,7 +149,7 @@
                                             <select id="usuario_comun" name="usuario_comun">
                                                 <option value=""> Todos </option>
                                                 {% for usuario in usuarios_comun %}
-                                                <option value="{{usuario.pk}}">{{usuario.nombre}} {{usuario.apellido}}</option>
+                                                <option value="{{usuario}}">{{usuario}}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
@@ -187,7 +187,7 @@
                                         </thead>
                                         <tbody>
                                             {% for movimiento in data_movimientos %}
-                                                <tr data-tipo="{% if movimiento.tipo_ingreso == 'OUT' %}{% if movimiento.ingreso_bancario == True %}Egreso Bancario{% else %}Egreso de Caja{% endif %}{% elif movimiento.tipo_ingreso == 'IN' %}{% if movimiento.accion == 'Reducción de Caja' %}Reducción{% else %}{% if movimiento.ingreso_bancario == True %}Ingreso Bancario{% else %}Ingreso de Caja{% endif %}{% endif %}{% else %}Desconocido{% endif %}" data-unidad="{{ movimiento.unidad_productiva }}" data-usuario="{{ movimiento.usuario_presupuesto.pk }}">
+                                                <tr data-tipo="{% if movimiento.tipo_ingreso == 'OUT' %}{% if movimiento.ingreso_bancario == True %}Egreso Bancario{% else %}Egreso de Caja{% endif %}{% elif movimiento.tipo_ingreso == 'IN' %}{% if movimiento.accion == 'Reducción de Caja' %}Reducción{% else %}{% if movimiento.ingreso_bancario == True %}Ingreso Bancario{% else %}Ingreso de Caja{% endif %}{% endif %}{% else %}Desconocido{% endif %}" data-unidad="{{ movimiento.unidad_productiva }}" data-usuario="{{ movimiento.usuario_presupuesto }}">
                                                     <td>{{ movimiento.fecha_registro|date:"d/m/Y - H:i"  }}</td>
                                                     
                                                     {% if movimiento.tipo_ingreso == 'OUT' %}
@@ -260,57 +260,62 @@
 
         <script>
             $(document).ready(function () {
-                // Evento al cambiar el select de tipo de movimiento
-                $("#filtro1").on("change", function () {
-                    filtrarTabla();
-                });
-
-                // Evento al cambiar el select de unidad productiva
-                $("#filtro2").on("change", function () {
-                    filtrarTabla();
-                });
-
-                // Evento al cambiar el select de usuario común
-                $("#usuario_comun").on("change", function () {
-                    filtrarTabla();
-                });
-
-                function filtrarTabla() {
-                    var tipoSeleccionado = $("#filtro1").val();
-                    var unidadSeleccionada = $("#filtro2").val();
-                    var usuarioSeleccionado = $("#usuario_comun").val();
-
-                    $("#dataTable tbody tr").each(function () {
-                        var tipo = $(this).data("tipo");
-                        var unidad = $(this).data("unidad");
-                        var usuario = $(this).data("usuario");
-
-                        if ((tipoSeleccionado == "" || tipoSeleccionado == tipo) &&
-                            (unidadSeleccionada == "" || unidadSeleccionada == unidad) &&
-                            (usuarioSeleccionado == "" || usuarioSeleccionado == usuario)) {
-                            $(this).show();
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-                }
-            });
-
-        </script>
-        
-        <script>
-            $(document).ready(function () {
-                $('#dataTable').DataTable({
+                // 1. Inicialización de DataTable
+                var table = $('#dataTable').DataTable({
                     "order": [[0, "desc"]],
                     "columnDefs": [{
                         "type": "date",
                         "targets": 0  // Indica que la primera columna tiene fechas
                     }]
                 });
+
+                // 2. Función de Filtrado Combinado
+                function filtrarTabla() {
+                    var tipoSeleccionado = $("#filtro1").val();
+                    var unidadSeleccionada = $("#filtro2").val();
+                    var usuarioSeleccionado = $("#usuario_comun").val();
+
+                    $.fn.dataTable.ext.search.push(
+                        function (settings, data, dataIndex) {
+                            var tipo = data[1];  // Cambia el índice según la posición de tu columna
+                            var unidad = data[2]; // Cambia el índice según la posición de tu columna
+                            var usuario = data[3]; // Cambia el índice según la posición de tu columna
+
+                            console.log("-----v-----")
+                            console.log(usuario)
+                            console.log(usuarioSeleccionado)
+                            console.log("-----------")
+
+                            if ((tipoSeleccionado == "" || tipoSeleccionado == tipo) &&
+                                (unidadSeleccionada == "" || unidadSeleccionada == unidad) &&
+                                (usuarioSeleccionado == "" || usuarioSeleccionado == usuario)) {
+                                return true;
+                            }
+                            return false;
+                        }
+                    );
+
+                    table.draw();
+                    $.fn.dataTable.ext.search.pop();
+                }
+
+                // 3. Event Listeners para los filtros
+                $("#filtro1").on("change", function () {
+                    filtrarTabla();
+                });
+
+                $("#filtro2").on("change", function () {
+                    filtrarTabla();
+                });
+
+                $("#usuario_comun").on("change", function () {
+                    filtrarTabla();
+                });
             });
-
-
         </script>
+        
+        
+        
     {% endblock %}
 
 
