@@ -9,7 +9,7 @@ from botocore.exceptions import ClientError
 from Modulos.Usuario.models import Usuario
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.db.models import Sum
+from django.db.models import Sum, ExpressionWrapper
 from django.conf import settings
 from django.db.models import Q
 from datetime import datetime
@@ -607,7 +607,7 @@ def tablas_ingresos(request,pdf=None):
                 movimiento.unidad_negocio = unidad_negocio.nombre
 
         
-        context['data_movimientos'] = movimientos.distinct()
+        context['data_movimientos'] = movimientos.order_by('-fecha_registro').distinct()
 
         return render(request,"tables_ingresos.html",context)
 
