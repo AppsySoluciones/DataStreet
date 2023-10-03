@@ -60,7 +60,7 @@ class Movimiento(models.Model):
 
 
     def __str__(self):
-        return f"{self.tipo_ingreso} - {self.concepto} - {self.valor}"
+        return f"{self.fecha_registro} -{self.tipo_ingreso} - {self.concepto} - {self.valor}"
     
     def gen_uid(self):
         self.uid = uuid.uuid4()
@@ -141,8 +141,12 @@ def export_to_excel(queryset,to_pdf=False):
             tipo_documento = obj.tipo_documento
             nro_documento = obj.numero_documento
             
-        worksheet.cell(row=row_num, column=1, value=obj.fecha_registro.strftime('%d/%m/%Y %H:%M'))
-        worksheet.cell(row=row_num, column=2, value=obj.fecha_modificacion.strftime('%d/%m/%Y %H:%M'))
+        fecha_registro = obj.fecha_registro.astimezone(timezone.get_current_timezone())
+        fecha_formateada_registro = fecha_registro.strftime('%d/%m/%Y %H:%M')    
+        worksheet.cell(row=row_num, column=1, value=fecha_formateada_registro)
+        fecha_modificacion = obj.fecha_modificacion.astimezone(timezone.get_current_timezone())
+        fecha_formateada_registro = fecha_modificacion.strftime('%d/%m/%Y %H:%M')    
+        worksheet.cell(row=row_num, column=2, value=fecha_formateada_registro)
         worksheet.cell(row=row_num, column=3, value=tipo_ingreso)
         worksheet.cell(row=row_num, column=4, value=unidad_productiva_nombre)
         worksheet.cell(row=row_num, column=5, value=usuario_presupuesto)
