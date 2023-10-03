@@ -1,6 +1,7 @@
 {% extends "./index.html" %}
 {% load static %}
 {% load auth_extras %}
+{% load custom_filters %}
 <!--{% load humanize %}-->
 
 
@@ -30,13 +31,15 @@
         <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
 
         <!-- jQuery -->
-        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
         <!-- Moment.js -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
         <!-- DataTables -->
-        <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
+        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+
 
         <!-- Plugin datetime-moment para DataTables -->
         <script src="https://cdn.datatables.net/plug-ins/1.10.25/sorting/datetime-moment.js"></script>
@@ -168,7 +171,8 @@
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                         <thead>
-                                            <tr>
+                                            <tr >
+                                            
                                                 <!-- Tipo de Movimiento	Fecha de Movimiento	Concepto	Valor	Comprobante/Detalle -->
                                                 <th>Ultima Fecha de Modificación</th>
                                                 <th>Tipo de Movimiento</th>
@@ -178,13 +182,13 @@
                                                 <th>Valor</th>
                                                 <th>Estado</th>
                                                 <th>Comprobante/Detalle/Eliminar</th>
-                                                
+                                            
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for movimiento in data_movimientos %}
-                                                <tr>
-                                                    <td>{{ movimiento.fecha_registro }}</td>
+                                                <tr data-tipo="{% if movimiento.tipo_ingreso == 'OUT' %}{% if movimiento.ingreso_bancario == True %}Egreso Bancario{% else %}Egreso de Caja{% endif %}{% elif movimiento.tipo_ingreso == 'IN' %}{% if movimiento.accion == 'Reducción de Caja' %}Reducción{% else %}{% if movimiento.ingreso_bancario == True %}Ingreso Bancario{% else %}Ingreso de Caja{% endif %}{% endif %}{% else %}Desconocido{% endif %}" data-unidad="{{ movimiento.unidad_productiva }}" data-usuario="{{ movimiento.usuario_presupuesto.pk }}">
+                                                    <td>{{ movimiento.fecha_registro|date:"d/m/Y - H:i"  }}</td>
                                                     
                                                     {% if movimiento.tipo_ingreso == 'OUT' %}
                                                         {% if movimiento.ingreso_bancario == True %}
@@ -252,84 +256,59 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
         <script src="https://cdn.datatables.net/plug-ins/1.10.25/sorting/datetime-moment.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.25/sorting/date-eu.js"></script>
 
         <script>
             $(document).ready(function () {
-                                // Configurar el tipo de datos de la columna de fecha
-                                $.fn.dataTable.moment('D [de] MMMM [de] YYYY [a las] HH:mm');
+                // Evento al cambiar el select de tipo de movimiento
+                $("#filtro1").on("change", function () {
+                    filtrarTabla();
+                });
 
-                                // Inicializar la tabla
-                                var tabla = $('#dataTable').DataTable({
-                                    order: [[0, "asc"]]
-                                });
+                // Evento al cambiar el select de unidad productiva
+                $("#filtro2").on("change", function () {
+                    filtrarTabla();
+                });
 
-                                // Aplicar el filtro cuando cambie el valor del select
-                                $('#filtro1').on('change', function() {
-                                    var valor = $(this).val();
+                // Evento al cambiar el select de usuario común
+                $("#usuario_comun").on("change", function () {
+                    filtrarTabla();
+                });
 
-                                    // Limpiar el filtro si no se selecciona ninguna opción
-                                    if (valor === '') {
-                                        tabla.column(1).search('').draw();
-                                    } else {
-                                        console.log(valor);
-                                        tabla.column(1).search(valor).draw();
-                                    }
-                                });
-                            });
-        </script>
-        <script>
-            $(document).ready(function() {
-                // Inicializar la tabla
-                $.fn.dataTable.moment('D [de] MMMM [de] YYYY [a las] HH:mm');
-                var tabla3 = $('#dataTable').DataTable();
+                function filtrarTabla() {
+                    var tipoSeleccionado = $("#filtro1").val();
+                    var unidadSeleccionada = $("#filtro2").val();
+                    var usuarioSeleccionado = $("#usuario_comun").val();
 
-                // Función para hacer la solicitud AJAX y actualizar el valor de ingresos_caja
-                function actualizarIngresosCaja(id_user) {
-                // Datos que deseas enviar con la solicitud
-                var dataToSend = {
-                    id_user: id_user,
-                };
-                console.log(id_user)
-                var url = "{{ server_url }}get_filtred_cards/" + id_user.toString();
+                    $("#dataTable tbody tr").each(function () {
+                        var tipo = $(this).data("tipo");
+                        var unidad = $(this).data("unidad");
+                        var usuario = $(this).data("usuario");
 
-                fetch(url)
-                .then(response => response.text())
-                .then(data => {
-                    console.log(data);
-                    console.log("Los datos son:  ")
-                    const data_object = JSON.parse(data);
-                    console.log(data_object.ingresos);
-                    // Actualizar el valor de ingresos_caja
-                    $('#ingresos_caja').text(data_object.ingresos);
-                    $('#egresos_caja').text(data_object.egresos);
-                    $('#disponible_caja').text(data_object.disponible);
-                    $('#ingresos_bancarios').text(data_object.ingresos_ba);
-                    $('#egresos_bancarios').text(data_object.egresos_ba);
-                    $('#disponible_bancarios').text(data_object.disponible_ba);
-                    
-                    
-                })
-                .catch(error => console.error('Error al obtener los ingresos:', error));
+                        if ((tipoSeleccionado == "" || tipoSeleccionado == tipo) &&
+                            (unidadSeleccionada == "" || unidadSeleccionada == unidad) &&
+                            (usuarioSeleccionado == "" || usuarioSeleccionado == usuario)) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
                 }
+            });
 
-
-                // Aplicar el filtro cuando cambie el valor del select
-                $('#usuario_comun').on('change', function() {
-                    var valor =  $('#usuario_comun').find(":selected").text();
-                    console.log(valor);
-                    var id_user = $(this).val();
-                    console.log(id_user);
-
-                    // Limpiar el filtro si no se selecciona ninguna opción
-                    if (id_user === '') {
-                        tabla3.column(3).search('').draw();
-                    } else {
-                        tabla3.column(3).search(valor).draw();
-                        // Llamar a la función para actualizar los ingresos
-                        actualizarIngresosCaja(id_user);
-                    }
+        </script>
+        
+        <script>
+            $(document).ready(function () {
+                $('#dataTable').DataTable({
+                    "order": [[0, "desc"]],
+                    "columnDefs": [{
+                        "type": "date",
+                        "targets": 0  // Indica que la primera columna tiene fechas
+                    }]
                 });
             });
+
 
         </script>
     {% endblock %}
