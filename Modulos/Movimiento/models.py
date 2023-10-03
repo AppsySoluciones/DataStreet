@@ -60,7 +60,9 @@ class Movimiento(models.Model):
 
 
     def __str__(self):
-        return f"{self.fecha_registro} -{self.tipo_ingreso} - {self.concepto} - {self.valor}"
+        fecha_registro = self.fecha_registro.astimezone(timezone.get_current_timezone())
+        fecha_formateada_registro = fecha_registro.strftime('%d/%m/%Y %H:%M')
+        return f"{fecha_formateada_registro} -{self.tipo_ingreso} - {self.concepto} - {self.valor}"
     
     def gen_uid(self):
         self.uid = uuid.uuid4()
