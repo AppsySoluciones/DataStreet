@@ -263,17 +263,18 @@
         <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.10.25/sorting/date-eu.js"></script>
 
         <script>
+            console.log("Listo5")
             $(document).ready(function () {
                 // 1. Inicialización de DataTable
                 var table = $('#dataTable').DataTable({
                     "order": [[0, "desc"]],
                     "columnDefs": [{
                         "type": "date",
-                        "targets": 0  // Indica que la primera columna tiene fechas
-                    }]
+                        "targets": 0
+                    }],
                 });
 
-                // 2. Función de Filtrado Combinado
+                // Función para filtrar la tabla
                 function filtrarTabla() {
                     var tipoSeleccionado = $("#filtro1").val();
                     var unidadSeleccionada = $("#filtro2").val();
@@ -281,42 +282,59 @@
 
                     $.fn.dataTable.ext.search.push(
                         function (settings, data, dataIndex) {
-                            var tipo = data[1];  // Cambia el índice según la posición de tu columna
-                            var unidad = data[2]; // Cambia el índice según la posición de tu columna
-                            var usuario = data[3]; // Cambia el índice según la posición de tu columna
-
-                            console.log("-----v-----")
-                            console.log(usuario)
-                            console.log(usuarioSeleccionado)
-                            console.log("-----------")
-
-                            if ((tipoSeleccionado == "" || tipoSeleccionado == tipo) &&
+                            var tipo = data[1];
+                            var unidad = data[2];
+                            var usuario = data[3];
+                            return (tipoSeleccionado == "" || tipoSeleccionado == tipo) &&
                                 (unidadSeleccionada == "" || unidadSeleccionada == unidad) &&
-                                (usuarioSeleccionado == "" || usuarioSeleccionado == usuario)) {
-                                return true;
-                            }
-                            return false;
+                                (usuarioSeleccionado == "" || usuarioSeleccionado == usuario);
                         }
                     );
 
-                    table.draw();
-                    $.fn.dataTable.ext.search.pop();
+                    // Nota: No llamamos a table.draw() aquí porque podría causar un bucle infinito.
                 }
 
-                // 3. Event Listeners para los filtros
-                $("#filtro1").on("change", function () {
+                // Inicialmente, filtramos la tabla
+                filtrarTabla();
+
+                // 2. Event Listeners para los filtros
+                $("#filtro1, #filtro2, #usuario_comun").on("change", function () {
+                    $.fn.dataTable.ext.search.pop(); // Remueve el filtro anterior
                     filtrarTabla();
+                    table.draw();
                 });
 
-                $("#filtro2").on("change", function () {
-                    filtrarTabla();
-                });
-
-                $("#usuario_comun").on("change", function () {
+                // 3. Cuando se redibuja la tabla (por ejemplo, al ordenar), queremos que se apliquen los filtros
+                table.on('draw', function () {
+                    $.fn.dataTable.ext.search.pop(); // Remueve el filtro anterior
                     filtrarTabla();
                 });
             });
+
+
         </script>
+        
+        
+        <script>
+            var server_url = "{{ server_url }}";
+        
+            function actualizarIngresosCaja(id_user) {
+                var url = server_url + "get_filtred_cards/" + id_user.toString();
+        
+                fetch(url)
+                    .then(response => response.json())  // Utilizamos response.json() en lugar de text() para obtener directamente un objeto
+                    .then(data_object => {
+                        $('#ingresos_caja').text(data_object.ingresos);
+                        $('#egresos_caja').text(data_object.egresos);
+                        $('#disponible_caja').text(data_object.disponible);
+                        $('#ingresos_bancarios').text(data_object.ingresos_ba);
+                        $('#egresos_bancarios').text(data_object.egresos_ba);
+                        $('#disponible_bancarios').text(data_object.disponible_ba);
+                    })
+                    .catch(error => console.error('Error al obtener los ingresos:', error));
+            }
+        </script>
+        
         
         
         
