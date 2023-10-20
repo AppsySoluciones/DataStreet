@@ -18,6 +18,9 @@ from django.urls import path,include
 from django.contrib.auth.views import LoginView
 from Modulos.Usuario.views import LoginView,logout
 
+from django.conf.urls.static import static
+from django.conf import settings
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include(('Modulos.Movimiento.urls','Movimiento'))),
@@ -25,4 +28,4 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', logout),
     
-]
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
