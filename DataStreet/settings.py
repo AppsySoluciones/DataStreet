@@ -109,8 +109,7 @@ DATABASES = {
         'NAME': 'crecentodb',
         'USER': 'postgres',
         'PORT': '5432',
-        }
-}
+        }}
 
 
 # Password validation
@@ -153,6 +152,7 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR,'DataStreet/static'),)
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static', )
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
@@ -186,7 +186,7 @@ AWS_DEFAULT_ACL =  'public-read'
 AWS_S3_VERITY = True
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-URL_SERVER = 'http://50.19.129.198:8080/'
+URL_SERVER = 'http://18.204.200.122:8080/'
 
 #URL_SERVER = 'http://127.0.0.1:8000/'
 
