@@ -202,6 +202,8 @@ def egresos(request):
     context['disponible_ba'] = disponible_ba
     context['ingresos_ba'] = ingreso_ba
     context['egresos_ba'] = egreso_ba
+
+    
     
     return render(request,"egreso.html",context)
 
@@ -367,7 +369,6 @@ def registrarIngreso(request):
             costo_valor = -1*float(costo_valor)
     else:
         ingreso_bancario = True
-
     
     
 
@@ -382,11 +383,11 @@ def registrarIngreso(request):
         tipo_documento = request.POST['tipo_doc']
         detalle = request.POST['negociacion']
         
-        if accion == 'ventas':
+        '''if accion == 'ventas':
             tipo_ventas = request.POST['tipoVentas']
             accion = request.POST['opciones']+" "+tipo_ventas
         else:
-            accion = request.POST['opciones']
+            accion = request.POST['opciones']'''
         
         if usuario.groups.filter(name='Administrador').exists():
             unidad_productiva_id = request.POST['sub_centro_costo']
@@ -417,6 +418,10 @@ def registrarIngreso(request):
         ingreso = Movimiento.objects.get(id=ingreso.id)
         ingreso.fecha_registro = fecha_datetime
         ingreso.save()
+
+        datos = obtener_diccionario_variables_modelo(ingreso)
+        message = GetIngresoMessageBancario(datos,'Ingreso Bancario')
+        usuario.send_email(f"¡El Egreso {concepto} se registró correctamente!",message)
         messages.success(request, f'¡El Ingreso Bancario {concepto} se registró correctamente!')
         return redirect(f'{URL_SERVER}ingreso_ba/')
     else:
@@ -447,10 +452,38 @@ def registrarIngreso(request):
             else:
                 usuario_comun.presupuesto = usuario_comun.presupuesto + float(costo_valor)
             usuario_comun.save() 
+        datos = obtener_diccionario_variables_modelo(ingreso)
+        message = GetIngresoMessageCaja(datos,'Ingreso Bancario')
+        usuario.send_email(f"¡El Egreso {concepto} se registró correctamente!",message)
         
     messages.success(request, f'¡El Ingreso {concepto} se registró correctamente!')
     return redirect(f'{URL_SERVER}ingreso/')
 
+def GetIngresoMessageCaja(datos,movimiento):
+    fecha_registro = datos['fecha_registro']
+    usuario_presupuesto_id = datos['usuario_presupuesto']
+    valor_datos = datos['valor']
+    concepto_datos = datos['concepto']
+    return f'Se registró el siguiente {movimiento}\nFecha Registro: {fecha_registro}\nUsuario Común: {usuario_presupuesto_id} \nValor: {valor_datos} \nConcepto: {concepto_datos}'
+
+
+def GetIngresoMessageBancario(datos,movimiento):
+    fecha_registro_datos = datos['fecha_registro']
+    valor_datos = datos['valor']
+    concepto_datos = datos['concepto']
+    unidad_prod_name = datos['unidad_productiva']
+    accion_datos = datos['accion']
+    negociacion_datos = datos['negociacion']
+    tipo_documento_datos = datos['tipo_documento']
+    numero_documento_datos = datos['numero_documento']
+    valor_datos = datos['valor']
+    concepto_datos = datos['concepto']
+    email_message = f'Se registró el siguiente {movimiento} \nFecha de Registro: {fecha_registro_datos} \n:Unidad Productiva: {unidad_prod_name}\nTipo de Ingreso Bancario: {accion_datos} \nTipo de Documento: {tipo_documento_datos}\nNúmero de Documento: {numero_documento_datos} \nNegociación: {negociacion_datos} \nValor: {valor_datos}  \nConcepto: {concepto_datos} '
+    if datos['comprobante_factura']:
+        url= comprobante_url(datos['id'])
+        email_message += f'\n Url Factura: {url} '
+    return email_message
+    
 #@grupo_requerido('Comun')
 def registrarEgreso(request):
     usuario = Usuario.objects.filter(pk=request.user.id).first()
@@ -531,12 +564,49 @@ def registrarEgreso(request):
         )
         egreso.save()
 
+    #Enviar correo
+    #send_mail(subject, 'Hola el mensaje a llegado!', from_email, recipient_list)
+    #send_email(self,subject, message)
+    
+    datos = obtener_diccionario_variables_modelo(egreso)
+    unidad_prod_name = datos['unidad_productiva']
+    subcentro_costo_datos = datos['sub_centro_costo']
+    proveedor_datos = datos['nombre_proveedor']
+    tipo_documento_datos = datos['tipo_documento']
+    numero_documento_datos = datos['numero_documento']
+    valor_datos = datos['valor']
+    concepto_datos = datos['concepto']
+    email_message = f'Se registró el siguiente egreso\nUnidad Productiva: {unidad_prod_name}\nSubcentro de Costos: {subcentro_costo_datos} \nProveedor: {proveedor_datos}\nTipo de Documento: {tipo_documento_datos}\nNúmero de Documento: {numero_documento_datos}\nValor: {valor_datos} \nConcepto: {concepto_datos}'
+    if datos['factura']:
+        numero_factura_datos = datos['numero_factura']
+        url= comprobante_url(datos['id'])
+        fecha_factura_datos = datos['fecha_factura']
+        email_message += f'\nNúmero de factura: {numero_factura_datos}\n Url Factura: {url} \nFecha Factura:  {fecha_factura_datos}'
+    else:
+        email_message += '\nNo se adjuntó factura'
     if ingreso_bancario == True:
-        messages.success(request, f'¡El Egreso {concepto} se registró correctamente!')
+        messages.success(request, f'¡El Egreso bancario {concepto} se registró correctamente!')
+        usuario.send_email(f"¡El Egreso {concepto} se registró correctamente!",email_message)
         return redirect(f'{URL_SERVER}egreso_ba/')
     else:
         messages.success(request, f'¡El Egreso {concepto} se registró correctamente!')
+        usuario.send_email(f"¡El Egreso {concepto} se registró correctamente!",email_message)
         return redirect(f'{URL_SERVER}egreso/')
+
+def obtener_diccionario_variables_modelo(modelo):
+    # Obtener los campos del modelo
+    campos = modelo._meta.fields
+    
+    # Crear un diccionario para almacenar los campos y sus valores
+    diccionario_variables = {}
+    
+    # Agregar cada campo al diccionario
+    for campo in campos:
+        nombre_campo = campo.name
+        valor_campo = getattr(modelo, nombre_campo)
+        diccionario_variables[nombre_campo] = valor_campo
+    
+    return diccionario_variables
 
 def tablas_ingresos(request,pdf=None):
     try:
@@ -1023,6 +1093,28 @@ def comprobante(request,pk):
             ExpiresIn=360
         )
         return redirect(f'{response}')
+    except ClientError as e:
+        # Manejar cualquier error de generación de URL firmada
+
+        return redirect('/')
+
+def comprobante_url(pk):
+    movimiento = get_object_or_404(Movimiento,pk=pk)
+    s3_client = boto3.client(
+    's3',
+    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY)
+
+    try:
+        response = s3_client.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': AWS_STORAGE_BUCKET_NAME,
+                'Key': movimiento.comprobante_factura.name
+            },
+            ExpiresIn=360
+        )
+        return f'{response}'
     except ClientError as e:
         # Manejar cualquier error de generación de URL firmada
 

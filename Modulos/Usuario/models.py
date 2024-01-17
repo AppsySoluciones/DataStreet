@@ -76,7 +76,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     def send_email(self,subject, message):
         # Enviar notificación por correo electrónico
         subject = 'Notificación'
-        from_email = 'noreply@grovity.co'
+        from_email = 'Dont Reply <crecentosuperadm@gmail.com>'
         recipient_list = [str(self.email)]
         send_mail(subject, message, from_email, recipient_list)
         
