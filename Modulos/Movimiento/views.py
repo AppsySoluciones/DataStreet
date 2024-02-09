@@ -1225,7 +1225,7 @@ def generar_excel_ingresos(request):
         else:
             movimiento.unidad_negocio = 'N/A'
         
-    excel_generado = export_to_excel(movimientos)
+    excel_generado = export_to_excel(movimientos.distinct())
     messages.success(request, f'¡El excel se generó corretamente!')
 
     return excel_generado 
