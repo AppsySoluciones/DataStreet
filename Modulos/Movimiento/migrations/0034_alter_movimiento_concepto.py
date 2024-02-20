@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='movimiento',
             name='concepto',
-            field=models.TextField(blank=True, null=True),
+            field=models.CharField(blank=True, max_length=200, null=True),
         ),
     ]
