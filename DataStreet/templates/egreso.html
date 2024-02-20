@@ -453,7 +453,7 @@ $(document).ready(function() {
             document.getElementById('billNumber').value = "{{ movimiento.numero_factura }}";
             
             document.getElementById('costo_valor').value = "{{ movimiento.valor }}";
-            document.getElementById('concepto').value = "{{ movimiento.concepto }}";
+            document.getElementById('concepto').value = `{{ movimiento.concepto }}`;
             // ... Precargar unidad productiva ...
             var unidad_productiva= document.getElementById('unidad_productiva');
             unidad_productiva.innerHTML = "";
