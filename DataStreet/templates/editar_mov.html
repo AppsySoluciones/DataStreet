@@ -110,7 +110,7 @@
                             document.getElementById('num_doc').value = "{{ movimiento.num_doc }}";
                             document.getElementById('negociacion').value = "{{ movimiento.negociacion }}";
                             document.getElementById('costo_valor').value = "{{ movimiento.costo_valor }}";
-                            document.getElementById('concepto').value = `{{ movimiento.concepto }}`;
+                            document.getElementById('concepto').value = `{{ movimiento.concepto|linebreaksbr|removetags:'br' }}`;
                             // ... Precargar otros valores aquí ...
                             
                         }
