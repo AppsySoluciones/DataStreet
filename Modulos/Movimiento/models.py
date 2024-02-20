@@ -43,7 +43,7 @@ class Movimiento(models.Model):
     fecha_registro = models.DateTimeField(default=timezone.now, null=True, blank=True, editable=True)
     fecha_factura = models.DateField(null=True, blank=True, editable=True)
     fecha_modificacion = models.DateTimeField(auto_now_add=True,null=True,blank=True)
-    concepto = models.CharField(max_length=200,null=True,blank=True)
+    #concepto = models.CharField(max_length=200,null=True,blank=True)
     concepto_text_field = models.TextField(null=True,blank=True)
     valor = models.FloatField(default=0)
     comprobante_factura = models.FileField(upload_to='comprobantes/',null=True,blank=True)
