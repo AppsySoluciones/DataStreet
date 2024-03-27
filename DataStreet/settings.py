@@ -94,13 +94,13 @@ WSGI_APPLICATION = 'DataStreet.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-""" DATABASES = {
+"""DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'DatasStreet.DB',
     }
-} """
-
+} 
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -186,7 +186,7 @@ AWS_DEFAULT_ACL =  'public-read'
 AWS_S3_VERITY = True
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-URL_SERVER = 'http://18.204.200.122:8080/'
+URL_SERVER = 'http://18.204.200.122/'
 
 #URL_SERVER = 'http://127.0.0.1:8000/'
 
