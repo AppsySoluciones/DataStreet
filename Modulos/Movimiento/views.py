@@ -608,82 +608,89 @@ def obtener_diccionario_variables_modelo(modelo):
     
     return diccionario_variables
 
-def tablas_ingresos(request,pdf=None):
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+def tablas_ingresos(request, pdf=None):
     try:
-        
         usuario = get_object_or_404(Usuario, pk=request.user.id)
-        
         if usuario.groups.filter(name__in=['Auditor']).exists():
             movimientos = get_movimientos_usuario(usuario)
-
         else:
             movimientos = get_movimientos_usuario(usuario)
         
+        context = {'server_url': URL_SERVER,
+                   'request': request}
 
-        context = {'server_url':URL_SERVER,
-            'data_movimientos':movimientos,
-            'request': request
-            }
+        disponible, ingreso, egreso, disponible_ba, ingreso_ba, egreso_ba = get_estado_caja(usuario)
 
-
-
-        disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_estado_caja(usuario)
-        if usuario.groups.filter(name__in=['Administrador','Auditor']).exists():
-            disponible,ingreso,egreso, disponible_ba,ingreso_ba,egreso_ba = get_movimientos(usuario)
-            context['disponible_ba'] = disponible_ba
-            context['ingresos_ba'] = ingreso_ba
-            context['egresos_ba'] = egreso_ba
-            context['ingresos'] = ingreso
-            context['egresos'] = egreso
-            context['disponible'] = disponible
+        if usuario.groups.filter(name__in=['Administrador', 'Auditor']).exists():
+            disponible, ingreso, egreso, disponible_ba, ingreso_ba, egreso_ba = get_movimientos(usuario)
+            context.update({'disponible_ba': disponible_ba,
+                            'ingresos_ba': ingreso_ba,
+                            'egresos_ba': egreso_ba,
+                            'ingresos': ingreso,
+                            'egresos': egreso,
+                            'disponible': disponible})
+            
             unidad_negocio = UnidadNegocio.objects.filter(admin=usuario).all()
             if usuario.groups.filter(name='Auditor').exists():
                 unidad_negocio = UnidadNegocio.objects.all()
+            
             usuarios_comun = []
             usuarios_comun_id =[]
+            
             for unidad in unidad_negocio:
                 for unidad_productiva in unidad.unidades_productivas.all():
-                    if unidad_productiva.usuarioRegistro != None:
-                        list_users_produn = list(unidad_productiva.usuarioRegistro.all().values_list('pk',flat=True))
+                    if unidad_productiva.usuarioRegistro:
+                        list_users_produn = list(unidad_productiva.usuarioRegistro.all().values_list('pk', flat=True))
                         if list_users_produn not in usuarios_comun_id:
-                            usuarios_comun_id = usuarios_comun_id + list_users_produn
+                            usuarios_comun_id += list_users_produn
                             usuarios_comun.append(unidad_productiva.usuarioRegistro.all())
                             
             usuarios_comun = list(set(chain(*usuarios_comun)))
             context['usuarios_comun'] = usuarios_comun
-        context['disponible_ba'] = disponible_ba
-        context['ingresos_ba'] = ingreso_ba
-        context['egresos_ba'] = egreso_ba
-        context['ingresos'] = ingreso
-        context['egresos'] = egreso
-        context['disponible'] = disponible
-
-        if usuario.groups.filter(name__in=['Administrador','Auditor','Comun']).exists():
-            #diccionario[clave] = valor
+        
+        context.update({'disponible_ba': disponible_ba,
+                        'ingresos_ba': ingreso_ba,
+                        'egresos_ba': egreso_ba,
+                        'ingresos': ingreso,
+                        'egresos': egreso,
+                        'disponible': disponible})
+        
+        if usuario.groups.filter(name__in=['Administrador', 'Auditor', 'Comun']).exists():
             elementos = movimientos.values_list('unidad_productiva__nombre', flat=True).distinct()
             unique_elementos = set(elementos)
             context['unidades_productivas'] = unique_elementos
-
-        # if usuario.groups.filter(name='Auditor').exists():
-            
-        #context['data_movimientos'] = movimientos.filter(tipo_ingreso='OUT')
+        
         for movimiento in movimientos:
             unidad_productiva = movimiento.unidad_productiva
-            if movimiento.unidad_productiva == None:
-                movimiento.unidad_productiva_admin = movimiento.usuario_presupuesto.nombre + " " +movimiento.usuario_presupuesto.apellido
+            if not unidad_productiva:
+                movimiento.unidad_productiva_admin = movimiento.usuario_presupuesto.nombre + " " + movimiento.usuario_presupuesto.apellido
             
             if UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).exists():
                 unidad_negocio = UnidadNegocio.objects.filter(unidades_productivas=unidad_productiva).first()
                 movimiento.unidad_negocio = unidad_negocio.nombre
-
         
-        context['data_movimientos'] = movimientos.order_by('-fecha_registro').distinct()
+        paginator = Paginator(movimientos.order_by('-fecha_registro').distinct(), 10)  # 10 elementos por página
+        
+        page = request.GET.get('page')
+        try:
+            data_movimientos = paginator.page(page)
+        except PageNotAnInteger:
+            # Si el parámetro de la página no es un entero, muestra la primera página
+            data_movimientos = paginator.page(1)
+        except EmptyPage:
+            # Si el número de página está fuera del rango, muestra la última página de resultados
+            data_movimientos = paginator.page(paginator.num_pages)
+        
+        context['data_movimientos'] = data_movimientos
 
-        return render(request,"tables_ingresos.html",context)
-
+        return render(request, "tables_ingresos.html", context)
+    
     except Exception as e:
         messages.error(request, f'¡Error! {e}')
         return redirect(f'{URL_SERVER}/')
+
 def tablas_egresos(request):
     usuario = get_object_or_404(Usuario, pk=request.user.id)
     if usuario.groups.filter(name='Administrador').exists():
