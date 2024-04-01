@@ -93,8 +93,8 @@ WSGI_APPLICATION = 'DataStreet.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
-"""DATABASES = {
+"""
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'DatasStreet.DB',
@@ -202,3 +202,16 @@ EMAIL_USE_TLS = True
 #Config Telegram
 token = "5957775434:AAEkU2H1pt3eiTFGHq5f5A6IKlcIS7gyIrw"
 
+# settings.py
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://3bc2fd9a0837ee765d24c203cf925cde@o4507011726639104.ingest.us.sentry.io/4507011729129472",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)

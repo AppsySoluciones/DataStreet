@@ -21,11 +21,15 @@ from Modulos.Usuario.views import LoginView,logout
 from django.conf.urls.static import static
 from django.conf import settings
 
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include(('Modulos.Movimiento.urls','Movimiento'))),
     path('usuario/',include(('Modulos.Usuario.urls','Usuario'))),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', logout),
+    path('sentry-debug/', trigger_error),
     
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
